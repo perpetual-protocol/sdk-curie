@@ -19,7 +19,10 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "clean-type:sdk": "rm -rf src/contracts/type",
+    "generate-type:sdk": "yarn clean-type:sdk && ts-node script/generate-type-sdk.ts",
+    "generate-type": "yarn generate-type:sdk"
   },
   "peerDependencies": {},
   "husky": {
@@ -48,10 +51,22 @@
   ],
   "devDependencies": {
     "@size-limit/preset-small-lib": "^7.0.8",
+    "@typechain/ethers-v5": "7.0.0",
+    "@types/big.js": "^6.1.3",
     "husky": "^7.0.4",
     "size-limit": "^7.0.8",
     "tsdx": "^0.14.1",
     "tslib": "^2.3.1",
+    "typechain": "5.0.0",
     "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@apollo/client": "3.4.7",
+    "@perp/curie-deployments": "2022.2.10-1644477375571",
+    "@perp/curie-periphery": "1.3.1",
+    "@uniswap/v3-core": "1.0.0",
+    "big.js": "6.1.1",
+    "dotenv-flow": "3.2.0",
+    "ethers": "5.5.0"
   }
 }
