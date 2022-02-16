@@ -5,9 +5,7 @@ import { glob, runTypeChain } from "typechain"
 async function main() {
     const cwd = process.cwd()
 
-    // NOTE: will not use the stage variable to decide which abi ref to use after we make the SDK bundle script independently
-    const stage = process.env.REACT_APP_STAGE
-    // NOTE: abi in optimism-kovan is the same with abi in optimism
+    const stage = process.env.STAGE
     const abiRef = stage === "production" ? "optimism" : "optimism-kovan"
 
     // find all files matching the glob
