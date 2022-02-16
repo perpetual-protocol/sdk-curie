@@ -2,7 +2,7 @@
   // see https://www.typescriptlang.org/tsconfig to better understand tsconfigs
   "include": ["src", "types", "script", "test"],
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es5",
     "module": "esnext",
     "lib": ["dom", "esnext"],
     "baseUrl": "src",
