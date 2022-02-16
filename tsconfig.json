@@ -4,7 +4,11 @@
   "compilerOptions": {
     "target": "es5",
     "module": "esnext",
-    "lib": ["dom", "esnext"],
+   "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "baseUrl": "src",
     "importHelpers": true,
     // output .d.ts declaration files for consumers
@@ -33,7 +37,7 @@
     "forceConsistentCasingInFileNames": true,
     // `tsdx build` ignores this option, but it is commonly used when type-checking separately with `tsc`
     "noEmit": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
   "ts-node": {
     "compilerOptions": {
