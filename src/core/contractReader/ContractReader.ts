@@ -419,7 +419,7 @@ export class ContractReader {
         const idsByMarkets = await this.getOpenOrderIds(marketMap, account)
         const contractCalls: ContractCall[] = []
 
-        Object.values(marketMap).forEach(({ baseAddress }, index) => {
+        Object.values(marketMap).forEach((_, index) => {
             contractCalls.push(
                 ...idsByMarkets[index].map((id: number) => ({
                     contract: this.contracts.orderBook,
@@ -434,7 +434,7 @@ export class ContractReader {
             async () => {
                 const orders = await this._multicallReader.execute([...contractCalls])
                 let pointer = 0
-                return idsByMarkets.map((ids, index) => {
+                return idsByMarkets.map((_, index) => {
                     const len = idsByMarkets[index].length
                     const result = orders.slice(pointer, pointer + len)
                     pointer += len

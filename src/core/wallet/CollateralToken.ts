@@ -17,7 +17,7 @@ export class CollateralToken extends Channel<CollateralEventName> {
     private _contractReader: ContractReader
     readonly decimal = COLLATERAL_TOKEN_DECIMAL
 
-    constructor(private readonly _perp: PerpetualProtocol) {
+    constructor(_perp: PerpetualProtocol) {
         super(_perp.channelRegistry)
         this._contract = _perp.contracts.collateralToken
         this._contractReader = _perp.contractReader
@@ -46,14 +46,14 @@ export class CollateralToken extends Channel<CollateralEventName> {
     }
     protected _getEventSourceMap() {
         const approvalEventSource = new ChannelEventSource<CollateralEventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 const handler = (...args: any[]) => this.emit("Approval", ...args)
                 this._contract.on("Approval", handler)
                 return () => this._contract.off("Approval", handler)
             },
         })
         const transferEventSource = new ChannelEventSource<CollateralEventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 const handler = (...args: any[]) => this.emit("Transfer", ...args)
                 this._contract.on("Transfer", handler)
                 return () => this._contract.off("Transfer", handler)

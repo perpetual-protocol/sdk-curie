@@ -132,15 +132,15 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         const fetchAndEmitUpdated = this._createFetchUpdateData()
 
         const marketUpdated = new ChannelEventSource<PositionDraftEventName | EventName>({
-            eventSourceStarter: eventName => {
-                return this.market.on("updated", async market => {
-                    this._handleMarketUpdate(market)
+            eventSourceStarter: () => {
+                return this.market.on("updated", async () => {
+                    this._handleMarketUpdate()
                 })
             },
         })
 
         const buyingPowerUpdated = new ChannelEventSource<PositionDraftEventName | EventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 invariant(
                     this._perp.hasConnected(),
                     () => new UnauthorizedError({ functionName: "_getEventSourceMap" }),
@@ -177,7 +177,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         }
         return createMemoizedFetcher(
             () => getBuyingPowerData(),
-            values => {
+            () => {
                 this.emit("buyingPowerUpdated", this)
             },
             (a, b) => {
@@ -186,7 +186,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         )
     }
 
-    protected async _handleMarketUpdate(market: Market) {
+    protected async _handleMarketUpdate() {
         if (this.amountInput.lte(0)) {
             return
         }

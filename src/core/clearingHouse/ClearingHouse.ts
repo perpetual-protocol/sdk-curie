@@ -239,6 +239,3 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
 }
 
 export { ClearingHouse }
-
-
-@perp/curie-deployments@2022.2.10-1644477375571

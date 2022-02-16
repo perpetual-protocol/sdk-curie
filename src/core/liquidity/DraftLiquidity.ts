@@ -37,7 +37,6 @@ export interface OrderDraftConstructorData extends OrderBaseConstructorData {
 }
 
 export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
-    private readonly _perp: PerpetualProtocol
 
     rawBaseAmount?: Big
     rawQuoteAmount?: Big
@@ -50,7 +49,6 @@ export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
         this.rawQuoteAmount = rawQuoteAmount
         this._lowerTick = lowerTick
         this._upperTick = upperTick
-        this._perp = perp
     }
 
     async getLiquidity({ cache = true } = {}) {

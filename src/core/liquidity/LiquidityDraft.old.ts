@@ -37,7 +37,6 @@ interface OrderDraftConstructorData extends OrderBaseConstructorData {
 }
 
 export class OrderDraft extends LiquidityBase<OrderDraftEventName> {
-    private readonly _perp: PerpetualProtocol
     private readonly _tickSpacing: number
     private readonly _hasExistingOrder: boolean = false
 
@@ -55,7 +54,6 @@ export class OrderDraft extends LiquidityBase<OrderDraftEventName> {
     constructor({ perp, tickSpacing, existingOrder, ...data }: OrderDraftConstructorData) {
         super(data, perp.channelRegistry)
         this._tickSpacing = tickSpacing
-        this._perp = perp
         if (existingOrder) {
             this._lowerTick = existingOrder?.lowerTick
             this._upperTick = existingOrder?.upperTick

@@ -131,14 +131,14 @@ export class Position extends Channel<PositionEventName> {
         return transactionFee
     }
 
-    private async _handleMarketUpdate(market: Market) {
+    private async _handleMarketUpdate() {
         await this._fetch("swap", { cache: false })
         this.emit("updated", this)
     }
 
     protected _getEventSourceMap() {
         const updateDataEventSource = new ChannelEventSource<PositionEventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 return this.market.on("updated", this._handleMarketUpdate.bind(this))
             },
             initEventEmitter: eventName => {
