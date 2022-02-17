@@ -9,6 +9,10 @@ jobs:
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
     steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      
       - name: Use Node.js 16.x
         uses: actions/setup-node@v2
         with:
