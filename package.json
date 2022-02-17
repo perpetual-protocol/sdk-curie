@@ -22,7 +22,8 @@
     "analyze": "size-limit --why",
     "clean-type:sdk": "rm -rf src/contracts/type",
     "generate-type:sdk": "yarn clean-type:sdk && ts-node script/generate-type-sdk.ts",
-    "generate-type": "yarn generate-type:sdk"
+    "generate-type": "yarn generate-type:sdk",
+    "release": "yarn publish --non-interactive --access public"
   },
   "peerDependencies": {},
   "husky": {
