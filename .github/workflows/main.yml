@@ -9,7 +9,7 @@ jobs:
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
     steps:
-       - name: Use Node.js 16.x
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v2
         with:
           node-version: 16.x
