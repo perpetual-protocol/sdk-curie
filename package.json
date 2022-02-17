@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "main": "dist/index.js",
-  "module": "dist/perp-frontend-sdk.esm.js",
+  "module": "dist/v2-sdk.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",

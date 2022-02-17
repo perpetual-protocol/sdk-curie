@@ -1,0 +1,12 @@
+{
+  "env": {
+    "modern": {
+      "presets": [
+        "@babel/preset-modules"
+      ]
+    }
+  },
+  "targets": {
+    "esmodules": true
+  }
+}

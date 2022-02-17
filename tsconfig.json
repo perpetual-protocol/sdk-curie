@@ -2,9 +2,9 @@
   // see https://www.typescriptlang.org/tsconfig to better understand tsconfigs
   "include": ["src", "types", "script", "test"],
   "compilerOptions": {
-    "target": "es5",
+    "target": "esnext",
     "module": "esnext",
-   "lib": [
+    "lib": [
       "dom",
       "dom.iterable",
       "esnext"
