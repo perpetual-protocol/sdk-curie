@@ -1,57 +1,85 @@
 {
   "name": "@perp/v2-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "main": "dist/index.js",
-  "module": "dist/perp-frontend-sdk.esm.js",
-  "typings": "dist/index.d.ts",
+  "module": "dist/v2-sdk.esm.js",
+  "typings": "dist/src/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=16 < 17"
   },
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "test": "tsdx test",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build",
-    "size": "size-limit",
-    "analyze": "size-limit --why"
+    "prepare": "rm -rf .husky/_ && husky install",
+    "lint": "eslint --ext .js,.ts src/",
+    "lint:fix": "eslint --ext .js,.ts --fix src/",
+    "start": "rollup -c rollup.config.js -w",
+    "docs": "typedoc --out docs --theme minimal src",
+    "prebuild": "rimraf dist",
+    "build": "rollup -c rollup.config.js",
+    "release": "npm run release:patch",
+    "release:patch": "npm run build && standard-version --release-as patch",
+    "release:minor": "npm run build && standard-version --release-as minor",
+    "release:major": "npm run build && standard-version --release-as major",
+    "test": "jest --coverage",
+    "test:watch": "jest --coverage --watch",
+    "test:prod": "npm run lint && npm run test -- --no-cache",
+    "deploy": "rimraf docs/ && npm run docs",
+    "clean-type:sdk": "rm -rf src/contracts/type",
+    "generate-type:sdk": "yarn clean-type:sdk && ts-node script/generate-type-sdk.ts",
+    "generate-type": "yarn generate-type:sdk"
   },
-  "peerDependencies": {},
-  "husky": {
-    "hooks": {
-      "pre-commit": "tsdx lint"
-    }
+  "lint-staged": {
+    "src/**/*.ts": [
+      "prettier --write",
+      "git add"
+    ]
   },
-  "prettier": {
-    "semi": false,
-    "printWidth": 120,
-    "singleQuote": false,
-    "trailingComma": "all",
-    "arrowParens": "avoid",
-    "tabWidth": 4,
-    "bracketSpacing": true
+  "keywords": [],
+  "dependencies": {
+    "@apollo/client": "3.4.7",
+    "@babel/preset-modules": "^0.1.5",
+    "@perp/curie-deployments": "2022.2.10-1644477375571",
+    "@perp/curie-periphery": "1.3.1",
+    "@uniswap/v3-core": "1.0.0",
+    "big.js": "6.1.1",
+    "dotenv-flow": "3.2.0",
+    "ethers": "5.5.0"
   },
-  "size-limit": [
-    {
-      "path": "dist/perp-frontend-sdk.cjs.production.min.js",
-      "limit": "10 KB"
-    },
-    {
-      "path": "dist/perp-frontend-sdk.esm.js",
-      "limit": "10 KB"
-    }
-  ],
   "devDependencies": {
-    "@size-limit/preset-small-lib": "^7.0.8",
-    "husky": "^7.0.4",
-    "size-limit": "^7.0.8",
-    "tsdx": "^0.14.1",
-    "tslib": "^2.3.1",
-    "typescript": "^4.5.5"
+    "@babel/preset-env": "^7.16.0",
+    "@commitlint/cli": "^13.1.0",
+    "@commitlint/config-conventional": "^13.1.0",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.1.3",
+    "@typechain/ethers-v5": "7.0.0",
+    "@types/big.js": "^6.1.3",
+    "@types/jest": "^27.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-airbnb": "^19.0.0",
+    "eslint-config-airbnb-typescript": "^15.0.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "husky": "^7.0.2",
+    "jest": "^27.1.0",
+    "lint-staged": "^11.1.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.56.3",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "standard-version": "^9.3.1",
+    "ts-jest": "^27.0.5",
+    "ts-lib": "^0.0.5",
+    "ts-node": "^10.5.0",
+    "typechain": "5.0.0",
+    "typedoc": "^0.21.9",
+    "typescript": "^4.4.2"
   }
 }
