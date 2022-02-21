@@ -37,7 +37,6 @@ export interface OrderDraftConstructorData extends OrderBaseConstructorData {
 }
 
 export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
-
     rawBaseAmount?: Big
     rawQuoteAmount?: Big
 

@@ -44,8 +44,14 @@ export class ClearingHouseConfig {
     }
 
     static async create(contractReader: ContractReader) {
-        const { mmRatio, imRatio, maxFundingRate, exchangeFeeRatios, insuranceFundFeeRatios, tickSpacings } =
-            await contractReader.getClearingHouseMetadata()
+        const {
+            mmRatio,
+            imRatio,
+            maxFundingRate,
+            exchangeFeeRatios,
+            insuranceFundFeeRatios,
+            tickSpacings,
+        } = await contractReader.getClearingHouseMetadata()
 
         return new ClearingHouseConfig(
             offsetDecimalLeft(mmRatio, RATIO_DECIMAL),

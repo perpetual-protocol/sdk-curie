@@ -90,7 +90,7 @@ describe("getSwapRate", () => {
                 amountBase: Big(0),
                 amountQuote: Big(50),
             })
-        } catch (e: any) {
+        } catch (e) {
             expect(e.message).toEqual("[big.js] Division by zero")
         }
     })
@@ -119,7 +119,7 @@ describe("getPriceImpact", () => {
                 price: Big(0),
                 markPrice: Big(0),
             })
-        } catch (e: any) {
+        } catch (e) {
             expect(e.message).toEqual("[big.js] Division by zero")
         }
     })

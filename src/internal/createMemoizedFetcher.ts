@@ -24,7 +24,7 @@ export function createMemoizedFetcher<T>(
 ): MemoizedFetcher {
     let prevResults: T
 
-    return async function (ignoreChangeCheck = false) {
+    return async function(ignoreChangeCheck = false) {
         const nextResults = await fetcher()
         if (!nextResults) {
             return

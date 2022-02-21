@@ -1,7 +1,7 @@
 import Big from "big.js"
 import { Liquidity } from "./Liquidity"
 import { PerpetualProtocol } from "../PerpetualProtocol"
-import {ArgumentError} from "../../errors"
+import { ArgumentError } from "../../errors"
 
 import { BIG_ZERO, ERC20_DECIMAL_DIGITS } from "../../constants"
 import { FailedPreconditionError } from "../../errors"

@@ -15,7 +15,9 @@ export function big2BigNum(val: Big, decimals: number = ERC20_DECIMAL_DIGITS): B
     return BigNumber.from(val.mul(new Big(10).pow(decimals)).toFixed(0))
 }
 export function fromSqrtX96(value: BigNumber) {
-    return bigNumber2Big(value, 0).div(Q96).pow(2)
+    return bigNumber2Big(value, 0)
+        .div(Q96)
+        .pow(2)
 }
 
 export function toSqrtX96(value: Big) {
@@ -23,7 +25,14 @@ export function toSqrtX96(value: Big) {
 }
 
 export function encodePriceSqrt(amount1: Big, amount0: Big) {
-    return BigNumber.from(amount1.div(amount0).sqrt().mul(Q96).round().toString())
+    return BigNumber.from(
+        amount1
+            .div(amount0)
+            .sqrt()
+            .mul(Q96)
+            .round()
+            .toString(),
+    )
 }
 
 export function offsetDecimalLeft(number: Big, decimal: number) {

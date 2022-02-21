@@ -1,5 +1,5 @@
 import { BaseContract, ethers, utils } from "ethers"
-import {ContractReadError, ContractReadErrorParams} from "../../errors"
+import { ContractReadError, ContractReadErrorParams } from "../../errors"
 import { ContractName } from "../../contracts"
 
 import { Multicall2 } from "../../contracts/type"
@@ -32,11 +32,8 @@ export class MulticallReader {
 
     // TODO: add type check to make sure the funcName is exist in the certain contract (https://app.asana.com/0/1200351496528172/1201094806109445/f)
     async execute(calls: ContractCall[], options?: OptionalParam): Promise<ethers.utils.Result> {
-        const {
-            failFirstByContract = true,
-            failFirstByClient = true,
-            returnByContractAndFuncName = false,
-        } = options || {}
+        const { failFirstByContract = true, failFirstByClient = true, returnByContractAndFuncName = false } =
+            options || {}
         const callRequests = calls.map(call => {
             const callData = call.contract.interface.encodeFunctionData(call.funcName, call.funcParams)
             return {

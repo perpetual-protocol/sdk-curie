@@ -2,7 +2,11 @@ import { createMemoizedFetcher } from "../createMemoizedFetcher"
 
 const setup = () => {
     return {
-        fetcherFactory: (value: any) => jest.fn().mockResolvedValueOnce(value).mockResolvedValueOnce("second"),
+        fetcherFactory: (value: any) =>
+            jest
+                .fn()
+                .mockResolvedValueOnce(value)
+                .mockResolvedValueOnce("second"),
         handler: jest.fn(),
         compareFn: jest.fn().mockImplementation((a: string, b: string) => a !== b),
     }

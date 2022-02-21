@@ -5,13 +5,13 @@ interface Options {
 export function debounce<T extends (...args: any[]) => any>(
     fn: T,
     secs: number,
-    { leading }: Options = { leading: false},
+    { leading }: Options = { leading: false },
 ) {
     let timeoutId: NodeJS.Timeout
 
     if (leading) {
         let isWaiting = false
-        return function (...args: Parameters<T>) {
+        return function(...args: Parameters<T>) {
             clearTimeout(timeoutId)
 
             if (!isWaiting) {
@@ -26,7 +26,7 @@ export function debounce<T extends (...args: any[]) => any>(
         }
     }
 
-    return function (...args: Parameters<T>) {
+    return function(...args: Parameters<T>) {
         clearTimeout(timeoutId)
 
         timeoutId = setTimeout(() => {

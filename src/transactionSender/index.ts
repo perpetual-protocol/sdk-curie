@@ -12,7 +12,7 @@ type ContractFunction = (...args: any[]) => Promise<Transaction>
 
 export interface TransactionMetadata<
     Contract extends EthersContract = EthersContract,
-    ContractFunctionName extends keyof Contract = keyof Contract,
+    ContractFunctionName extends keyof Contract = keyof Contract
 > {
     contractName: ContractName
     contractFunctionName: ContractFunctionName

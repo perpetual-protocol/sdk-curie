@@ -267,8 +267,16 @@ export class ContractWriteError<ContractType extends EthersContract> extends SDK
 
     constructor(data: ContractWriteBaseErrorParams<keyof ContractType>) {
         super(data)
-        const { contractName, contractFunctionName, contractErrorCode, context, txHash, gasLimit, args, txPayload } =
-            data
+        const {
+            contractName,
+            contractFunctionName,
+            contractErrorCode,
+            context,
+            txHash,
+            gasLimit,
+            args,
+            txPayload,
+        } = data
         this.name = ErrorName.CONTRACT_WRITE_ERROR
         this.message =
             `Write ${contractName} contract error, invoke ${contractFunctionName} function failed.` +

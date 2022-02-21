@@ -1,10 +1,7 @@
 // import { SupportedChainId } from "network";
 
-
-
 // Note: if we need to support multi abis,
 // we could use factory function to create them.
-
 
 // interface ContractsFactoryProps {
 

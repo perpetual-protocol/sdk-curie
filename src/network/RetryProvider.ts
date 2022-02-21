@@ -94,7 +94,7 @@ export class RetryProvider extends BaseProvider {
                 const result = await func(provider)
                 return result
                 // @ts-ignore Catch clause variable cannot have a type annotation.
-            } catch (error: any) {
+            } catch (error) {
                 if (error.code === EthersErrorCode.SERVER_ERROR) {
                     serverErrors.push(error)
                     // NOTE: ignore this error including 429 and unsupported block number(out of sync) in order to retry

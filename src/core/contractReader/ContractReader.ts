@@ -307,14 +307,18 @@ export class ContractReader {
     }: GetQuoterSwapParams): Promise<GetQuoterSwapReturn> {
         return errorGuardAsync(
             async () => {
-                const { deltaAvailableBase, deltaAvailableQuote, exchangedPositionNotional, exchangedPositionSize } =
-                    await this.contracts.quoter.callStatic.swap({
-                        baseToken: baseTokenAddress,
-                        isBaseToQuote,
-                        isExactInput,
-                        amount: big2BigNumber(amount),
-                        sqrtPriceLimitX96: 0,
-                    })
+                const {
+                    deltaAvailableBase,
+                    deltaAvailableQuote,
+                    exchangedPositionNotional,
+                    exchangedPositionSize,
+                } = await this.contracts.quoter.callStatic.swap({
+                    baseToken: baseTokenAddress,
+                    isBaseToQuote,
+                    isExactInput,
+                    amount: big2BigNumber(amount),
+                    sqrtPriceLimitX96: 0,
+                })
 
                 const _deltaAvailableBase = bigNumber2Big(deltaAvailableBase)
                 const _deltaAvailableQuote = bigNumber2Big(deltaAvailableQuote)
@@ -541,8 +545,10 @@ export class ContractReader {
     }: GetTotalTokenAmountInPoolAndPendingFeeParams) {
         return errorGuardAsync(
             async () => {
-                const [_totalTokenAmount, _totalPendingFee] =
-                    await this.contracts.orderBook.getTotalTokenAmountInPoolAndPendingFee(trader, baseToken, false)
+                const [
+                    _totalTokenAmount,
+                    _totalPendingFee,
+                ] = await this.contracts.orderBook.getTotalTokenAmountInPoolAndPendingFee(trader, baseToken, false)
                 return {
                     totalTokenAmount: bigNumber2Big(_totalTokenAmount),
                     totalPendingFee: bigNumber2Big(_totalPendingFee),
@@ -939,11 +945,13 @@ export class ContractReader {
                     failFirstByClient: false,
                     failFirstByContract: false,
                 })
-                const [{ deltaAvailableBase, deltaAvailableQuote, exchangedPositionNotional, exchangedPositionSize }] =
-                    result[genKeyFromContractAndFuncName(swapCall)]
+                const [
+                    { deltaAvailableBase, deltaAvailableQuote, exchangedPositionNotional, exchangedPositionSize },
+                ] = result[genKeyFromContractAndFuncName(swapCall)]
 
-                const [[owedPNL, unrealizedPNL, pendingFee]] =
-                    result[genKeyFromContractAndFuncName(getPnlAndPendingFeeCall)]
+                const [[owedPNL, unrealizedPNL, pendingFee]] = result[
+                    genKeyFromContractAndFuncName(getPnlAndPendingFeeCall)
+                ]
 
                 const otherBaseDebts = result[genKeyFromContractAndFuncName(otherBaseDebtCalls[0])]
                 const otherMarketIndexPrices = result[genKeyFromContractAndFuncName(otherMarketIndexPriceCalls[0])]
