@@ -3,7 +3,7 @@
 
 ## Setup
 ```bash
-yarn && yarn start
+yarn && yarn start && yarn generate-type
 ```
 ### Local development
 ```
