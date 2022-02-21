@@ -25,7 +25,6 @@
     "generate-type": "yarn generate-type:sdk",
     "release": "yarn publish --non-interactive --access public"
   },
-  "peerDependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "tsdx lint"
@@ -69,5 +68,10 @@
     "big.js": "6.1.1",
     "dotenv-flow": "3.2.0",
     "ethers": "5.5.0"
+  },
+  "peerDependencies": {
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0",
+    "react": "^16.8.0 || ^17.0.0",
+    "subscriptions-transport-ws": "^0.9.0 || ^0.11.0"
   }
 }
