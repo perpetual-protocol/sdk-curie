@@ -81,5 +81,10 @@
     "typechain": "5.0.0",
     "typedoc": "^0.21.9",
     "typescript": "^4.4.2"
+  },
+  "peerDependencies": {
+    "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0",
+    "react": "^16.8.0 || ^17.0.0",
+    "subscriptions-transport-ws": "^0.9.0 || ^0.11.0"
   }
 }
