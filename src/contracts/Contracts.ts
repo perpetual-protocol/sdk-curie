@@ -54,7 +54,7 @@ interface ContractsConfig {
 }
 
 export class Contracts {
-    hasSigner = false
+    hasSigner: boolean = false
     vault: Vault
     clearingHouse: ClearingHouse
     orderBook: OrderBook

@@ -1,6 +1,7 @@
 import Big from "big.js"
 import { constants, utils } from "ethers"
 
+import { big2BigNum } from "../../../util/format"
 import { BIG_ONE } from "../../constants"
 import { ContractName } from "../../contracts"
 import { ClearingHouse as ContractClearingHouse } from "../../contracts/type"
@@ -14,9 +15,9 @@ import {
     hasNumberChange,
 } from "../../internal"
 import { getTransaction } from "../../transactionSender"
-import { big2BigNumber, invariant, poll,big2BigNum } from "../../utils"
-import { DraftLiquidity } from "../liquidity/DraftLiquidity"
+import { big2BigNumber, invariant, poll } from "../../utils"
 import { Liquidity } from "../liquidity/Liquidity"
+import { LiquidityDraft } from "../liquidity/LiquidityDraft"
 import type { PerpetualProtocol } from "../PerpetualProtocol"
 import { Position } from "../positions/Position"
 import { PositionDraft, PositionDraftConstructorData } from "../positions/PositionDraft"
@@ -51,7 +52,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         })
     }
 
-    createDraftOrder({
+    createLiquidityDraft({
         tickerSymbol,
         rawBaseAmount,
         rawQuoteAmount,
@@ -65,7 +66,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         lowerTick: number
     }) {
         const market = this._perp.markets.getMarket({ tickerSymbol: tickerSymbol })
-        return new DraftLiquidity({
+        return new LiquidityDraft({
             perp: this._perp,
             market,
             lowerTick,
@@ -124,11 +125,11 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         })
     }
 
-    async addLiquidity(orderDraft: DraftLiquidity, slippage: Big) {
+    async addLiquidity(liquidityDraft: LiquidityDraft, slippage: Big) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "addLiquidity" }))
 
-        const baseAmount = await orderDraft.getBaseAmount()
-        const quoteAmount = await orderDraft.getQuoteAmount()
+        const baseAmount = await liquidityDraft.getBaseAmount()
+        const quoteAmount = await liquidityDraft.getQuoteAmount()
 
         const base = big2BigNum(baseAmount)
         const quote = big2BigNum(quoteAmount)
@@ -142,11 +143,11 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
             contractFunctionName: "addLiquidity",
             args: [
                 {
-                    baseToken: orderDraft.market.baseAddress,
+                    baseToken: liquidityDraft.market.baseAddress,
                     base,
                     quote,
-                    lowerTick: orderDraft.lowerTick,
-                    upperTick: orderDraft.upperTick,
+                    lowerTick: liquidityDraft.lowerTick,
+                    upperTick: liquidityDraft.upperTick,
                     minBase,
                     minQuote,
                     deadline: constants.MaxUint256,
@@ -156,10 +157,10 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         })
     }
 
-    async removeLiquidity(order: Liquidity, ratio: Big, slippage: Big) {
+    async removeLiquidity(liquidity: Liquidity, ratio: Big, slippage: Big) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "removeLiquidity" }))
 
-        const { amountBase, amountQuote } = await order.getLiquidityAmounts()
+        const { amountBase, amountQuote } = await liquidity.getLiquidityAmounts()
 
         // TODO: so far we calculate minBase/minQuote by slippage directly
         // instead of querying contract call like position do
@@ -173,10 +174,10 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
             contractFunctionName: "removeLiquidity",
             args: [
                 {
-                    baseToken: order.market.baseAddress,
-                    lowerTick: order.lowerTick,
-                    upperTick: order.upperTick,
-                    liquidity: big2BigNum(order.liquidity.mul(ratio), 0),
+                    baseToken: liquidity.market.baseAddress,
+                    lowerTick: liquidity.lowerTick,
+                    upperTick: liquidity.upperTick,
+                    liquidity: big2BigNum(liquidity.liquidity.mul(ratio), 0),
                     minBase,
                     minQuote,
                     deadline: constants.MaxUint256,

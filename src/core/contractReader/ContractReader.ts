@@ -1,5 +1,6 @@
 import Big from "big.js"
 import { BigNumber, constants, errors } from "ethers"
+import { ContractCall, MulticallReader, offsetDecimalLeft } from "sdk"
 
 import { COLLATERAL_TOKEN_DECIMAL, RATIO_DECIMAL } from "../../constants"
 import { ContractName, Contracts } from "../../contracts"
@@ -25,9 +26,8 @@ import {
 } from "../../errors"
 import { Metadata } from "../../metadata"
 import { RetryProvider } from "../../network/RetryProvider"
-import { big2BigNumber, bigNumber2Big, errorGuardAsync, fromSqrtX96, offsetDecimalLeft } from "../../utils"
+import { big2BigNumber, bigNumber2Big, errorGuardAsync, fromSqrtX96 } from "../../utils"
 import { MarketMap } from "../markets"
-import { ContractCall, MulticallReader } from "./MulticallReader"
 import { contractCallsParserForErrorHandling, genKeyFromContractAndFuncName } from "./utils"
 
 interface ContractsReaderConfig {
@@ -36,19 +36,19 @@ interface ContractsReaderConfig {
     metadata: Metadata
 }
 
-interface GetOrderPendingFeeParams {
+interface GetLiquidityPendingFeeParams {
     trader: string
     baseTokenAddress: string
     lowerTick: number
     upperTick: number
 }
 
-interface GetOpenOrdersParams {
+interface GetOpenLiquiditiesParams {
     trader: string
     baseTokenAddress: string
 }
 
-interface GetOpenOrderParams {
+interface GetOpenLiquidityParams {
     trader: string
     baseTokenAddress: string
     lowerTick: number
@@ -118,7 +118,7 @@ export interface GetPositionDraftRelatedData {
     currentMarketBaseAddress: string
 }
 
-export interface GetOpenOrderReturn {
+export interface GetOpenLiquidityReturn {
     baseDebt: Big
     quoteDebt: Big
     liquidity: Big
@@ -149,22 +149,6 @@ export class ContractReader {
         this._provider = provider
         this._metadata = metadata
         this._multicallReader = new MulticallReader({ contract: contracts.multicall2 })
-    }
-
-    /* ===== Independent Contract Reader */
-    async getTickSpacingFromAllMarkets() {
-        const poolAddresses = this._metadata.pools.map(pool => {
-            return pool.address
-        })
-
-        const tickSpacingFromAllMarkets = await Promise.all(
-            poolAddresses.map(address => this.contracts.pool.attach(address).tickSpacing()),
-        )
-
-        return poolAddresses.reduce((acc, address, idx) => {
-            acc[address] = tickSpacingFromAllMarkets[idx]
-            return acc
-        }, {} as MarketTickSpacings)
     }
 
     async getNativeBalance(account: string) {
@@ -361,7 +345,7 @@ export class ContractReader {
         )
     }
 
-    async getOrderPendingFee({ trader, baseTokenAddress, lowerTick, upperTick }: GetOrderPendingFeeParams) {
+    async getLiquidityPendingFee({ trader, baseTokenAddress, lowerTick, upperTick }: GetLiquidityPendingFeeParams) {
         return errorGuardAsync(
             async () => {
                 const fee = await this.contracts.orderBook.getPendingFee(trader, baseTokenAddress, lowerTick, upperTick)
@@ -377,7 +361,7 @@ export class ContractReader {
         )
     }
 
-    async getOpenOrderIdsByMarket({ trader, baseTokenAddress }: GetOpenOrdersParams) {
+    async getOpenLiquidityIdsByMarket({ trader, baseTokenAddress }: GetOpenLiquiditiesParams) {
         return errorGuardAsync(
             async () => {
                 return this.contracts.orderBook.getOpenOrderIds(trader, baseTokenAddress)
@@ -392,7 +376,7 @@ export class ContractReader {
         )
     }
 
-    async getOpenOrderIds(marketMap: MarketMap, account: string) {
+    async getOpenLiquidityIds(marketMap: MarketMap, account: string) {
         const contractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.orderBook,
             contractName: ContractName.ORDERBOOK,
@@ -415,11 +399,11 @@ export class ContractReader {
         )
     }
 
-    async getOpenOrders(marketMap: MarketMap, account: string) {
-        const idsByMarkets = await this.getOpenOrderIds(marketMap, account)
+    async getOpenLiquidities(marketMap: MarketMap, account: string) {
+        const idsByMarkets = await this.getOpenLiquidityIds(marketMap, account)
         const contractCalls: ContractCall[] = []
 
-        Object.values(marketMap).forEach((_, index) => {
+        Object.values(marketMap).forEach(({ baseAddress }, index) => {
             contractCalls.push(
                 ...idsByMarkets[index].map((id: number) => ({
                     contract: this.contracts.orderBook,
@@ -434,7 +418,7 @@ export class ContractReader {
             async () => {
                 const orders = await this._multicallReader.execute([...contractCalls])
                 let pointer = 0
-                return idsByMarkets.map((_, index) => {
+                return idsByMarkets.map((ids, index) => {
                     const len = idsByMarkets[index].length
                     const result = orders.slice(pointer, pointer + len)
                     pointer += len
@@ -457,9 +441,9 @@ export class ContractReader {
         )
     }
 
-    async getOpenOrdersByMarket({ trader, baseTokenAddress }: GetOpenOrdersParams) {
-        const ids = await this.getOpenOrderIdsByMarket({ trader, baseTokenAddress })
-        const openOrderCalls = ids.map(id => ({
+    async getOpenLiquiditiesByMarket({ trader, baseTokenAddress }: GetOpenLiquiditiesParams) {
+        const ids = await this.getOpenLiquidityIdsByMarket({ trader, baseTokenAddress })
+        const openLiquidityCalls = ids.map(id => ({
             contract: this.contracts.orderBook,
             contractName: ContractName.ORDERBOOK,
             funcName: "getOpenOrderById",
@@ -468,8 +452,8 @@ export class ContractReader {
 
         return errorGuardAsync(
             async () => {
-                const orders = await this._multicallReader.execute(openOrderCalls)
-                return orders.map(({ baseDebt, quoteDebt, liquidity, lowerTick, upperTick }) => ({
+                const liquidities = await this._multicallReader.execute(openLiquidityCalls)
+                return liquidities.map(({ baseDebt, quoteDebt, liquidity, lowerTick, upperTick }) => ({
                     baseDebt: bigNumber2Big(baseDebt),
                     quoteDebt: bigNumber2Big(quoteDebt),
                     liquidity: bigNumber2Big(liquidity),
@@ -481,13 +465,13 @@ export class ContractReader {
                 new ContractReadError<Multicall2>({
                     contractName: ContractName.MULTICALL2,
                     contractFunctionName: "tryAggregate",
-                    args: contractCallsParserForErrorHandling(openOrderCalls),
+                    args: contractCallsParserForErrorHandling(openLiquidityCalls),
                     rawError,
                 }),
         )
     }
 
-    async getOpenOrder({ trader, baseTokenAddress, lowerTick, upperTick }: GetOpenOrderParams) {
+    async getOpenOrder({ trader, baseTokenAddress, lowerTick, upperTick }: GetOpenLiquidityParams) {
         return errorGuardAsync(
             async () => {
                 const info = await this.contracts.orderBook.getOpenOrder(trader, baseTokenAddress, lowerTick, upperTick)

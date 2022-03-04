@@ -1,5 +1,5 @@
 import Big from "big.js"
-import { PositionSide } from "../../positions"
+import { PositionSide } from "sdk"
 
 import {
     getBuyingPower,

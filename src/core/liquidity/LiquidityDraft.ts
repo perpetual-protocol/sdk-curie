@@ -1,12 +1,14 @@
+import { bigNum2Big } from "util/format"
+
 import Big from "big.js"
 import { constants } from "ethers"
 
 import { BIG_ZERO } from "../../constants"
-import { invariant, tickToPrice, toSqrtX96, bigNumber2Big } from "../../utils"
+import { invariant, tickToPrice, toSqrtX96 } from "../../utils"
 import { PerpetualProtocol } from "../PerpetualProtocol"
-import { LiquidityBase, OrderBaseConstructorData, RangeType } from "./LiquidityBase"
+import { LiquidityBase, LiquidityBaseConstructorData, RangeType } from "./LiquidityBase"
 
-type OrderDraftEventName = "tickPriceUpdated" | "liquidityAmountUpdated" | "updateError"
+type LiquidityDraftEventName = "tickPriceUpdated" | "liquidityAmountUpdated" | "updateError"
 
 export interface EventPayloadLiquidityAmountUpdated {
     quoteAmount?: Big
@@ -15,20 +17,20 @@ export interface EventPayloadLiquidityAmountUpdated {
     isUpdatedFromTickPrice: boolean
 }
 
-export interface OrderDraftLiquidityAmountUpdatable {
+export interface LiquidityDraftLiquidityAmountUpdatable {
     amount: Big
     isBaseToken: boolean
     isUpdatedFromTickPrice?: boolean
 }
 
-export interface OrderDraftTickUpdatable {
+export interface LiquidityDraftTickUpdatable {
     lowerRawPrice?: Big
     upperRawPrice?: Big
     isLastEditBase: boolean
     isFullRange?: boolean
 }
 
-export interface OrderDraftConstructorData extends OrderBaseConstructorData {
+export interface LiquidityDraftConstructorData extends LiquidityBaseConstructorData {
     perp: PerpetualProtocol
     lowerTick: number
     upperTick: number
@@ -36,12 +38,13 @@ export interface OrderDraftConstructorData extends OrderBaseConstructorData {
     rawQuoteAmount?: Big
 }
 
-export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
+export class LiquidityDraft extends LiquidityBase<LiquidityDraftEventName> {
+    private readonly _perp: PerpetualProtocol
 
     rawBaseAmount?: Big
     rawQuoteAmount?: Big
 
-    constructor({ perp, market, lowerTick, upperTick, rawBaseAmount, rawQuoteAmount }: OrderDraftConstructorData) {
+    constructor({ perp, market, lowerTick, upperTick, rawBaseAmount, rawQuoteAmount }: LiquidityDraftConstructorData) {
         super({ market }, perp.channelRegistry)
         invariant(!!rawBaseAmount || !!rawQuoteAmount, () => new Error())
 
@@ -49,6 +52,7 @@ export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
         this.rawQuoteAmount = rawQuoteAmount
         this._lowerTick = lowerTick
         this._upperTick = upperTick
+        this._perp = perp
     }
 
     async getLiquidity({ cache = true } = {}) {
@@ -59,12 +63,12 @@ export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
         const lowerPriceSqrtX96 = toSqrtX96(lowerTickPrice)
         const upperPriceSqrtX96 = toSqrtX96(upperTickPrice)
 
-        return DraftLiquidity.maxLiquidityForAmounts(
+        return LiquidityDraft.maxLiquidityForAmounts(
             markPriceSqrtX96,
             lowerPriceSqrtX96,
             upperPriceSqrtX96,
-            this.rawBaseAmount || bigNumber2Big(constants.MaxUint256, 1),
-            this.rawQuoteAmount || bigNumber2Big(constants.MaxUint256, 1),
+            this.rawBaseAmount || bigNum2Big(constants.MaxUint256, 1),
+            this.rawQuoteAmount || bigNum2Big(constants.MaxUint256, 1),
         )
     }
 
@@ -83,11 +87,11 @@ export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
 
         switch (rangeType) {
             case RangeType.RANGE_AT_RIGHT: {
-                amount = DraftLiquidity.getBaseTokenAmountFromLiquidity(lowerPriceSqrtX96, upperPriceSqrtX96, liquidity)
+                amount = LiquidityDraft.getBaseTokenAmountFromLiquidity(lowerPriceSqrtX96, upperPriceSqrtX96, liquidity)
                 break
             }
             case RangeType.RANGE_INSIDE: {
-                amount = DraftLiquidity.getBaseTokenAmountFromLiquidity(markPriceSqrtX96, upperPriceSqrtX96, liquidity)
+                amount = LiquidityDraft.getBaseTokenAmountFromLiquidity(markPriceSqrtX96, upperPriceSqrtX96, liquidity)
                 break
             }
             case RangeType.RANGE_AT_LEFT: {
@@ -114,7 +118,7 @@ export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
 
         switch (rangeType) {
             case RangeType.RANGE_AT_LEFT: {
-                amount = DraftLiquidity.getQuoteTokenAmountFromLiquidity(
+                amount = LiquidityDraft.getQuoteTokenAmountFromLiquidity(
                     lowerPriceSqrtX96,
                     upperPriceSqrtX96,
                     liquidity,
@@ -122,7 +126,7 @@ export class DraftLiquidity extends LiquidityBase<OrderDraftEventName> {
                 break
             }
             case RangeType.RANGE_INSIDE: {
-                amount = DraftLiquidity.getQuoteTokenAmountFromLiquidity(markPriceSqrtX96, lowerPriceSqrtX96, liquidity)
+                amount = LiquidityDraft.getQuoteTokenAmountFromLiquidity(markPriceSqrtX96, lowerPriceSqrtX96, liquidity)
                 break
             }
             case RangeType.RANGE_AT_RIGHT: {

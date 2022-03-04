@@ -1,4 +1,5 @@
 import Big from "big.js"
+import type { PerpetualProtocol } from "sdk"
 
 import { COLLATERAL_TOKEN_DECIMAL } from "../../constants"
 import { ContractName } from "../../contracts"
@@ -14,7 +15,6 @@ import {
 import { getTransaction } from "../../transactionSender"
 import { big2BigNumber, poll } from "../../utils"
 import { ContractReader } from "../contractReader"
-import { PerpetualProtocol } from "../PerpetualProtocol"
 
 export type VaultEventName = "updated" | "updateError"
 

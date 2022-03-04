@@ -1,6 +1,6 @@
 import { Big } from "big.js"
 import { constants } from "ethers"
-import { COLLATERAL_TOKEN_DECIMAL } from "../../constants"
+import { COLLATERAL_TOKEN_DECIMAL, PerpetualProtocol } from "sdk"
 
 import { ContractName } from "../../contracts"
 import { IERC20Metadata } from "../../contracts/type"
@@ -8,7 +8,6 @@ import { Channel, ChannelEventSource } from "../../internal"
 import { getTransaction } from "../../transactionSender"
 import { big2BigNumber } from "../../utils"
 import { ContractReader } from "../contractReader"
-import { PerpetualProtocol } from "../PerpetualProtocol"
 
 type CollateralEventName = "Approval" | "Transfer"
 
@@ -17,7 +16,7 @@ export class CollateralToken extends Channel<CollateralEventName> {
     private _contractReader: ContractReader
     readonly decimal = COLLATERAL_TOKEN_DECIMAL
 
-    constructor(_perp: PerpetualProtocol) {
+    constructor(private readonly _perp: PerpetualProtocol) {
         super(_perp.channelRegistry)
         this._contract = _perp.contracts.collateralToken
         this._contractReader = _perp.contractReader
@@ -46,14 +45,14 @@ export class CollateralToken extends Channel<CollateralEventName> {
     }
     protected _getEventSourceMap() {
         const approvalEventSource = new ChannelEventSource<CollateralEventName>({
-            eventSourceStarter: () => {
+            eventSourceStarter: eventName => {
                 const handler = (...args: any[]) => this.emit("Approval", ...args)
                 this._contract.on("Approval", handler)
                 return () => this._contract.off("Approval", handler)
             },
         })
         const transferEventSource = new ChannelEventSource<CollateralEventName>({
-            eventSourceStarter: () => {
+            eventSourceStarter: eventName => {
                 const handler = (...args: any[]) => this.emit("Transfer", ...args)
                 this._contract.on("Transfer", handler)
                 return () => this._contract.off("Transfer", handler)

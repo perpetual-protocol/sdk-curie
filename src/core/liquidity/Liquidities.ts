@@ -3,21 +3,21 @@ import Big from "big.js"
 import { BIG_ZERO } from "../../constants"
 import { Channel, ChannelEventSource, DEFAULT_PERIOD, MemoizedFetcher, createMemoizedFetcher } from "../../internal"
 import { poll } from "../../utils"
-import { GetOpenOrderReturn, GetTotalTokenAmountInPoolAndPendingFeeReturn } from "../contractReader"
+import { GetOpenLiquidityReturn, GetTotalTokenAmountInPoolAndPendingFeeReturn } from "../contractReader"
 import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { Liquidity } from "./Liquidity"
 
 export interface UpdatedDataReturn {
-    openOrdersFromMarkets: { [marketBaseAddress: string]: Liquidity[] }
+    openLiquiditiesFromMarkets: { [marketBaseAddress: string]: Liquidity[] }
     totalPendingFees: { [marketBaseAddress: string]: Big }
 }
 
-type OrdersEventName = "updateError" | "updated"
+type LiquiditiesEventName = "updateError" | "updated"
 
-type CacheKey = "getOpenOrders" | "totalTokenAmountInPoolAndPendingFee"
-type CacheValue = GetOpenOrderReturn[][] | GetTotalTokenAmountInPoolAndPendingFeeReturn[]
+type CacheKey = "getOpenLiquidities" | "totalTokenAmountInPoolAndPendingFee"
+type CacheValue = GetOpenLiquidityReturn[][] | GetTotalTokenAmountInPoolAndPendingFeeReturn[]
 
-class Liquidities extends Channel<OrdersEventName> {
+class Liquidities extends Channel<LiquiditiesEventName> {
     private _cache: Map<CacheKey, CacheValue> = new Map()
     private readonly _fetchAndEmitUpdated: MemoizedFetcher
 
@@ -25,7 +25,7 @@ class Liquidities extends Channel<OrdersEventName> {
         super(_perp.channelRegistry)
         this._fetchAndEmitUpdated = createMemoizedFetcher(
             () => this._fetchUpdateData(),
-            () => {
+            values => {
                 this.emit("updated", this)
             },
             (a, b) => (a && b ? this._compareUpdatedData(a, b) : true),
@@ -35,28 +35,28 @@ class Liquidities extends Channel<OrdersEventName> {
     private _compareUpdatedData(a: UpdatedDataReturn, b: UpdatedDataReturn) {
         const aFees = Object.values(a.totalPendingFees)
         const bFees = Object.values(b.totalPendingFees)
-        const aOrdersFromMarkets = Object.values(a.openOrdersFromMarkets)
-        const bOrdersFromMarkets = Object.values(b.openOrdersFromMarkets)
+        const aLiquiditiesFromMarkets = Object.values(a.openLiquiditiesFromMarkets)
+        const bLiquiditiesFromMarkets = Object.values(b.openLiquiditiesFromMarkets)
 
-        const hasDifferentOrderLengthInSomeMarkets = aOrdersFromMarkets.some((orders, marketIndex) => {
-            return orders.length !== bOrdersFromMarkets[marketIndex].length
+        const hasDifferentLiquidityLengthInSomeMarkets = aLiquiditiesFromMarkets.some((liquidities, marketIndex) => {
+            return liquidities.length !== bLiquiditiesFromMarkets[marketIndex].length
         })
 
-        if (hasDifferentOrderLengthInSomeMarkets) {
+        if (hasDifferentLiquidityLengthInSomeMarkets) {
             return true
         }
 
         return (
-            aOrdersFromMarkets.some((orders, marketIndex) => {
-                return orders.some((order, index) => {
-                    return !Liquidity.same(order, bOrdersFromMarkets[marketIndex][index])
+            aLiquiditiesFromMarkets.some((liquidities, marketIndex) => {
+                return liquidities.some((liquidity, index) => {
+                    return !Liquidity.same(liquidity, bLiquiditiesFromMarkets[marketIndex][index])
                 })
             }) || aFees.some((fee, index) => !bFees[index].eq(fee))
         )
     }
 
     protected _getEventSourceMap() {
-        const updateDataEventSource = new ChannelEventSource<OrdersEventName>({
+        const updateDataEventSource = new ChannelEventSource<LiquiditiesEventName>({
             eventSourceStarter: () =>
                 poll(this._fetchAndEmitUpdated, this._perp.moduleConfigs?.orders?.period || DEFAULT_PERIOD).cancel,
             initEventEmitter: () => this._fetchAndEmitUpdated(),
@@ -69,12 +69,12 @@ class Liquidities extends Channel<OrdersEventName> {
     private async _fetchUpdateData() {
         try {
             const result = await Promise.all([
-                this.getOpenOrdersFromMarkets({ cache: false }),
+                this.getOpenLiquiditiesFromMarkets({ cache: false }),
                 this.getTotalPendingFees({ cache: false }),
             ])
 
             return {
-                openOrdersFromMarkets: result[0],
+                openLiquiditiesFromMarkets: result[0],
                 totalPendingFees: result[1],
             }
         } catch (e) {
@@ -83,17 +83,17 @@ class Liquidities extends Channel<OrdersEventName> {
     }
 
     async getTotalLiquidities({ cache = true } = {}) {
-        const openOrders = await this.getOpenOrdersFromMarkets({ cache })
+        const openLiquidities = await this.getOpenLiquiditiesFromMarkets({ cache })
 
-        const openOrdersInTheMarkets = Object.values(openOrders)
-        const marketBaseAddresses = Object.keys(openOrders)
+        const openLiquiditiesInTheMarkets = Object.values(openLiquidities)
+        const marketBaseAddresses = Object.keys(openLiquidities)
         const result: { [marketBaseAddress: string]: Big } = {}
 
-        for (let i = 0; i < openOrdersInTheMarkets.length; i++) {
-            const openOrdersInTheMarket = openOrdersInTheMarkets[i]
+        for (let i = 0; i < openLiquiditiesInTheMarkets.length; i++) {
+            const openLiquiditiesInTheMarket = openLiquiditiesInTheMarkets[i]
             const baseAddress = marketBaseAddresses[i]
             const liquidityValues = await Promise.all(
-                openOrdersInTheMarket.map(openOrder => openOrder.getLiquidityValue()),
+                openLiquiditiesInTheMarket.map(openLiquidity => openLiquidity.getLiquidityValue()),
             )
             result[baseAddress] = liquidityValues.reduce((acc, value) => acc.add(value), BIG_ZERO)
         }
@@ -102,8 +102,10 @@ class Liquidities extends Channel<OrdersEventName> {
     }
 
     async getTotalLiquidityByMarket(baseAddress: string, { cache = true } = {}) {
-        const openOrders = await this.getOpenOrdersByMarket(baseAddress, { cache })
-        const liquidityValues = await Promise.all(openOrders.map(openOrder => openOrder.getLiquidityValue()))
+        const openLiquidities = await this.getOpenLiquiditiesByMarket(baseAddress, { cache })
+        const liquidityValues = await Promise.all(
+            openLiquidities.map(openLiquidity => openLiquidity.getLiquidityValue()),
+        )
         return liquidityValues.reduce((acc, value) => acc.add(value), BIG_ZERO)
     }
 
@@ -129,11 +131,11 @@ class Liquidities extends Channel<OrdersEventName> {
         return result[index].totalPendingFee
     }
 
-    async getOpenOrdersFromMarkets({ cache = true } = {}) {
-        const orders = await this._fetch("getOpenOrders", { cache })
+    async getOpenLiquiditiesFromMarkets({ cache = true } = {}) {
+        const liquidities = await this._fetch("getOpenLiquidities", { cache })
 
         return Object.values(this._perp.markets.marketMap).reduce((acc, market, index) => {
-            acc[market.baseAddress] = orders[index].map(
+            acc[market.baseAddress] = liquidities[index].map(
                 ({ liquidity, baseDebt, quoteDebt, lowerTick, upperTick }) =>
                     new Liquidity(
                         {
@@ -153,8 +155,8 @@ class Liquidities extends Channel<OrdersEventName> {
         }, {} as { [marketBaseAddress: string]: Liquidity[] })
     }
 
-    async getOpenOrdersByMarket(baseAddress: string, { cache = true } = {}) {
-        const orders = await this._fetch("getOpenOrders", { cache })
+    async getOpenLiquiditiesByMarket(baseAddress: string, { cache = true } = {}) {
+        const liquidities = await this._fetch("getOpenLiquidities", { cache })
         const index = Object.values(this._perp.markets.marketMap).findIndex(
             market => market.baseAddress === baseAddress,
         )
@@ -162,7 +164,7 @@ class Liquidities extends Channel<OrdersEventName> {
             return []
         }
 
-        return orders[index].map(
+        return liquidities[index].map(
             ({ liquidity, baseDebt, quoteDebt, lowerTick, upperTick }) =>
                 new Liquidity(
                     {
@@ -180,7 +182,7 @@ class Liquidities extends Channel<OrdersEventName> {
         )
     }
 
-    private async _fetch(key: "getOpenOrders", obj?: { cache: boolean }): Promise<GetOpenOrderReturn[][]>
+    private async _fetch(key: "getOpenLiquidities", obj?: { cache: boolean }): Promise<GetOpenLiquidityReturn[][]>
     private async _fetch(
         key: "totalTokenAmountInPoolAndPendingFee",
         obj?: { cache: boolean },
@@ -196,8 +198,8 @@ class Liquidities extends Channel<OrdersEventName> {
 
         let result
         switch (key) {
-            case "getOpenOrders": {
-                result = await this._perp.contractReader.getOpenOrders(...args)
+            case "getOpenLiquidities": {
+                result = await this._perp.contractReader.getOpenLiquidities(...args)
                 break
             }
             case "totalTokenAmountInPoolAndPendingFee": {

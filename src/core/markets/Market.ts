@@ -1,4 +1,5 @@
 import { Big } from "big.js"
+import type { PerpetualProtocol } from "sdk"
 
 import {
     Channel,
@@ -17,7 +18,6 @@ import {
     tickToPrice,
 } from "../../utils"
 import { ContractReader } from "../contractReader"
-import { PerpetualProtocol } from "../PerpetualProtocol"
 
 type MarketEventName = "updateError" | "updated"
 
@@ -109,7 +109,7 @@ class Market extends Channel<MarketEventName> {
         }
         return createMemoizedFetcher(
             getMarketData.bind(this),
-            () => {
+            values => {
                 this.emit("updated", this)
             },
             (a, b) => (a && b ? hasNumbersChange(a, b) : true),

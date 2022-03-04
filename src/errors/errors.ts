@@ -201,7 +201,7 @@ export interface ContractErrorParams<ContractFunctionName> extends SDKBaseErrorP
     context?: { [key: string]: any }
 }
 /* ========== CONTRACT READ ========== */
-export type ContractReadErrorParams<ContractFunctionName> = ContractErrorParams<ContractFunctionName>
+export interface ContractReadErrorParams<ContractFunctionName> extends ContractErrorParams<ContractFunctionName> {}
 
 export class ContractReadError<ContractType extends EthersContract> extends SDKBaseError {
     readonly contractName: string
@@ -272,7 +272,7 @@ export class ContractWriteError<ContractType extends EthersContract> extends SDK
         this.name = ErrorName.CONTRACT_WRITE_ERROR
         this.message =
             `Write ${contractName} contract error, invoke ${contractFunctionName} function failed.` +
-            (contractErrorCode ? ` (Error Code: ${contractErrorCode})` : "")
+            (!!contractErrorCode ? ` (Error Code: ${contractErrorCode})` : "")
         this.contractName = contractName
         this.contractFunctionName = contractFunctionName
         this.contractErrorCode = contractErrorCode

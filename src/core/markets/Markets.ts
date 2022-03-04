@@ -1,8 +1,8 @@
+import type { PerpetualProtocol } from "sdk"
 
 import { ArgumentError, TypeError } from "../../errors"
 import { Pool } from "../../metadata"
 import { assertExist, getTickerSymbol, invariant, isEmptyObject } from "../../utils"
-import { PerpetualProtocol } from "../PerpetualProtocol"
 import { Market } from "./Market"
 
 export interface MarketMap {

@@ -4,13 +4,14 @@ import { BIG_ZERO, ERC20_DECIMAL_DIGITS } from "../../constants"
 import { FailedPreconditionError } from "../../errors"
 import { ChannelEventSource, ChannelRegistry } from "../../internal"
 import { offsetDecimalLeft, toSqrtX96 } from "../../utils"
+import { Market } from "../markets"
 import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { Position, PositionSide, PositionType } from "../positions"
-import { LiquidityBase, OrderBaseConstructorData, RangeType } from "./LiquidityBase"
+import { LiquidityBase, LiquidityBaseConstructorData, RangeType } from "./LiquidityBase"
 
-type OrderEventName = "updated" | "updateError"
+type LiquidityEventName = "updated" | "updateError"
 
-type CacheKey = "orderPendingFee"
+type CacheKey = "liquidityPendingFee"
 type CacheValue = Big
 
 export interface EventPayloadLiquidityFeeUpdated {
@@ -23,7 +24,7 @@ export interface EventPayloadLiquidityAmountsUpdated {
     makerPositionImpermanent: Position
 }
 
-export interface OrderConstructorData extends OrderBaseConstructorData {
+export interface LiquidityConstructorData extends LiquidityBaseConstructorData {
     perp: PerpetualProtocolConnected
     id: string
     liquidity: Big
@@ -33,8 +34,7 @@ export interface OrderConstructorData extends OrderBaseConstructorData {
     quoteDebt: Big
 }
 
-
-export class Liquidity extends LiquidityBase<OrderEventName> {
+export class Liquidity extends LiquidityBase<LiquidityEventName> {
     private _cache: Map<CacheKey, CacheValue> = new Map()
     readonly _perp: PerpetualProtocolConnected
     readonly id: string
@@ -47,7 +47,7 @@ export class Liquidity extends LiquidityBase<OrderEventName> {
     private _quoteDebt: Big
 
     constructor(
-        { perp, id, liquidity, lowerTick, upperTick, baseDebt, quoteDebt, ...data }: OrderConstructorData,
+        { perp, id, liquidity, lowerTick, upperTick, baseDebt, quoteDebt, ...data }: LiquidityConstructorData,
         _channelRegistry?: ChannelRegistry,
     ) {
         super(data, _channelRegistry)
@@ -70,8 +70,8 @@ export class Liquidity extends LiquidityBase<OrderEventName> {
 
     protected _getEventSourceMap() {
         const eventSourceMap = super._getEventSourceMap()
-        const updateDataEventSource = new ChannelEventSource<OrderEventName>({
-            eventSourceStarter: () => {
+        const updateDataEventSource = new ChannelEventSource<LiquidityEventName>({
+            eventSourceStarter: eventName => {
                 return this.market.on("updated", this._handleMarketUpdate.bind(this))
             },
         })
@@ -82,9 +82,9 @@ export class Liquidity extends LiquidityBase<OrderEventName> {
         }
     }
 
-    protected async _handleMarketUpdate() {
+    protected async _handleMarketUpdate(market: Market) {
         try {
-            await this._fetch("orderPendingFee", { cache: false })
+            await this._fetch("liquidityPendingFee", { cache: false })
             this.emit("updated", this)
         } catch (e) {
             this.emit("updateError", e)
@@ -92,7 +92,7 @@ export class Liquidity extends LiquidityBase<OrderEventName> {
     }
 
     async getPendingFee({ cache = true } = {}) {
-        return this._fetch("orderPendingFee", { cache })
+        return this._fetch("liquidityPendingFee", { cache })
     }
 
     async getLiquidityAmounts({ cache = true } = {}) {
@@ -232,7 +232,7 @@ export class Liquidity extends LiquidityBase<OrderEventName> {
         }
     }
 
-    private async _fetch(key: "orderPendingFee", obj?: { cache: boolean }): Promise<Big>
+    private async _fetch(key: "liquidityPendingFee", obj?: { cache: boolean }): Promise<Big>
     private async _fetch(key: CacheKey, { cache = true } = {}) {
         if (this._cache.has(key) && cache) {
             return this._cache.get(key) as CacheValue
@@ -240,8 +240,8 @@ export class Liquidity extends LiquidityBase<OrderEventName> {
 
         let result
         switch (key) {
-            case "orderPendingFee": {
-                result = await this._perp.contractReader.getOrderPendingFee({
+            case "liquidityPendingFee": {
+                result = await this._perp.contractReader.getLiquidityPendingFee({
                     trader: this._perp.wallet.account,
                     baseTokenAddress: this.market.baseAddress,
                     lowerTick: this._lowerTick,
@@ -255,12 +255,12 @@ export class Liquidity extends LiquidityBase<OrderEventName> {
         return result
     }
 
-    static same(orderA: Liquidity, orderB: Liquidity) {
+    static same(liquidityA: Liquidity, liquidityB: Liquidity) {
         return (
-            orderA.id === orderB.id &&
-            orderA.liquidity.eq(orderB.liquidity) &&
-            orderA.baseDebt.eq(orderB.baseDebt) &&
-            orderA.quoteDebt.eq(orderB.quoteDebt)
+            liquidityA.id === liquidityB.id &&
+            liquidityA.liquidity.eq(liquidityB.liquidity) &&
+            liquidityA.baseDebt.eq(liquidityB.baseDebt) &&
+            liquidityA.quoteDebt.eq(liquidityB.quoteDebt)
         )
     }
 }

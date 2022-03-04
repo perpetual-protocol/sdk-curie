@@ -13,18 +13,18 @@ export enum RangeType {
     RANGE_AT_RIGHT = "RANGE_AT_RIGHT", // markPrice < lower < upper
 }
 
-type OrderBaseEventName = "updateError" | "updated"
+type LiquidityBaseEventName = "updateError" | "updated"
 
 export interface EventPayloadRangeTypeUpdated {
     rangeType: RangeType
     markPrice: Big
 }
 
-export interface OrderBaseConstructorData {
+export interface LiquidityBaseConstructorData {
     market: Market
 }
 
-export class LiquidityBase<EventName extends string> extends Channel<EventName | OrderBaseEventName> {
+export class LiquidityBase<EventName extends string> extends Channel<EventName | LiquidityBaseEventName> {
     readonly market: Market
 
     // TODO: should have init value?
@@ -32,7 +32,7 @@ export class LiquidityBase<EventName extends string> extends Channel<EventName |
     protected _upperTick = TICK_MAX
     protected _markPrice?: Big
 
-    constructor({ market }: OrderBaseConstructorData, _channelRegistry?: ChannelRegistry) {
+    constructor({ market }: LiquidityBaseConstructorData, _channelRegistry?: ChannelRegistry) {
         super(_channelRegistry)
 
         this.market = market
@@ -74,8 +74,8 @@ export class LiquidityBase<EventName extends string> extends Channel<EventName |
     }
 
     protected _getEventSourceMap() {
-        const updateDataEventSource = new ChannelEventSource<EventName | OrderBaseEventName>({
-            eventSourceStarter: () => {
+        const updateDataEventSource = new ChannelEventSource<EventName | LiquidityBaseEventName>({
+            eventSourceStarter: eventName => {
                 return this.market.on("updated", () => this.emit("updated", this))
             },
         })
@@ -146,7 +146,7 @@ export class LiquidityBase<EventName extends string> extends Channel<EventName |
         amount1: Big,
     ): Big {
         if (sqrtRatioAX96.gt(sqrtRatioBX96)) {
-            [sqrtRatioAX96, sqrtRatioBX96] = [sqrtRatioBX96, sqrtRatioAX96]
+            ;[sqrtRatioAX96, sqrtRatioBX96] = [sqrtRatioBX96, sqrtRatioAX96]
         }
         if (sqrtRatioCurrentX96.lte(sqrtRatioAX96)) {
             return LiquidityBase.getLiquidityForBaseToken(sqrtRatioAX96, sqrtRatioBX96, amount0)

@@ -38,7 +38,7 @@ export interface PerpetualProtocolInitialized extends PerpetualProtocol {
 export interface PerpetualProtocolConnected extends PerpetualProtocolInitialized {
     wallet: Wallet
     positions: Positions
-    orders: Liquidities
+    liquidities: Liquidities
     vault: Vault
 }
 
@@ -50,11 +50,11 @@ export interface PerpetualProtocolConnected extends PerpetualProtocolInitialized
 class PerpetualProtocol {
     readonly providerConfigs: ProviderConfig[]
     readonly moduleConfigs?: ModuleConfigs
-    readonly metadata: Metadata
     readonly provider: RetryProvider
-    readonly contracts: Contracts
-    readonly contractReader: ContractReader
-
+    private _metadata?: Metadata
+    private _contracts?: Contracts
+    private _contractReader?: ContractReader
+    private readonly _chainId: number
     private _channelRegistry: ChannelRegistry
     private _markets?: Markets
     private _wallet?: Wallet
@@ -63,8 +63,17 @@ class PerpetualProtocol {
     private _clearingHouseConfig?: ClearingHouseConfig
     private _clearingHouse?: ClearingHouse
     private _positions?: Positions
-    private _orders?: Liquidities
+    private _liquidities?: Liquidities
 
+    get metadata() {
+        return this._metadata as Metadata
+    }
+    get contracts() {
+        return this._contracts as Contracts
+    }
+    get contractReader() {
+        return this._contractReader as ContractReader
+    }
     get wallet() {
         return this._wallet
     }
@@ -85,7 +94,6 @@ class PerpetualProtocol {
         )
         return this._markets!
     }
-
     get clearingHouseConfig() {
         invariant(
             !!this._clearingHouseConfig,
@@ -107,8 +115,8 @@ class PerpetualProtocol {
         return this._positions
     }
 
-    get orders() {
-        return this._orders
+    get liquidities() {
+        return this._liquidities
     }
 
     get channelRegistry() {
@@ -125,21 +133,19 @@ class PerpetualProtocol {
         this.moduleConfigs = moduleConfigs
 
         this._channelRegistry = new ChannelRegistry()
-        this.metadata = new Metadata(chainId)
-
-        // NOTE: init Network Layer
+        this._chainId = chainId
         this.provider = getRetryProvider(providerConfigs)
-        this.contracts = new Contracts({ metadata: this.metadata, provider: this.provider })
-
-        this.contractReader = new ContractReader({
-            metadata: this.metadata,
-            provider: this.provider,
-            contracts: this.contracts,
-        })
     }
 
     async init() {
         try {
+            this._metadata = await Metadata.create(this._chainId)
+            this._contracts = new Contracts({ metadata: this.metadata, provider: this.provider })
+            this._contractReader = new ContractReader({
+                metadata: this.metadata,
+                provider: this.provider,
+                contracts: this.contracts,
+            })
             this._markets = new Markets(this)
             this._clearingHouseConfig = await ClearingHouseConfig.create(this.contractReader)
             this._clearingHouse = new ClearingHouse(this)
@@ -167,7 +173,7 @@ class PerpetualProtocol {
 
         if (this.hasConnected()) {
             this._positions = new Positions(this)
-            this._orders = new Liquidities(this)
+            this._liquidities = new Liquidities(this)
         }
     }
 

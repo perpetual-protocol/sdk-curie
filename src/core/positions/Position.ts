@@ -1,10 +1,10 @@
 import Big from "big.js"
+import type { PerpetualProtocol } from "sdk"
 
 import { Channel, ChannelEventSource, ChannelRegistry } from "../../internal"
 import { getPriceImpact, getSwapRate, getTransactionFee, getUnrealizedPnl } from "../clearingHouse/utils"
 import { GetQuoterSwapReturn } from "../contractReader"
 import { Market } from "../markets"
-import { PerpetualProtocol } from "../PerpetualProtocol"
 import { PositionSide } from "./types"
 
 type PositionEventName = "updated"
@@ -131,14 +131,14 @@ export class Position extends Channel<PositionEventName> {
         return transactionFee
     }
 
-    private async _handleMarketUpdate() {
+    private async _handleMarketUpdate(market: Market) {
         await this._fetch("swap", { cache: false })
         this.emit("updated", this)
     }
 
     protected _getEventSourceMap() {
         const updateDataEventSource = new ChannelEventSource<PositionEventName>({
-            eventSourceStarter: () => {
+            eventSourceStarter: eventName => {
                 return this.market.on("updated", this._handleMarketUpdate.bind(this))
             },
             initEventEmitter: eventName => {

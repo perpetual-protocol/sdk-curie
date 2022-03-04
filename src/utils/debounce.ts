@@ -1,11 +1,12 @@
 interface Options {
     leading?: boolean
+    trailing?: boolean
 }
 
 export function debounce<T extends (...args: any[]) => any>(
     fn: T,
     secs: number,
-    { leading }: Options = { leading: false },
+    { leading, trailing }: Options = { leading: false, trailing: true },
 ) {
     let timeoutId: NodeJS.Timeout
 

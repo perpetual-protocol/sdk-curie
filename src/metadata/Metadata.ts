@@ -1,50 +1,54 @@
-import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan/metadata.json"
-import MainMetadataOptimism from "@perp/curie-deployments/optimism/metadata.json"
 import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
 import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
+import { ChainId, ChainName } from "sdk/network"
 
-const MetadataOptimistic = {
-    ...MainMetadataOptimism,
+export type Pool = {
+    address: string
+    baseAddress: string
+    baseSymbol: string
+    quoteAddress: string
+    quoteSymbol: string
+}
+export type Pools = Pool[]
+export type RawPools = Pool[]
+export interface ChainMetadata {
+    chainId: number
     contracts: {
-        ...MainMetadataOptimism.contracts,
-        ...PeripheryMetadataOptimism.contracts,
-    },
+        [PriceFeed: string]: {
+            address: string
+            createdBlockNumber: number
+            name: string
+        }
+    }
+    externalContracts: {
+        DefaultProxyAdmin: string
+        USDC: string
+        UniswapV3Factory: string
+    }
+    network: "optimism" | "optimismKovan"
+    pools: Pool[]
 }
 
-const MetadataOptimisticKovan = {
-    ...MainMetadataOptimismKovan,
-    contracts: {
-        ...MainMetadataOptimismKovan.contracts,
-        ...PeripheryMetadataOptimismKovan.contracts,
-    },
-}
-
-const MetadataByChainId = {
-    [MetadataOptimistic.chainId]: MetadataOptimistic,
-    [MetadataOptimisticKovan.chainId]: MetadataOptimisticKovan,
-}
-
-export type Contracts = typeof MetadataOptimistic.contracts | typeof MetadataOptimisticKovan.contracts
-export type ExternalContracts =
-    | typeof MetadataOptimistic.externalContracts
-    | typeof MetadataOptimisticKovan.externalContracts
-export type Pool = typeof MetadataOptimistic.pools[0] | typeof MetadataOptimisticKovan.pools[0]
-export type Pools = typeof MetadataOptimistic.pools | typeof MetadataOptimisticKovan.pools
-export type RawPools = typeof MetadataOptimistic.pools | typeof MetadataOptimisticKovan.pools
-
+export type Contracts = ChainMetadata["contracts"]
+export type ExternalContracts = ChainMetadata["externalContracts"]
 export class Metadata {
     readonly contracts: Contracts
     readonly externalContracts: ExternalContracts
     readonly pools: Pools
     readonly rawPools: RawPools
-
-    constructor(chainId: number) {
-        this.contracts = MetadataByChainId[chainId].contracts
-        this.externalContracts = MetadataByChainId[chainId].externalContracts
-        this.rawPools = MetadataByChainId[chainId].pools
+    private constructor(contracts: Contracts, externalContracts: ExternalContracts, pools: Pools) {
+        this.contracts = contracts
+        this.externalContracts = externalContracts
+        this.rawPools = pools
         this.pools = this._normalizePools(this.rawPools)
     }
 
+    static async create(chainId: number) {
+        // NOTE: The reason we fetch contract metadata from s3 instead of using node_modules
+        // is we don't need to deploy frontend again every we are gonna have a new market.
+        const { contracts, externalContracts, pools } = await Metadata._fetchMarketMetaData(chainId)
+        return new Metadata(contracts, externalContracts, pools)
+    }
     /**
      * 1. Make addresses lower case
      * 2. Remove "v" from symbols (vETH -> ETH)
@@ -61,5 +65,21 @@ export class Metadata {
             baseSymbol: pool.baseSymbol.replace(regex, "$1"),
             quoteSymbol: pool.quoteSymbol.replace(regex, "$1"),
         }))
+    }
+
+    static async _fetchMarketMetaData(chainId: number): Promise<ChainMetadata> {
+        const isOptimism = chainId === ChainId.OPTIMISTIC_ETHEREUM
+        const chainName = ChainName[chainId] || ChainName[ChainId.OPTIMISTIC_ETHEREUM]
+        const url = `https://metadata.perp.exchange/v2/${chainName}.json`
+        const metadata = await fetch(url)
+            .then(res => res.json())
+            .then(data => data as ChainMetadata)
+        return {
+            ...metadata,
+            contracts: {
+                ...metadata.contracts,
+                ...(isOptimism ? PeripheryMetadataOptimism.contracts : PeripheryMetadataOptimismKovan.contracts),
+            },
+        }
     }
 }

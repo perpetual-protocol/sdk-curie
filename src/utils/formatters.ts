@@ -7,13 +7,10 @@ export function bigNumber2Big(val: BigNumber, decimals: number = ERC20_DECIMAL_D
     return new Big(val.toString()).div(new Big(10).pow(decimals))
 }
 
-export function big2BigNumber(val: Big, decimals: number = ERC20_DECIMAL_DIGITS): BigNumber {
+export function big2BigNumber(val: Big, decimals: number = ERC20_DECIMAL_DIGITS) {
     return BigNumber.from(val.mul(new Big(10).pow(decimals)).toFixed(0))
 }
-// TODO:big2BigNum and big2BigNumber are equal. Will remove one later.
-export function big2BigNum(val: Big, decimals: number = ERC20_DECIMAL_DIGITS): BigNumber {
-    return BigNumber.from(val.mul(new Big(10).pow(decimals)).toFixed(0))
-}
+
 export function fromSqrtX96(value: BigNumber) {
     return bigNumber2Big(value, 0).div(Q96).pow(2)
 }
