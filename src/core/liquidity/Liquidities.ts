@@ -25,7 +25,7 @@ class Liquidities extends Channel<LiquiditiesEventName> {
         super(_perp.channelRegistry)
         this._fetchAndEmitUpdated = createMemoizedFetcher(
             () => this._fetchUpdateData(),
-            values => {
+            () => {
                 this.emit("updated", this)
             },
             (a, b) => (a && b ? this._compareUpdatedData(a, b) : true),

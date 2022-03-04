@@ -132,7 +132,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         const fetchAndEmitUpdated = this._createFetchUpdateData()
 
         const marketUpdated = new ChannelEventSource<PositionDraftEventName | EventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 return this.market.on("updated", async market => {
                     this._handleMarketUpdate(market)
                 })
@@ -140,7 +140,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         })
 
         const buyingPowerUpdated = new ChannelEventSource<PositionDraftEventName | EventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 invariant(
                     this._perp.hasConnected(),
                     () => new UnauthorizedError({ functionName: "_getEventSourceMap" }),
@@ -177,7 +177,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         }
         return createMemoizedFetcher(
             () => getBuyingPowerData(),
-            values => {
+            () => {
                 this.emit("buyingPowerUpdated", this)
             },
             (a, b) => {
@@ -186,7 +186,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         )
     }
 
-    protected async _handleMarketUpdate(market: Market) {
+    protected async _handleMarketUpdate() {
         if (this.amountInput.lte(0)) {
             return
         }
@@ -276,7 +276,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
 
         const { otherBaseDebts, otherMarketIndexPrices, quoteDebts } = relatedData
 
-        let sumOfOtherBaseDebtValue = BIG_ZERO
+        const sumOfOtherBaseDebtValue = BIG_ZERO
         for (let i = 0; i < otherBaseDebts.length; i++) {
             const baseDebt = otherBaseDebts[i]
             const baseIndexPrice = otherMarketIndexPrices[i]

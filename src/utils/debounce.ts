@@ -6,7 +6,7 @@ interface Options {
 export function debounce<T extends (...args: any[]) => any>(
     fn: T,
     secs: number,
-    { leading, trailing }: Options = { leading: false, trailing: true },
+    { leading }: Options = { leading: false, trailing: true },
 ) {
     let timeoutId: NodeJS.Timeout
 

@@ -403,7 +403,7 @@ export class ContractReader {
         const idsByMarkets = await this.getOpenLiquidityIds(marketMap, account)
         const contractCalls: ContractCall[] = []
 
-        Object.values(marketMap).forEach(({ baseAddress }, index) => {
+        Object.values(marketMap).forEach((_, index) => {
             contractCalls.push(
                 ...idsByMarkets[index].map((id: number) => ({
                     contract: this.contracts.orderBook,

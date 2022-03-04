@@ -37,7 +37,7 @@ export class Positions extends Channel<PositionsEventName> {
     protected _getEventSourceMap() {
         const fetchAndEmitUpdated = this._createFetchUpdateData()
         const updateDataEventSource = new ChannelEventSource<PositionsEventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 return poll(fetchAndEmitUpdated, this._perp.moduleConfigs?.positions?.period || DEFAULT_PERIOD).cancel
             },
             initEventEmitter: () => fetchAndEmitUpdated(true),
@@ -305,7 +305,7 @@ export class Positions extends Channel<PositionsEventName> {
 
         return createMemoizedFetcher(
             getTakerMakerPositions.bind(this),
-            values => {
+            () => {
                 this.emit("updated", this)
             },
             (a, b) => (a && b ? this._comparePositions(a, b) : true),

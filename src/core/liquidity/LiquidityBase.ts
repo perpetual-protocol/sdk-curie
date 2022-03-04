@@ -75,7 +75,7 @@ export class LiquidityBase<EventName extends string> extends Channel<EventName |
 
     protected _getEventSourceMap() {
         const updateDataEventSource = new ChannelEventSource<EventName | LiquidityBaseEventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 return this.market.on("updated", () => this.emit("updated", this))
             },
         })

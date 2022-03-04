@@ -109,7 +109,7 @@ class Market extends Channel<MarketEventName> {
         }
         return createMemoizedFetcher(
             getMarketData.bind(this),
-            values => {
+            () => {
                 this.emit("updated", this)
             },
             (a, b) => (a && b ? hasNumbersChange(a, b) : true),

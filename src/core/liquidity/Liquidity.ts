@@ -4,7 +4,6 @@ import { BIG_ZERO, ERC20_DECIMAL_DIGITS } from "../../constants"
 import { FailedPreconditionError } from "../../errors"
 import { ChannelEventSource, ChannelRegistry } from "../../internal"
 import { offsetDecimalLeft, toSqrtX96 } from "../../utils"
-import { Market } from "../markets"
 import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { Position, PositionSide, PositionType } from "../positions"
 import { LiquidityBase, LiquidityBaseConstructorData, RangeType } from "./LiquidityBase"
@@ -71,7 +70,7 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
     protected _getEventSourceMap() {
         const eventSourceMap = super._getEventSourceMap()
         const updateDataEventSource = new ChannelEventSource<LiquidityEventName>({
-            eventSourceStarter: eventName => {
+            eventSourceStarter: () => {
                 return this.market.on("updated", this._handleMarketUpdate.bind(this))
             },
         })
@@ -82,7 +81,7 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
         }
     }
 
-    protected async _handleMarketUpdate(market: Market) {
+    protected async _handleMarketUpdate() {
         try {
             await this._fetch("liquidityPendingFee", { cache: false })
             this.emit("updated", this)
