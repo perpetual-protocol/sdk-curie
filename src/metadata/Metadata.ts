@@ -1,6 +1,6 @@
 import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
 import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
-import { ChainId, ChainName } from "sdk/network"
+import { ChainId, ChainName } from "../network"
 
 export type Pool = {
     address: string

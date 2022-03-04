@@ -10,7 +10,7 @@ export function invariant(expectedCondition: boolean, errorFactory: ErrorFactory
 export function errorGuard<T>(func: () => T, errorFactory: ErrorFactory) {
     try {
         return func()
-    } catch (rawError) {
+    } catch (rawError: any) {
         throw errorFactory(rawError)
     }
 }
@@ -18,7 +18,7 @@ export function errorGuard<T>(func: () => T, errorFactory: ErrorFactory) {
 export async function errorGuardAsync<T>(func: () => Promise<T>, errorFactory: ErrorFactory) {
     try {
         return await func()
-    } catch (rawError) {
+    } catch (rawError: any) {
         throw errorFactory(rawError)
     }
 }

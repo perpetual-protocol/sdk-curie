@@ -1,5 +1,5 @@
 import Big from "big.js"
-import type { PerpetualProtocol } from "sdk"
+import type { PerpetualProtocol } from "../PerpetualProtocol"
 
 import { COLLATERAL_TOKEN_DECIMAL } from "../../constants"
 import { ContractName } from "../../contracts"

@@ -1,7 +1,7 @@
 import { Big } from "big.js"
 import { constants } from "ethers"
-import { COLLATERAL_TOKEN_DECIMAL, PerpetualProtocol } from "sdk"
-
+import { PerpetualProtocol } from "../PerpetualProtocol"
+import { COLLATERAL_TOKEN_DECIMAL } from "../../constants"
 import { ContractName } from "../../contracts"
 import { IERC20Metadata } from "../../contracts/type"
 import { Channel, ChannelEventSource } from "../../internal"

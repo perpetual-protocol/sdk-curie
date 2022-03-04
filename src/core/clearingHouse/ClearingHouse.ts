@@ -1,7 +1,7 @@
 import Big from "big.js"
 import { constants, utils } from "ethers"
 
-import { big2BigNum } from "../../../util/format"
+import { big2BigNum } from "../../utils/formatters"
 import { BIG_ONE } from "../../constants"
 import { ContractName } from "../../contracts"
 import { ClearingHouse as ContractClearingHouse } from "../../contracts/type"

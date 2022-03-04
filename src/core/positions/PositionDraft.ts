@@ -133,8 +133,8 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
 
         const marketUpdated = new ChannelEventSource<PositionDraftEventName | EventName>({
             eventSourceStarter: () => {
-                return this.market.on("updated", async market => {
-                    this._handleMarketUpdate(market)
+                return this.market.on("updated", async () => {
+                    this._handleMarketUpdate()
                 })
             },
         })

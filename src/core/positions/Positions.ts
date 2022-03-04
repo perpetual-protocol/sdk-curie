@@ -1,5 +1,5 @@
 import Big from "big.js"
-import { UnauthorizedError } from "sdk"
+import { UnauthorizedError } from "../../errors"
 
 import { BIG_ONE, BIG_ZERO } from "../../constants"
 import { Channel, ChannelEventSource, DEFAULT_PERIOD, MemoizedFetcher, createMemoizedFetcher } from "../../internal"

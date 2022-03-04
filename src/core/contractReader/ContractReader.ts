@@ -1,6 +1,7 @@
 import Big from "big.js"
 import { BigNumber, constants, errors } from "ethers"
-import { ContractCall, MulticallReader, offsetDecimalLeft } from "sdk"
+import { ContractCall, MulticallReader } from "./"
+import { offsetDecimalLeft } from "../../utils"
 
 import { COLLATERAL_TOKEN_DECIMAL, RATIO_DECIMAL } from "../../constants"
 import { ContractName, Contracts } from "../../contracts"

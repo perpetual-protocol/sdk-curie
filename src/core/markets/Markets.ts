@@ -1,4 +1,4 @@
-import type { PerpetualProtocol } from "sdk"
+import type { PerpetualProtocol } from "../PerpetualProtocol"
 
 import { ArgumentError, TypeError } from "../../errors"
 import { Pool } from "../../metadata"

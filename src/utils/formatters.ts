@@ -6,11 +6,15 @@ import { ERC20_DECIMAL_DIGITS, Q96 } from "../constants"
 export function bigNumber2Big(val: BigNumber, decimals: number = ERC20_DECIMAL_DIGITS) {
     return new Big(val.toString()).div(new Big(10).pow(decimals))
 }
-
+export function bigNum2Big(val: BigNumber, decimals: number = ERC20_DECIMAL_DIGITS): Big {
+    return new Big(val.toString()).div(new Big(10).pow(decimals))
+}
 export function big2BigNumber(val: Big, decimals: number = ERC20_DECIMAL_DIGITS) {
     return BigNumber.from(val.mul(new Big(10).pow(decimals)).toFixed(0))
 }
-
+export function big2BigNum(val: Big, decimals: number = ERC20_DECIMAL_DIGITS): BigNumber {
+    return BigNumber.from(val.mul(new Big(10).pow(decimals)).toFixed(0))
+}
 export function fromSqrtX96(value: BigNumber) {
     return bigNumber2Big(value, 0).div(Q96).pow(2)
 }

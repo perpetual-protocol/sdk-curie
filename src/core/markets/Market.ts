@@ -1,5 +1,5 @@
 import { Big } from "big.js"
-import type { PerpetualProtocol } from "sdk"
+import type { PerpetualProtocol } from "../PerpetualProtocol"
 
 import {
     Channel,
