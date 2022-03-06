@@ -11,6 +11,10 @@
   "engines": {
     "node": ">=16 < 17"
   },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
   "scripts": {
     "prepare": "rm -rf .husky/_ && husky install",
     "lint": "eslint --ext .js,.ts src/",
@@ -34,10 +38,14 @@
   "lint-staged": {
     "src/**/*.ts": [
       "prettier --write",
-      "git add"
+      "eslint --cache --fix"
     ]
   },
-  "keywords": [],
+  "keywords": [
+    "perpetual protocol",
+    "DeFi",
+    "sdk"
+  ],
   "dependencies": {
     "@apollo/client": "3.4.7",
     "@babel/preset-modules": "^0.1.5",
@@ -66,8 +74,10 @@
     "eslint": "^8.9.0",
     "eslint-config-airbnb": "^19.0.0",
     "eslint-config-airbnb-typescript": "^15.0.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^4.3.1",
     "husky": "^7.0.2",
     "jest": "^27.1.0",
