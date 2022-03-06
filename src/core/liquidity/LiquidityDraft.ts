@@ -15,6 +15,7 @@ export interface EventPayloadLiquidityAmountUpdated {
     baseAmount?: Big
     isLastEditBase: boolean
     isUpdatedFromTickPrice: boolean
+    test?: string
 }
 
 export interface LiquidityDraftLiquidityAmountUpdatable {
