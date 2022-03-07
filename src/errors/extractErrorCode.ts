@@ -1,4 +1,4 @@
-import { ContractErrorCode } from "."
+import { ContractErrorCode } from "./errors"
 
 export const extractContractErrorCode = (error: Error) => {
     const errorString = JSON.stringify(error)
