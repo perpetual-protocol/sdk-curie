@@ -128,12 +128,11 @@ class PerpetualProtocol {
         if (!isSupportedChainId(chainId)) {
             throw new UnsupportedChainError()
         }
-
+        this._chainId = chainId
         this.providerConfigs = providerConfigs
         this.moduleConfigs = moduleConfigs
 
         this._channelRegistry = new ChannelRegistry()
-        this._chainId = chainId
         this.provider = getRetryProvider(providerConfigs)
     }
 
@@ -178,11 +177,11 @@ class PerpetualProtocol {
     }
 
     hasInitialized(): this is PerpetualProtocolInitialized {
-        return !!this.markets && !!this.clearingHouse
+        return !!this._markets && !!this._clearingHouse
     }
 
     hasConnected(): this is PerpetualProtocolConnected {
-        return this.hasInitialized() && !!this.wallet
+        return this.hasInitialized() && !!this._wallet
     }
 
     destroy() {
