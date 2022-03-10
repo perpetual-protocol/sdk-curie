@@ -9,6 +9,11 @@ jobs:
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
     steps:
+      - name: Set variables
+        id: set-variables
+        run: |
+          echo "::set-output name=release_env::production"
+
       - uses: actions/checkout@v2
         with:
           persist-credentials: false
@@ -38,6 +43,8 @@ jobs:
 
       - name: Build contract package
         run: yarn build
+        env:
+          APP_STAGE: ${{ steps.set-variables.outputs.release_env }}
 
       - name: Publish npm package
         run: yarn release
