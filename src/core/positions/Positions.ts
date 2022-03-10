@@ -1,6 +1,5 @@
 import Big from "big.js"
 import { UnauthorizedError } from "../../errors"
-
 import { BIG_ONE, BIG_ZERO } from "../../constants"
 import { Channel, ChannelEventSource, DEFAULT_PERIOD, MemoizedFetcher, createMemoizedFetcher } from "../../internal"
 import { invariant, poll } from "../../utils"
@@ -15,17 +14,19 @@ export interface FetchPositionsReturn {
 
 type PositionsEventName = "updated" | "updateError"
 
+type ByMarketTickerSymbol<Value> = { [tickerSymbol: string]: Value }
+
 type CacheKey =
     | "takerPositionSizeList"
     | "takerOpenNotionalList"
     | "totalPositionSizeList"
     | "totalOpenNotionalList"
-    | "pendingFundingPaymentList"
+    | "pendingFundingPayments"
     | "liquidationPriceList"
     | "totalPositionValueList"
     | "totalAbsPositionValue"
 
-type CacheValue = Big[] | Big
+type CacheValue = Big[] | Big | ByMarketTickerSymbol<Big>
 
 export class Positions extends Channel<PositionsEventName> {
     private _cache: Map<CacheKey, CacheValue> = new Map()
@@ -210,9 +211,8 @@ export class Positions extends Channel<PositionsEventName> {
         return totalUnrealizedPnl
     }
 
-    async getTotalPendingFundingPaymentList({ cache = true } = {}) {
-        const list = this._fetch("pendingFundingPaymentList", { cache })
-        return list
+    async getTotalPendingFundingPayments({ cache = true } = {}) {
+        return this._fetch("pendingFundingPayments", { cache })
     }
 
     async getAccountMarginRatio({ cache = true } = {}) {
@@ -313,10 +313,14 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     private async _fetch(key: "totalAbsPositionValue", obj?: { cache: boolean }): Promise<Big>
-    private async _fetch(key: Omit<CacheKey, "totalAbsPositionValue">, obj?: { cache: boolean }): Promise<Big[]>
+    private async _fetch(key: "pendingFundingPayments", obj?: { cache: boolean }): Promise<ByMarketTickerSymbol<Big>>
+    private async _fetch(
+        key: Exclude<CacheKey, "totalAbsPositionValue" | "pendingFundingPayments">,
+        obj?: { cache: boolean },
+    ): Promise<Big[]> // TODO: return ByMarketTickerSymbol<Big> instead of Big[]
     private async _fetch(key: CacheKey, { cache = true } = {}) {
         if (this._cache.has(key) && cache) {
-            return this._cache.get(key) as CacheValue
+            return this._cache.get(key)
         }
 
         const marketMap = this._perp.markets.marketMap
@@ -341,8 +345,8 @@ export class Positions extends Channel<PositionsEventName> {
                 result = await this._perp.contractReader.getTotalOpenNotionalList(...args)
                 break
             }
-            case "pendingFundingPaymentList": {
-                result = await this._perp.contractReader.getPendingFundingPaymentList(...args)
+            case "pendingFundingPayments": {
+                result = await this._perp.contractReader.getPendingFundingPayments(...args)
                 break
             }
             case "liquidationPriceList": {

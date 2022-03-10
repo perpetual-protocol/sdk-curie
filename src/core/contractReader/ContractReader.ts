@@ -152,6 +152,22 @@ export class ContractReader {
         this._multicallReader = new MulticallReader({ contract: contracts.multicall2 })
     }
 
+    /* ===== Independent Contract Reader */
+    async getTickSpacingFromAllMarkets() {
+        const poolAddresses = this._metadata.pools.map(pool => {
+            return pool.address
+        })
+
+        const tickSpacingFromAllMarkets = await Promise.all(
+            poolAddresses.map(address => this.contracts.pool.attach(address).tickSpacing()),
+        )
+
+        return poolAddresses.reduce((acc, address, idx) => {
+            acc[address] = tickSpacingFromAllMarkets[idx]
+            return acc
+        }, {} as MarketTickSpacings)
+    }
+
     async getNativeBalance(account: string) {
         return errorGuardAsync(
             async () => {
@@ -795,8 +811,8 @@ export class ContractReader {
         )
     }
 
-    async getPendingFundingPaymentList(marketMap: MarketMap, account: string) {
-        const contractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
+    async getPendingFundingPayments(marketMap: MarketMap, account: string) {
+        const contractCallParams = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.exchange,
             contractName: ContractName.EXCHANGE,
             funcName: "getPendingFundingPayment",
@@ -804,14 +820,20 @@ export class ContractReader {
         }))
         return errorGuardAsync(
             async () => {
-                const rawPendingFundingPaymentList = await this._multicallReader.execute([...contractCalls])
-                return rawPendingFundingPaymentList.map(fundingPayment => bigNumber2Big(fundingPayment))
+                const rawPendingFundingPaymentList = await this._multicallReader.execute([...contractCallParams])
+                return Object.values(marketMap).reduce<Record<string, Big>>(
+                    (acc, next, index) => ({
+                        ...acc,
+                        [next.tickerSymbol]: bigNumber2Big(rawPendingFundingPaymentList[index]),
+                    }),
+                    {},
+                )
             },
             rawError =>
                 new ContractReadError<Multicall2>({
                     contractName: ContractName.MULTICALL2,
                     contractFunctionName: "tryAggregate",
-                    args: contractCallsParserForErrorHandling(contractCalls),
+                    args: contractCallsParserForErrorHandling(contractCallParams),
                     rawError,
                 }),
         )
