@@ -65,9 +65,23 @@ const perp = new PerpetualProtocol({ chainId, providerConfigs })
 
 ## Open a position
   ```
+  const newPositionDraft = perp.clearingHouse.createPositionDraft({
+                tickerSymbol,
+                side,
+                amountInput,
+                isAmountInputBase: DEFAULT_LAST_EDIT_BASE,
+            })
   perp.clearingHouse.openPosition(positionDraft, slippage, referralCode)
   ```
 ## Add liquidity
   ```
-    perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
+  const liquidityDraft = perp.clearingHouse.createLiquidityDraft({
+      tickerSymbol,
+      rawBaseAmount,
+      rawQuoteAmount,
+      upperTick,
+      lowerTick,
+  })
+
+  perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
   ```
