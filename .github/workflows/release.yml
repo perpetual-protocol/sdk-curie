@@ -20,6 +20,7 @@ jobs:
         run: |
             echo "@perp/v2-sdk  version ${{ steps.version.outputs.value }}"
             echo "::set-output name=pkg_version::${{ steps.version.outputs.value }}"
+
             if [[ ${{ github.event.release.tag_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
               && [[ ${{ github.event.release.target_commitish }} =~ ^release\/[0-9]+\.[0-9]+\.[0-9x]+$ ]]
               then
@@ -61,29 +62,29 @@ jobs:
         env:
           APP_STAGE: ${{ steps.set-variables.outputs.release_env }}
 
-      - name: Publish npm package
-        run: yarn release
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish npm package
+      #   run: yarn release
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  discord-notification-npm-package:
-    name: Discord Notification for publishing npm package
-    if: ${{ always() }}
-    needs: [publish-npm-package]
-    runs-on: ubuntu-latest
-    steps:
-      - name: issue success notificaiton
-        if: needs.publish-npm-package.result == 'success'
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
-        with:
-          args: "**[npm package]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
+  # discord-notification-npm-package:
+    # name: Discord Notification for publishing npm package
+    # if: ${{ always() }}
+    # needs: [publish-npm-package]
+    # runs-on: ubuntu-latest
+    # steps:
+    #   - name: issue success notificaiton
+    #     if: needs.publish-npm-package.result == 'success'
+    #     env:
+    #       DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+    #     uses: Ilshidur/action-discord@master
+    #     with:
+    #       args: "**[npm package]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
 
-      - name: issue failure notificaiton
-        if: needs.publish-npm-package.result != 'success'
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
-        with:
-          args: "**[npm package]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"
+    #   - name: issue failure notificaiton
+    #     if: needs.publish-npm-package.result != 'success'
+    #     env:
+    #       DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+    #     uses: Ilshidur/action-discord@master
+    #     with:
+    #       args: "**[npm package]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"
