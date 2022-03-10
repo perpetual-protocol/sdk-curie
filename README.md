@@ -11,7 +11,7 @@ yarn add @perp/v2-sdk
 
 Commit:
 
-We use commitlint and commitizen to regulate commit message.
+Use commitlint and commitizen to regulate commit message.
  ```bash
  git ci
 ```
@@ -47,9 +47,41 @@ We use commitlint and commitizen to regulate commit message.
     - `PositionHistory`
     - `FundingPaymentHistory`
 
----
 
 
 
+# Usage
+
+## Create a perpetualProtocol instance.
+
+* Now we only support **optimism**
 
 
+```
+
+const perp = new PerpetualProtocol({ chainId, providerConfigs })
+
+```
+
+## Open a position
+  ```
+  const newPositionDraft = perp.clearingHouse.createPositionDraft({
+                tickerSymbol,
+                side,
+                amountInput,
+                isAmountInputBase: DEFAULT_LAST_EDIT_BASE,
+            })
+  perp.clearingHouse.openPosition(positionDraft, slippage, referralCode)
+  ```
+## Add liquidity
+  ```
+  const liquidityDraft = perp.clearingHouse.createLiquidityDraft({
+      tickerSymbol,
+      rawBaseAmount,
+      rawQuoteAmount,
+      upperTick,
+      lowerTick,
+  })
+
+  perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
+  ```
