@@ -1,8 +1,7 @@
 name: Publish NPM package
 on:
-    push:
-        branches:
-          - main
+  release:
+    types: [created]
 jobs:
   publish-npm-package:
     runs-on: ubuntu-latest
@@ -12,7 +11,14 @@ jobs:
       - name: Set variables
         id: set-variables
         run: |
-          echo "::set-output name=release_env::production"
+            if [[ ${{ github.event.release.tag_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+              && [[ ${{ github.event.release.target_commitish }} =~ ^release\/[0-9]+\.[0-9]+\.[0-9x]+$ ]]
+              then
+                echo "::set-output name=release_env::production"
+            else
+              echo "Your tag and branch are not matched."
+              exit 1
+            fi
 
       - uses: actions/checkout@v2
         with:
