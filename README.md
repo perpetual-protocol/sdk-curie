@@ -1,12 +1,19 @@
 # Perpetual Protocol V2 SDK
 
- An SDK for interacting with the Perpetual Protocol V2
+ An SDK for  Perpetual Protocol V2
 
 # Setup
-Install the lib using npm or yarn
+Install the lib
 
 ```bash
 yarn add @perp/v2-sdk
+```
+
+Commit:
+
+We use commitlint and commitizen to regulate commit message.
+ ```bash
+ git ci
 ```
 
 
@@ -41,5 +48,8 @@ yarn add @perp/v2-sdk
     - `FundingPaymentHistory`
 
 ---
+
+
+
 
 
