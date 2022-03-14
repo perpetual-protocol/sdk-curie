@@ -1,6 +1,6 @@
 {
   "name": "@perp/v2-sdk",
-  "version": "0.1.4",
+  "version": "0.1.4-multicollateral",
   "license": "BSD 3-Clause",
   "main": "dist/index.js",
   "module": "dist/v2-sdk.esm.js",
