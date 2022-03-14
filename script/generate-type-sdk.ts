@@ -2,12 +2,29 @@ import "dotenv-flow/config"
 
 import { glob, runTypeChain } from "typechain"
 
+const getABIEnv = (stage: string | undefined) => {
+
+  switch (stage) {
+    case "production":
+      return "optimism"
+    case "staging":
+      return "optimism-kovan"
+    case "dev1":
+        return "optimism-kovan-dev-1"
+    case "dev2":
+          return "optimism-kovan-dev-2"
+    default:
+      return "optimism"
+  }
+
+}
+
 async function main() {
     const cwd = process.cwd()
 
     // NOTE: will not use the stage variable to decide which abi ref to use after we make the SDK bundle script independently
     const stage = process.env.APP_STAGE
-    const abiRef = stage === "production" ? "optimism" : "optimism-kovan"
+    const abiRef = getABIEnv(stage)
     console.log('abiRef----', abiRef)
     // find all files matching the glob
     const allFiles = glob(cwd, [
