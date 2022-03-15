@@ -5,6 +5,7 @@ on:
         - op-kovan-dev1
 jobs:
   publish-npm-package:
+    if: github.base_ref	!= 'main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
