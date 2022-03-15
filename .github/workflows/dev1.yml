@@ -60,7 +60,7 @@ jobs:
 
   discord-notification-npm-package:
     name: Discord Notification for publishing npm package
-    if: ${{ always() }}
+    if: github.base_ref	!= 'main' && github.event_name != 'pull_request' && always()
     needs: [publish-npm-package]
     runs-on: ubuntu-latest
     steps:
