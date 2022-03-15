@@ -4,6 +4,8 @@ on:
     branches:
       - main
       - release/*
+      - op-kovan-dev1
+      - op-kovan-dev2
 jobs:
   build_check:
     runs-on: ubuntu-latest
