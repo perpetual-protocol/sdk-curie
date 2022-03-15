@@ -3,11 +3,9 @@ on:
   push:
     branches:
       - op-kovan-dev1
-  pull_request:
-    branches-ignore:
-      - main
 jobs:
   publish-npm-package:
+    if: github.base_ref != 'main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
@@ -75,7 +73,7 @@ jobs:
           args: "**[@perp/v2-sdk: dev1]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
 
       - name: issue failure notificaiton
-        if: needs.publish-npm-package.result != 'success'
+        if: needs.publish-npm-package.result != 'success' &&  github.base_ref != 'main' && github.event_name != 'pull_request'
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
         uses: Ilshidur/action-discord@master
