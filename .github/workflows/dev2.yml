@@ -3,9 +3,6 @@ on:
   push:
       branches:
         - op-kovan-dev2
-  pull_request:
-    branches-ignore:
-      - main
 jobs:
   publish-npm-package:
     if: github.base_ref != 'main' && github.event_name != 'pull_request'
