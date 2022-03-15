@@ -5,7 +5,7 @@ on:
       - op-kovan-dev1
 jobs:
   publish-npm-package:
-    if: github.base_ref != 'main' && github.event_name != 'pull_request'
+    if: ${{github.base_ref != 'main' && github.event_name != 'pull_request'}}
     runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
@@ -33,6 +33,9 @@ jobs:
         run: |
             echo "::set-output name=pkg_version::${{ steps.version.outputs.value }}"
             echo "::set-output name=release_env::dev1"
+            echo "github base ref- ${{github.base_ref}}"
+            echo "github.event_name- ${{github.event_name}}"
+
        # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
       - name: Get Yarn cache directory
         id: yarn-cache-dir-path
@@ -58,24 +61,24 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  discord-notification-npm-package:
-    name: Discord Notification for publishing npm package
-    if: always()
-    needs: [publish-npm-package]
-    runs-on: ubuntu-latest
-    steps:
-      - name: issue success notificaiton
-        if: needs.publish-npm-package.result == 'success'
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
-        with:
-          args: "**[@perp/v2-sdk: dev1]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
+  # discord-notification-npm-package:
+  #   name: Discord Notification for publishing npm package
+  #   if: always()
+  #   needs: [publish-npm-package]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: issue success notificaiton
+  #       if: needs.publish-npm-package.result == 'success'
+  #       env:
+  #         DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+  #       uses: Ilshidur/action-discord@master
+  #       with:
+  #         args: "**[@perp/v2-sdk: dev1]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
 
-      - name: issue failure notificaiton
-        if: needs.publish-npm-package.result != 'success' &&  github.base_ref != 'main' && github.event_name != 'pull_request'
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
-        with:
-          args: "**[@perp/v2-sdk: dev1]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"
+  #     - name: issue failure notificaiton
+  #       if: needs.publish-npm-package.result != 'success' &&  github.base_ref != 'main' && github.event_name != 'pull_request'
+  #       env:
+  #         DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+  #       uses: Ilshidur/action-discord@master
+  #       with:
+  #         args: "**[@perp/v2-sdk: dev1]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"
