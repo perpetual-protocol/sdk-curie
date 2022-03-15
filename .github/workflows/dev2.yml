@@ -1,11 +1,8 @@
 name: Publish NPM package for dev2
 on:
-  push:
-      branches:
-        - op-kovan-dev2
+  workflow_dispatch:
 jobs:
   publish-npm-package:
-    if: github.base_ref != 'main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
@@ -32,13 +29,13 @@ jobs:
         id: set-variables
         run: |
             echo "::set-output name=pkg_version::${{ steps.version.outputs.value }}"
+            echo "::set-output name=release_env::dev2"
 
        # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
       - name: Get Yarn cache directory
         id: yarn-cache-dir-path
         run: |
           echo "::set-output name=dir::$(yarn cache dir)"
-          echo "::set-output name=release_env::dev2"
 
       - name: Use Yarn cache
         uses: actions/cache@v2

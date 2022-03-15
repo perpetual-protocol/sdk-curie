@@ -1,11 +1,8 @@
 name: Publish NPM package for dev1
 on:
-  push:
-    branches:
-      - op-kovan-dev1
+   workflow_dispatch:
 jobs:
   publish-npm-package:
-    if: ${{contains(github.event.release.tag_name, 'multicollateral' )}}
     runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
@@ -60,7 +57,7 @@ jobs:
 
   discord-notification-npm-package:
     name: Discord Notification for publishing npm package
-    if: always() && contains(github.event.release.tag_name, 'multicollateral')
+    if: always()
     needs: [publish-npm-package]
     runs-on: ubuntu-latest
     steps:
