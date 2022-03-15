@@ -3,6 +3,9 @@ on:
   push:
       branches:
         - op-kovan-dev2
+  pull_request:
+    branches-ignore:
+      - main
 jobs:
   publish-npm-package:
     runs-on: ubuntu-latest

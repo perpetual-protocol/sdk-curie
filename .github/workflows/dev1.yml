@@ -1,11 +1,13 @@
 name: Publish NPM package for dev1
 on:
   push:
-      branches:
-        - op-kovan-dev1
+    branches:
+      - op-kovan-dev1
+  pull_request:
+    branches-ignore:
+      - main
 jobs:
   publish-npm-package:
-    if: github.base_ref	!= 'main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
@@ -60,7 +62,7 @@ jobs:
 
   discord-notification-npm-package:
     name: Discord Notification for publishing npm package
-    if: github.base_ref	!= 'main' && github.event_name != 'pull_request' && always()
+    if: always()
     needs: [publish-npm-package]
     runs-on: ubuntu-latest
     steps:
