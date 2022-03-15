@@ -60,7 +60,7 @@ jobs:
 
   discord-notification-npm-package:
     name: Discord Notification for publishing npm package
-    if: always()
+    if: always() && contains(github.event.release.tag_name, 'multicollateral')
     needs: [publish-npm-package]
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +73,7 @@ jobs:
           args: "**[@perp/v2-sdk: dev1]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
 
       - name: issue failure notificaiton
-        if: needs.publish-npm-package.result != 'success' &&  contains(github.event.release.tag_name, 'multicollateral')
+        if: needs.publish-npm-package.result != 'success'
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
         uses: Ilshidur/action-discord@master
