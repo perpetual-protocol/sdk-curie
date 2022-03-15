@@ -1,11 +1,11 @@
 name: Publish NPM package for dev1
 on:
   push:
-      branches:
-        - op-kovan-dev1
+    branches:
+      - op-kovan-dev1
 jobs:
   publish-npm-package:
-    if: github.base_ref	!= 'main' && github.event_name != 'pull_request'
+    if: github.base_ref != 'main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
@@ -60,7 +60,7 @@ jobs:
 
   discord-notification-npm-package:
     name: Discord Notification for publishing npm package
-    if: github.base_ref	!= 'main' && github.event_name != 'pull_request' && always()
+    if: always()
     needs: [publish-npm-package]
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +73,7 @@ jobs:
           args: "**[@perp/v2-sdk: dev1]** @perp/v2-sdk version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
 
       - name: issue failure notificaiton
-        if: needs.publish-npm-package.result != 'success'
+        if: needs.publish-npm-package.result != 'success' &&  github.base_ref != 'main' && github.event_name != 'pull_request'
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
         uses: Ilshidur/action-discord@master
