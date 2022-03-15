@@ -31,7 +31,7 @@ jobs:
         id: set-variables
         run: |
             echo "::set-output name=pkg_version::${{ steps.version.outputs.value }}"
-
+            echo "::set-output name=release_env::dev1"
        # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
       - name: Get Yarn cache directory
         id: yarn-cache-dir-path
