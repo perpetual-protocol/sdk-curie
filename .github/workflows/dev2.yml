@@ -1,4 +1,4 @@
-name: Publish NPM package
+name: Publish NPM package for dev2
 on:
   push:
       branches:
