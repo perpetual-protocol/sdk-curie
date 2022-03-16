@@ -24,7 +24,7 @@ class Wallet extends Channel<WalletEventName> {
     private _cache: Map<CacheKey, Big> = new Map()
     private readonly _contractReader: ContractReader
     private _collateralToken: CollateralToken
-    private _contractVault: ContractVault
+    private _contractVault: ContractVault // TODO: move to vault
 
     constructor(private readonly _perp: PerpetualProtocol, readonly account: string) {
         super(_perp.channelRegistry)
