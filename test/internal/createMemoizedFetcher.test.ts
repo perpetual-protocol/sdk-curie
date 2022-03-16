@@ -1,4 +1,4 @@
-import { createMemoizedFetcher } from "../createMemoizedFetcher"
+import { createMemoizedFetcher } from "../../src/internal"
 
 const setup = () => {
     return {

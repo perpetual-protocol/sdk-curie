@@ -1,6 +1,6 @@
 import Big from "big.js"
 
-import { getLeastSignificantDigit } from "../formatters"
+import { getLeastSignificantDigit } from "../../src/utils"
 
 describe("getLeastSignificantDigit", () => {
     test("return 3 with price 380.12345678", () => {
