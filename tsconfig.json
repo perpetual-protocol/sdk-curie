@@ -19,7 +19,8 @@
       "node_modules/@types"
     ],
      "jsx": "react-jsx",
-     "resolveJsonModule": true
+     "resolveJsonModule": true,
+     "esModuleInterop": true
   },
   "include": [
     "src",
