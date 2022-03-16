@@ -1,6 +1,7 @@
 import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
 import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
 import { ChainId, ChainName } from "../network"
+import fetch from "cross-fetch"
 
 export type Pool = {
     address: string
