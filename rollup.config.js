@@ -1,7 +1,6 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs'
 import sourceMaps from 'rollup-plugin-sourcemaps';
-import { babel } from '@rollup/plugin-babel';
 import typescript from 'rollup-plugin-typescript2';
 import json from '@rollup/plugin-json';
 import pkg from './package.json';
