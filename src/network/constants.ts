@@ -6,6 +6,7 @@ export enum SupportedChainId {
     OPTIMISTIC_ETHEREUM = MainMetadataOptimism.chainId,
 }
 
+// TODO ChainId and ChainName might be deprecated later
 export const ChainId = {
     OPTIMISTIC_ETHEREUM: 10,
     OPTIMISTIC_ETHEREUM_TESTNET_KOVAN: 69,

@@ -137,20 +137,20 @@ class PerpetualProtocol {
     }
 
     async init() {
-        try {
-            this._metadata = await Metadata.create(this._chainId)
-            this._contracts = new Contracts({ metadata: this.metadata, provider: this.provider })
-            this._contractReader = new ContractReader({
-                metadata: this.metadata,
-                provider: this.provider,
-                contracts: this.contracts,
-            })
-            this._markets = new Markets(this)
-            this._clearingHouseConfig = await ClearingHouseConfig.create(this.contractReader)
-            this._clearingHouse = new ClearingHouse(this)
-        } catch (e) {
-            throw new InitSDKError()
-        }
+        // try {
+        this._metadata = await Metadata.create(this._chainId)
+        this._contracts = new Contracts({ metadata: this.metadata, provider: this.provider })
+        this._contractReader = new ContractReader({
+            metadata: this.metadata,
+            provider: this.provider,
+            contracts: this.contracts,
+        })
+        this._markets = new Markets(this)
+        this._clearingHouseConfig = await ClearingHouseConfig.create(this.contractReader)
+        this._clearingHouse = new ClearingHouse(this)
+        // } catch (e) {
+        //     throw new InitSDKError()
+        // }
     }
 
     async connect({ signer }: { signer: Signer }) {
