@@ -14,7 +14,7 @@ export default {
     { file: pkg.module, format: 'es', sourcemap: true },
   ],
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
-  external: [],
+  external: ['cross-fetch', 'cross-fetch/polyfill', "axios"],
   watch: {
     include: 'src/**',
   },
