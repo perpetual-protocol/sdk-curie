@@ -6,4 +6,11 @@ module.exports = {
   transform: { '^.+\\.ts?$': 'ts-jest' },
   testPathIgnorePatterns: ['dist/'],
   globals: { 'ts-jest': { diagnostics: false }},
+  moduleDirectories: [
+    "node_modules",
+    "src"
+  ],
+  transform: {
+    "^.+\\.ts$": "ts-jest"
+  },
 };
