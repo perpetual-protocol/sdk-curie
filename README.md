@@ -86,7 +86,7 @@ await perp.init()
   const tickerSymbol =  "ETHUSD"
   const slippage = new Big(0.02) // remember to transformed to Big type
   const amountInput = new Big(100) // remember to transformed to Big type
-  const side = "LONG"
+  const side = PositionSide.LONG
   const isAmountInputBase = false // we are not using base token to open a long position here.
 
   const newPositionDraft = perp.clearingHouse.createPositionDraft({
