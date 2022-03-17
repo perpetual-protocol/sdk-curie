@@ -13,9 +13,13 @@ Commit:
 
 Use commitlint and commitizen to regulate commit message.
  ```bash
- git ci
+  git ci
 ```
+Test:
 
+```
+ yarn test
+```
 
 # Layers
 - **Market:** Tradable pairs for positions.
@@ -68,6 +72,8 @@ await perp.init()
 
 ## Open a position
 
+* Remember to provide your singer when connecting.
+
 For example:
 
 Open a `Long` position using `quoteToken`. <br>
@@ -79,6 +85,7 @@ const perp = new PerpetualProtocol({
   chainId: 10,
   providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}] })
 await perp.init()
+await perp.connect({ signer })
 
 ```
 
@@ -101,19 +108,13 @@ await perp.init()
 ## Close a position
 
 ```
-  const perpParam = {
-    chainId: 10,
-    providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
-  }
- const perp = new PerpetualProtocol(perpParam)
- await perp.init()
- ```
-```
 const tickerSymbol = "ETHUSD"
 const position = await perp.positions.getTakerPositionByTickerSymbol(tickerSymbol)
 perp.clearingHouse.closePosition(position, slippage)
 ```
 ## Add liquidity
+* Remember to provide your singer when connecting.
+
  For example:<br />
   Use `quoteToken` to add liquidity. <br />
   baseToken: ETH <br />
@@ -127,6 +128,7 @@ perp.clearingHouse.closePosition(position, slippage)
   }
  const perp = new PerpetualProtocol(perpParam)
  await perp.init()
+ await perp.connect({ signer })
  ```
  ```
  const tickerSymbol = "ETHUSD"
@@ -151,14 +153,7 @@ const rawQuoteAmount = new Big(100) // remember to transformed to Big type
   ```
 
 ## Close liquidity
-```
- const perpParam = {
-    chainId: 10,
-    providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
-  }
- const perp = new PerpetualProtocol(perpParam)
- await perp.init()
-```
+
 - `ratio` means how much ratio you would like to remove. 1 means 100%
 - Use `filterFn` to filter out liquidity you would like to remove.
 ```
