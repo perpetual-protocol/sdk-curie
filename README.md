@@ -59,22 +59,86 @@ Use commitlint and commitizen to regulate commit message.
 
 ```
 
-const perp = new PerpetualProtocol({ chainId, providerConfigs })
+const perp = new PerpetualProtocol({
+  chainId: 10,
+  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}] })
+await perp.init()
 
 ```
 
 ## Open a position
+
+For example:
+
+Open a `Long` position using `quoteToken`. <br>
+baseToken: ETH <br>
+quoteToken: USD
+
+```
+const perp = new PerpetualProtocol({
+  chainId: 10,
+  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}] })
+await perp.init()
+
+```
+
   ```
+  const tickerSymbol =  "ETHUSD"
+  const slippage = new Big(0.02) // remember to transformed to Big type
+  const amountInput = new Big(100) // remember to transformed to Big type
+  const side = "LONG"
+  const isAmountInputBase = false // we are not using base token to open a long position here.
+
   const newPositionDraft = perp.clearingHouse.createPositionDraft({
                 tickerSymbol,
                 side,
                 amountInput,
-                isAmountInputBase: DEFAULT_LAST_EDIT_BASE,
+                isAmountInputBase,
             })
-  perp.clearingHouse.openPosition(positionDraft, slippage, referralCode)
+  perp.clearingHouse.openPosition(positionDraft, slippage)
   ```
+
+## Close a position
+
+```
+  const perpParam = {
+    chainId: 10,
+    providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
+  }
+ const perp = new PerpetualProtocol(perpParam)
+ await perp.init()
+ ```
+```
+const tickerSymbol = "ETHUSD"
+const position = await perp.positions.getTakerPositionByTickerSymbol(tickerSymbol)
+perp.clearingHouse.closePosition(position, slippage)
+```
 ## Add liquidity
+ For example:<br />
+  Use `quoteToken` to add liquidity. <br />
+  baseToken: ETH <br />
+  quoteToken: USD
+
+
   ```
+  const perpParam = {
+    chainId: 10,
+    providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
+  }
+ const perp = new PerpetualProtocol(perpParam)
+ await perp.init()
+ ```
+ ```
+ const tickerSymbol = "ETHUSD"
+ const market = perp.markets.getMarket({ tickerSymbol })
+ const lowerTick = perp.market.getPriceToTick(lowerTickPrice)
+ const upperTick = perp.market.getPriceToTick(upperTickPrice)
+
+ const slippage = new Big(0.02) // remember to transformed to Big type
+
+const rawBaseAmount = undefined
+const rawQuoteAmount = new Big(100) // remember to transformed to Big type
+
   const liquidityDraft = perp.clearingHouse.createLiquidityDraft({
       tickerSymbol,
       rawBaseAmount,
@@ -85,3 +149,23 @@ const perp = new PerpetualProtocol({ chainId, providerConfigs })
 
   perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
   ```
+
+## Close liquidity
+```
+ const perpParam = {
+    chainId: 10,
+    providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
+  }
+ const perp = new PerpetualProtocol(perpParam)
+ await perp.init()
+```
+- `ratio` means how much ratio you would like to remove. 1 means 100%
+- Use `filterFn` to filter out liquidity you would like to remove.
+```
+
+const ratio = new Big(1) // remember to transformed to Big type
+const slippage = new Big(0.02) // remember to transformed to Big type
+const liquidity = perp.liquidities.getTotalLiquidities().filter(filterFn)
+perp.clearingHouse.removeLiquidity(liquidity, ratio, slippage)
+
+```
