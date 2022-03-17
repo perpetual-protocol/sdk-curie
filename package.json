@@ -23,6 +23,7 @@
     "docs": "typedoc --out docs --theme minimal src",
     "prebuild": "yarn generate-type",
     "build": "rimraf dist && rollup -c rollup.config.js",
+    "postbuild": "yarn copy-dts",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watch",
     "test:prod": "npm run lint && npm run test -- --no-cache",
@@ -34,7 +35,8 @@
     "generate-type:production": "cross-env APP_STAGE=production yarn generate-type",
     "generate-type:dev1": "cross-env APP_STAGE=dev1 yarn generate-type",
     "generate-type:dev2": "cross-env APP_STAGE=dev2 yarn generate-type",
-    "release": "yarn publish --non-interactive --access public"
+    "release": "yarn publish --non-interactive --access public",
+    "copy-dts": "copyfiles -f ./src/contracts/type/*.d.ts dist/src/contracts/type"
   },
   "lint-staged": {
     "src/**/*.ts": [
@@ -94,7 +96,8 @@
     "ts-node": "10.5.0",
     "typechain": "5.0.0",
     "typedoc": "0.21.9",
-    "typescript": "4.4.2"
+    "typescript": "4.4.2",
+    "copyfiles":"2.4.1"
   },
   "config": {
     "commitizen": {
