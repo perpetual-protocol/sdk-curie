@@ -1,5 +1,5 @@
 import Big from "big.js"
-import { PositionSide } from "../../positions"
+import { PositionSide } from "../../../src/core/positions"
 
 import {
     getBuyingPower,
@@ -11,7 +11,7 @@ import {
     getSwapRate,
     getTransactionFee,
     getUnrealizedPnl,
-} from "../utils"
+} from "../../../src/core/clearingHouse"
 
 describe("getTransactionFee", () => {
     test("Given that long exact 100 USD worth ETH", () => {
