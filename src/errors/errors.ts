@@ -118,10 +118,11 @@ abstract class SDKBaseError extends Error {
 
 // NOTE: init error
 export class InitSDKError extends Error {
-    constructor() {
+    constructor(e: any) {
         super()
         this.name = ErrorName.INIT_SDK_ERROR
         this.message = `Init SDK error.`
+        this.stack = e.stack
     }
 }
 
@@ -201,7 +202,7 @@ export interface ContractErrorParams<ContractFunctionName> extends SDKBaseErrorP
     context?: { [key: string]: any }
 }
 /* ========== CONTRACT READ ========== */
-export interface ContractReadErrorParams<ContractFunctionName> extends ContractErrorParams<ContractFunctionName> {}
+export type ContractReadErrorParams<ContractFunctionName> = ContractErrorParams<ContractFunctionName>
 
 export class ContractReadError<ContractType extends EthersContract> extends SDKBaseError {
     readonly contractName: string
@@ -272,7 +273,7 @@ export class ContractWriteError<ContractType extends EthersContract> extends SDK
         this.name = ErrorName.CONTRACT_WRITE_ERROR
         this.message =
             `Write ${contractName} contract error, invoke ${contractFunctionName} function failed.` +
-            (!!contractErrorCode ? ` (Error Code: ${contractErrorCode})` : "")
+            (contractErrorCode ? ` (Error Code: ${contractErrorCode})` : "")
         this.contractName = contractName
         this.contractFunctionName = contractFunctionName
         this.contractErrorCode = contractErrorCode
