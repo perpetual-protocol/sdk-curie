@@ -1,6 +1,6 @@
 {
   "name": "@perp/v2-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "BSD-3-Clause",
   "main": "dist/index.js",
   "module": "dist/v2-sdk.esm.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/perpetual-protocol/perp-sdk"
   },
   "scripts": {
     "prepare": "rm -rf .husky/_ && husky install",
