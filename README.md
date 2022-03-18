@@ -22,36 +22,35 @@ Test:
 ```
 
 # Layers
-- **Market:** Tradable pairs for positions.
-    - `Market`
-        - values:
-            - `indexPrice`, `markPrice`, `tradingVolume24h`, `fundingRate`
-- **Pool** (*extends Market*)**:** Addable pairs for liquidity.
-    - `Pool`
-        - values:
-            - `TVL`, `APR`
+- **Market:**
+    - `indexPrice`
+    - `markPrice`
+    - `indexTwapPrice`
+
+- **Liquidity**:  Addable pairs for liquidity.
+   - `liquidityPendingFee`
+   - `totalTokenAmountInPoolAndPendingFee`
+   - `getMakerPositionImpermanent`
+
 - **Wallet:** Manages user’s assets in his/her connected web3 wallet. (e.g. MetaMask)
     - `Wallet`
     - `DepositHistory`
     - `WithdrawHistory`
+
 - **Vault:** Manages user’s assets stored inside Perpetual Protocol.
-    - `Vault`
-        - methods:
-            - `deposit`, `withdraw`
-        - values:
-            - `accountBalance`, `totalPnl`
+     - `deposit`
+     - `withdraw`
+
 - **ClearingHouse:** Manage transactions.
-    - `ClearingHouse`
-        - methods:
-            - openPosition, closePosition
-            - addLiquidity, removeLiquidity
+     - `openPosition`
+     - `closePosition`
+     - `addLiquidity`
+     - `removeLiquidity`
 - **Position:**
     - `Position`
     - `PositionDraft`
     - `PositionHistory`
     - `FundingPaymentHistory`
-
-
 
 
 # Usage
