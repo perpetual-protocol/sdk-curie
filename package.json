@@ -24,7 +24,7 @@
     "prebuild": "yarn generate-type",
     "build": "rimraf dist && rollup -c rollup.config.js",
     "postbuild": "yarn copy-dts",
-    "test": "jest --coverage",
+    "test": "jest",
     "test:watch": "jest --coverage --watch",
     "test:prod": "npm run lint && npm run test -- --no-cache",
     "deploy": "rimraf docs/ && npm run docs",

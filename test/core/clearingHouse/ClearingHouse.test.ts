@@ -1,24 +1,24 @@
-import { JsonRpcProvider } from '@ethersproject/providers';
 import Big from 'big.js';
-import { Signer } from "@ethersproject/abstract-signer"
-import { SupportedChainId, PerpetualProtocol, getTransaction, PositionSide } from '../../../src';
+import { constants } from "ethers"
+import { SupportedChainId, PerpetualProtocol, getTransaction, PositionSide, Wallet, big2BigNumber, Position, PositionType, BIG_ZERO, Market } from '../../../src';
+import { ContractName } from '../../../src/contracts/Contracts';
+
+
+
+
 jest.mock("../../../src/transactionSender", () => {
   return {
     getTransaction: jest.fn().mockResolvedValue(null)
   }
 })
-
-
-
-const mockSigner = {
-  getChainId:() => SupportedChainId.OPTIMISTIC_ETHEREUM,
-  getAddress: () => "",
-  provider: new JsonRpcProvider("")
-} as unknown as Signer
+jest.spyOn(PerpetualProtocol.prototype, "hasConnected").mockImplementationOnce(() => true)
+jest.spyOn(PerpetualProtocol.prototype, "connect").mockImplementationOnce(jest.fn())
+jest.spyOn(PerpetualProtocol.prototype, 'wallet', 'get').mockReturnValue({ account: "" } as unknown as Wallet)
 
 
 describe("ClearingHouse", () => {
   let perp: PerpetualProtocol
+
   beforeAll(async () => {
     perp = new PerpetualProtocol({
       chainId: SupportedChainId.OPTIMISTIC_ETHEREUM,
@@ -29,15 +29,13 @@ describe("ClearingHouse", () => {
       ],
     })
     await perp.init()
-    await perp.connect({signer: mockSigner})
   })
-  it("Create position with correct param", async () => {
+  it("Open position with correct param", async () => {
     const tickerSymbol = "ETHUSD"
-    const slippage = new Big(0.02) // remember to transformed to Big type
-    const amountInput = new Big(100) // remember to transformed to Big type
+    const slippage = new Big(0.02)
+    const amountInput = new Big(100)
     const side = PositionSide.LONG
-    const isAmountInputBase = false // we are not using base token to open a long position here.
-
+    const isAmountInputBase = false
     const newPositionDraft = perp.clearingHouse?.createPositionDraft({
       tickerSymbol,
       side,
@@ -46,7 +44,26 @@ describe("ClearingHouse", () => {
     })
 
     await perp.clearingHouse?.openPosition(newPositionDraft!, slippage)
-    expect(getTransaction).toBeCalled()
+    expect(getTransaction).toBeCalledTimes(1)
+    const oppositeAmountBound = await newPositionDraft?.getOppositeAmountBound(slippage)
+    const expected = {
+      account: '',
+      contract: perp.contracts.clearingHouse,
+      contractName: ContractName.CLEARINGHOUSE,
+      contractFunctionName: "openPosition",
+      args: [
+        {
+          baseToken: '0x8c835dfaa34e2ae61775e80ee29e2c724c6ae2bb',
+          isBaseToQuote: false,
+          isExactInput: true,
+          amount: big2BigNumber(amountInput),
+          oppositeAmountBound: big2BigNumber(oppositeAmountBound!),
+          sqrtPriceLimitX96: 0,
+          deadline: constants.MaxUint256,
+          referralCode: '0x0000000000000000000000000000000000000000000000000000000000000000'
+        }
+      ]
+    }
+    expect(getTransaction).toBeCalledWith(expected)
   })
-
 })
