@@ -160,7 +160,7 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
                 side: makerPositionImpermanentRaw.gt(0) ? PositionSide.LONG : PositionSide.SHORT,
                 size: makerPositionImpermanentRaw.abs(),
                 openNotional: makerPositionImpermanentRawOpenNotional,
-                entryPrice: makerPositionImpermanentRawOpenNotional.div(makerPositionImpermanentRaw.abs()),
+                entryPrice: makerPositionImpermanentRawOpenNotional.div(makerPositionImpermanentRaw).abs(),
             })
         }
         return makerPositionImpermanent

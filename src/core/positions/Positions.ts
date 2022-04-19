@@ -76,7 +76,7 @@ export class Positions extends Channel<PositionsEventName> {
                         side: takerSize.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
                         size: takerSize.abs(),
                         openNotional: takerOpenNotional,
-                        entryPrice: takerOpenNotional.div(takerSize.abs()),
+                        entryPrice: takerOpenNotional.div(takerSize).abs(),
                         liquidationPrice,
                     }),
                 )
@@ -136,7 +136,7 @@ export class Positions extends Channel<PositionsEventName> {
                         side: makerSize.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
                         size: makerSize.abs(),
                         openNotional: makerOpenNotional,
-                        entryPrice: makerOpenNotional.div(makerSize.abs()),
+                        entryPrice: makerOpenNotional.div(makerSize).abs(),
                     }),
                 )
             }
