@@ -91,9 +91,9 @@ export class Position extends Channel<PositionEventName> {
     public async getExitPrice({ cache = true } = {}) {
         const { exchangedPositionSize, exchangedPositionNotional } = await this._fetch("swap", { cache })
         const exitPrice = getSwapRate({
-            amountBase: exchangedPositionSize.abs(),
-            amountQuote: exchangedPositionNotional.abs(),
-        })
+            amountBase: exchangedPositionSize,
+            amountQuote: exchangedPositionNotional,
+        }).abs()
         return exitPrice
     }
 

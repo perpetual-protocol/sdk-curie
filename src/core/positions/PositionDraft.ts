@@ -210,9 +210,9 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
     public async getEntryPrice({ cache = true } = {}) {
         const { exchangedPositionSize, exchangedPositionNotional } = await this._fetch("swap", { cache })
         const entryPrice = getSwapRate({
-            amountBase: exchangedPositionSize.abs(),
-            amountQuote: exchangedPositionNotional.abs(),
-        })
+            amountBase: exchangedPositionSize,
+            amountQuote: exchangedPositionNotional,
+        }).abs()
         return entryPrice
     }
 
