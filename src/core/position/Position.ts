@@ -1,13 +1,13 @@
-import Big from "big.js"
-import type { PerpetualProtocol } from "../PerpetualProtocol"
-
 import { Channel, ChannelEventSource, ChannelRegistry } from "../../internal"
 import { getPriceImpact, getSwapRate, getTransactionFee, getUnrealizedPnl } from "../clearingHouse/utils"
+
+import Big from "big.js"
 import { GetQuoterSwapReturn } from "../contractReader"
-import { Market } from "../markets"
+import { Market } from "../market"
+import type { PerpetualProtocol } from "../PerpetualProtocol"
 import { PositionSide } from "./types"
 
-type PositionEventName = "updated"
+type PositionEventName = "updated" | "updateError"
 
 export enum PositionType {
     TAKER = "TAKER",
@@ -19,8 +19,8 @@ interface PositionConstructorData {
     type: PositionType
     market: Market
     side: PositionSide
-    size: Big // NOTE: base asset amount
-    openNotional: Big // NOTE: quote asset amount
+    sizeAbs: Big // NOTE: base asset amount
+    openNotionalAbs: Big // NOTE: quote asset amount
     entryPrice: Big
     liquidationPrice?: Big
 }
@@ -44,15 +44,15 @@ export class Position extends Channel<PositionEventName> {
     readonly market: Market
     private _cache: Map<CacheKey, CacheValue> = new Map()
     readonly side: PositionSide
-    readonly size: Big
-    readonly openNotional: Big
+    readonly sizeAbs: Big
+    readonly openNotionalAbs: Big
     readonly entryPrice: Big
     readonly liquidationPrice?: Big
-
+    readonly type: PositionType
     private readonly _perp: PerpetualProtocol
 
     constructor(
-        { perp, market, side, size, openNotional, entryPrice, liquidationPrice }: PositionConstructorData,
+        { perp, market, side, sizeAbs, openNotionalAbs, entryPrice, liquidationPrice, type }: PositionConstructorData,
         _channelRegistry?: ChannelRegistry,
     ) {
         super(_channelRegistry)
@@ -60,12 +60,19 @@ export class Position extends Channel<PositionEventName> {
         this._perp = perp
         this.market = market
         this.side = side
-        this.size = size
-        this.openNotional = openNotional
+        this.sizeAbs = sizeAbs
+        this.openNotionalAbs = openNotionalAbs
         this.entryPrice = entryPrice
         this.liquidationPrice = liquidationPrice
+        this.type = type
+    }
+    get sizeOriginal() {
+        return this.sizeAbs.mul(this.side === PositionSide.LONG ? 1 : -1)
     }
 
+    get openNotionalOriginal() {
+        return this.openNotionalAbs.mul(this.side === PositionSide.LONG ? -1 : 1)
+    }
     /**
      * When closing position, is trader selling BASE token in exchange for QUOTE token?
      */
@@ -91,8 +98,8 @@ export class Position extends Channel<PositionEventName> {
     public async getExitPrice({ cache = true } = {}) {
         const { exchangedPositionSize, exchangedPositionNotional } = await this._fetch("swap", { cache })
         const exitPrice = getSwapRate({
-            amountBase: exchangedPositionSize.abs(),
-            amountQuote: exchangedPositionNotional.abs(),
+            amountBase: exchangedPositionSize,
+            amountQuote: exchangedPositionNotional,
         })
         return exitPrice
     }
@@ -113,7 +120,7 @@ export class Position extends Channel<PositionEventName> {
         const unrealizedPnl = getUnrealizedPnl({
             isLong,
             deltaAvailableQuote,
-            openNotional: this.openNotional,
+            openNotionalAbs: this.openNotionalAbs,
         })
         return unrealizedPnl
     }
@@ -132,8 +139,12 @@ export class Position extends Channel<PositionEventName> {
     }
 
     private async _handleMarketUpdate() {
-        await this._fetch("swap", { cache: false })
-        this.emit("updated", this)
+        try {
+            await this._fetch("swap", { cache: false })
+            this.emit("updated", this)
+        } catch (error) {
+            this.emit("updateError", error)
+        }
     }
 
     protected _getEventSourceMap() {
@@ -177,7 +188,7 @@ export class Position extends Channel<PositionEventName> {
         return (
             positionA.market.tickerSymbol === positionB.market.tickerSymbol &&
             positionA.side === positionB.side &&
-            positionA.size.eq(positionB.size)
+            positionA.sizeAbs.eq(positionB.sizeAbs)
         )
     }
 
@@ -192,7 +203,7 @@ export class Position extends Channel<PositionEventName> {
             case "swap": {
                 result = await this._perp.contractReader.getQuoterSwap({
                     baseTokenAddress: this.market.baseAddress,
-                    amount: this.size,
+                    amount: this.sizeAbs,
                     isBaseToQuote: this.isBaseToQuote,
                     isExactInput: this.isExactInput,
                 })

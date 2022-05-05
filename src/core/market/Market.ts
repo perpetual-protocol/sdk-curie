@@ -1,5 +1,4 @@
 import { Big } from "big.js"
-import type { PerpetualProtocol } from "../PerpetualProtocol"
 
 import {
     Channel,
@@ -10,23 +9,31 @@ import {
     hasNumbersChange,
 } from "../../internal"
 import {
+    TickPriceMode,
     fromSqrtX96,
     getMaxTickByTickSpacing,
     getMinTickByTickSpacing,
+    getTickFromPrice,
     poll,
-    priceToTick,
     tickToPrice,
 } from "../../utils"
-import { ContractReader } from "../contractReader"
+import { ContractReader, GetMarketStatusReturn } from "../contractReader"
+import type { PerpetualProtocol } from "../PerpetualProtocol"
 
 type MarketEventName = "updateError" | "updated"
 
-type CacheKey = "indexPrice" | "markPrice" | "indexTwapPrice"
+type CacheKey = "indexPrice" | "markPrice" | "indexTwapPrice" | "isMarketPaused" | "isMarketClosed" | "marketStatus"
 
-type CacheValue = Big
+type CacheValue = Big | boolean | GetMarketStatusReturn
+
+export enum MarketStatus {
+    ACTIVE = "ACTIVE",
+    PAUSED = "PAUSED",
+    CLOSED = "CLOSED",
+}
 
 class Market extends Channel<MarketEventName> {
-    private _cache: Map<CacheKey, Big> = new Map()
+    private _cache: Map<CacheKey, CacheValue> = new Map()
     private readonly _contractReader: ContractReader
 
     constructor(
@@ -58,11 +65,11 @@ class Market extends Channel<MarketEventName> {
         return getMinTickByTickSpacing(this.tickSpacing)
     }
 
-    getPriceToTick(price: Big) {
-        return priceToTick(price, this.tickSpacing)
+    getTickFromPrice(price: Big, mode?: TickPriceMode) {
+        return getTickFromPrice(price, this.tickSpacing, mode)
     }
 
-    getTickToPrice(tick: number) {
+    getPriceFromTick(tick: number) {
         return tickToPrice(tick)
     }
 
@@ -103,10 +110,10 @@ class Market extends Channel<MarketEventName> {
 
                 return result
             } catch (error) {
-                // TODO(deprecate): after refactoring SDK
                 this.emit("updateError", { error })
             }
         }
+
         return createMemoizedFetcher(
             getMarketData.bind(this),
             () => {
@@ -116,8 +123,13 @@ class Market extends Channel<MarketEventName> {
         )
     }
 
+    async getStatus() {
+        const { isPaused, isClosed } = await this._fetch("marketStatus", { cache: false })
+        return isClosed ? MarketStatus.CLOSED : isPaused ? MarketStatus.PAUSED : MarketStatus.ACTIVE
+    }
+
     async getPrices({ cache = true } = {}) {
-        // TODO: wrap all these promise into multi-call reader
+        // TODO: replace with multi-call
         const [markPrice, indexPrice, indexTwapPrice] = await Promise.all([
             this._fetch("markPrice", { cache }),
             this._fetch("indexPrice", { cache }),
@@ -130,6 +142,9 @@ class Market extends Channel<MarketEventName> {
         }
     }
 
+    private async _fetch(key: "indexPrice" | "markPrice" | "indexTwapPrice", obj?: { cache: boolean }): Promise<Big>
+    private async _fetch(key: "isMarketPaused" | "isMarketClosed", obj?: { cache: boolean }): Promise<boolean>
+    private async _fetch(key: "marketStatus", obj?: { cache: boolean }): Promise<GetMarketStatusReturn>
     private async _fetch(key: CacheKey, obj?: { cache: boolean }): Promise<CacheValue>
     private async _fetch(key: CacheKey, { cache = true } = {}) {
         if (this._cache.has(key) && cache) {
@@ -149,6 +164,18 @@ class Market extends Channel<MarketEventName> {
             }
             case "indexTwapPrice": {
                 result = await this._contractReader.getIndexPrice(this.baseAddress, 15 * 60)
+                break
+            }
+            case "isMarketPaused": {
+                result = await this._contractReader.isMarketPaused(this.baseAddress)
+                break
+            }
+            case "isMarketClosed": {
+                result = await this._contractReader.isMarketClosed(this.baseAddress)
+                break
+            }
+            case "marketStatus": {
+                result = await this._contractReader.getMarketStatus(this.baseAddress)
                 break
             }
         }

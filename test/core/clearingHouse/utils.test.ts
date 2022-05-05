@@ -1,6 +1,3 @@
-import Big from "big.js"
-import { PositionSide } from "../../../src/core/positions"
-
 import {
     getBuyingPower,
     getNextAccountValue,
@@ -12,6 +9,9 @@ import {
     getTransactionFee,
     getUnrealizedPnl,
 } from "../../../src/core/clearingHouse"
+
+import Big from "big.js"
+import { PositionSide } from "../../../src/core/position"
 
 describe("getTransactionFee", () => {
     test("Given that long exact 100 USD worth ETH", () => {
@@ -41,7 +41,7 @@ describe("getUnrealizedPnl", () => {
     test("Should return negative (loss) when giving a long position", () => {
         const unrealizedPnl = getUnrealizedPnl({
             isLong: true,
-            openNotional: Big(100),
+            openNotionalAbs: Big(100),
             deltaAvailableQuote: Big(80),
         }).toString()
         expect(unrealizedPnl).toEqual("-20")
@@ -50,7 +50,7 @@ describe("getUnrealizedPnl", () => {
     test("Should return positive (profit) when giving a long position", () => {
         const unrealizedPnl = getUnrealizedPnl({
             isLong: true,
-            openNotional: Big(100),
+            openNotionalAbs: Big(100),
             deltaAvailableQuote: Big(120),
         }).toString()
         expect(unrealizedPnl).toEqual("20")
@@ -59,7 +59,7 @@ describe("getUnrealizedPnl", () => {
     test("Should return positive (profit) when giving a short position", () => {
         const unrealizedPnl = getUnrealizedPnl({
             isLong: false,
-            openNotional: Big(-100),
+            openNotionalAbs: Big(100),
             deltaAvailableQuote: Big(80),
         }).toString()
         expect(unrealizedPnl).toEqual("20")
@@ -68,7 +68,7 @@ describe("getUnrealizedPnl", () => {
     test("Should return negative (loss) when giving a short position", () => {
         const unrealizedPnl = getUnrealizedPnl({
             isLong: false,
-            openNotional: Big(-100),
+            openNotionalAbs: Big(100),
             deltaAvailableQuote: Big(120),
         }).toString()
         expect(unrealizedPnl).toEqual("-20")

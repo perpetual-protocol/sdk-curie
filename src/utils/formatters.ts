@@ -1,7 +1,7 @@
+import { ERC20_DECIMAL_DIGITS, Q96 } from "../constants"
+
 import Big from "big.js"
 import { BigNumber } from "ethers"
-
-import { ERC20_DECIMAL_DIGITS, Q96 } from "../constants"
 
 export function bigNumber2Big(val: BigNumber, decimals: number = ERC20_DECIMAL_DIGITS) {
     return new Big(val.toString()).div(new Big(10).pow(decimals))
@@ -42,11 +42,17 @@ export function offsetDecimalRight(number: Big, decimal: number) {
  * @example getLeastSignificantDigit(new Big(12345)) -> 1 (12345.0)
  * @example getLeastSignificantDigit(new Big(0.12345678)) -> 6 (0.123456)
  * @example getLeastSignificantDigit(new Big(0.000012345678)) -> 10 (0.0000123456)
- * @param num the quote asset amount
+ * @param value the quote asset amount
  * @returns how many decimals need to be shown
  */
-export function getLeastSignificantDigit(num: Big, displayLength = 6, minimal = 1): number {
-    const fixed = num.toFixed()
+export function getLeastSignificantDigit(value: string | number | Big, displayLength = 6, minimal = 1): number {
+    const number = Number(value)
+    if (isNaN(number)) {
+        return minimal
+    }
+
+    const big = new Big(number || 0)
+    const fixed = big.toFixed()
     const firstNonZeroMatched = fixed.match(/[1-9]/)
     let dotIndex = fixed.indexOf(".")
 
@@ -59,10 +65,10 @@ export function getLeastSignificantDigit(num: Big, displayLength = 6, minimal = 
         return minimal
     }
 
-    if (num.gt(1)) {
+    if (big.gt(1)) {
         return Math.max(displayLength - dotIndex, minimal)
     } else {
         // -2 is for "0." these two chars
-        return displayLength + (firstNonZeroMatched.index! - 2)
+        return displayLength + (firstNonZeroMatched?.index ?? 0 - 2)
     }
 }

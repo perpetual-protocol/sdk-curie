@@ -1,9 +1,6 @@
-import Big from "big.js"
-
-import { BIG_ZERO } from "../../constants"
-import { UnauthorizedError } from "../../errors"
 import { Channel, ChannelEventSource, MemoizedFetcher, createMemoizedFetcher, hasNumberChange } from "../../internal"
-import { invariant } from "../../utils"
+import { ContractReader, GetPositionDraftRelatedDataReturn, GetQuoterSwapReturn } from "../contractReader"
+import { PerpetualProtocol, PerpetualProtocolConnected } from "../PerpetualProtocol"
 import {
     getBuyingPower,
     getNextAccountValue,
@@ -14,10 +11,13 @@ import {
     getSwapRate,
     getTransactionFee,
 } from "../clearingHouse/utils"
-import { ContractReader, GetPositionDraftRelatedDataReturn, GetQuoterSwapReturn } from "../contractReader"
-import { Market } from "../markets"
-import { PerpetualProtocol, PerpetualProtocolConnected } from "../PerpetualProtocol"
+
+import { BIG_ZERO } from "../../constants"
+import Big from "big.js"
+import { Market } from "../market"
 import { PositionSide } from "./types"
+import { UnauthorizedError } from "../../errors"
+import { invariant } from "../../utils"
 
 type CacheKey = "swap" | "relatedData"
 
@@ -210,8 +210,8 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
     public async getEntryPrice({ cache = true } = {}) {
         const { exchangedPositionSize, exchangedPositionNotional } = await this._fetch("swap", { cache })
         const entryPrice = getSwapRate({
-            amountBase: exchangedPositionSize.abs(),
-            amountQuote: exchangedPositionNotional.abs(),
+            amountBase: exchangedPositionSize,
+            amountQuote: exchangedPositionNotional,
         })
         return entryPrice
     }
@@ -324,7 +324,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getExistingPositionSize" }))
         const makerPosition = await this._perp.positions.getTakerPosition(this.market.baseAddress, { cache })
         const takerPosition = await this._perp.positions.getMakerPosition(this.market.baseAddress)
-        return Big(makerPosition?.size || 0).add(takerPosition?.size || 0)
+        return Big(makerPosition?.sizeAbs || 0).add(takerPosition?.sizeAbs || 0)
     }
 
     public async simulateOpenPosition() {

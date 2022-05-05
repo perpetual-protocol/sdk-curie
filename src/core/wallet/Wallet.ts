@@ -1,4 +1,3 @@
-import { BigNumber } from "@ethersproject/bignumber"
 import Big from "big.js"
 
 import { Vault as ContractVault } from "../../contracts/type"
@@ -8,101 +7,118 @@ import {
     DEFAULT_PERIOD,
     MemoizedFetcher,
     createMemoizedFetcher,
+    hasNumberArrChange,
     hasNumberChange,
 } from "../../internal"
-import { bigNumber2Big, poll } from "../../utils"
+import { poll } from "../../utils"
 import { ContractReader } from "../contractReader"
 import type { PerpetualProtocol } from "../PerpetualProtocol"
-import { CollateralToken } from "./CollateralToken"
+import { NonSettlementCollateralToken } from "./NonSettlementCollateralToken"
+import { SettlementToken } from "./SettlementToken"
 
-type WalletEventName = "allowanceUpdated" | "balanceCollateralUpdated" | "balanceEthUpdated" | "updateError"
+type WalletEventName =
+    | "allowanceListUpdated"
+    | "balanceListUpdated"
+    | "balanceEthUpdated"
+    | "collateralTokenPriceListUpdated"
+    | "updateError"
 
-type CacheKey = "ethBalance" | "collateralAllowance" | "collateralBalance"
-type CacheValue = Big
+type CacheKey = "allowanceList" | "balanceList" | "balanceEth" | "collateralTokenPriceList"
+type CacheValue = Big | Big[] | number[]
 
 class Wallet extends Channel<WalletEventName> {
-    private _cache: Map<CacheKey, Big> = new Map()
+    private readonly _contractVault: ContractVault // TODO: move to vault
     private readonly _contractReader: ContractReader
-    private _collateralToken: CollateralToken
-    private _contractVault: ContractVault // TODO: move to vault
+    private readonly _settlementToken: SettlementToken
+    private readonly _collateralTokenList: (NonSettlementCollateralToken | SettlementToken)[] = []
+    private _cache: Map<CacheKey, CacheValue> = new Map()
 
     constructor(private readonly _perp: PerpetualProtocol, readonly account: string) {
         super(_perp.channelRegistry)
-        this._contractReader = _perp.contractReader
         this._contractVault = _perp.contracts.vault
-        this._collateralToken = new CollateralToken(_perp)
+        this._contractReader = _perp.contractReader
+        this._settlementToken = new SettlementToken(_perp, _perp.contracts.settlementToken)
+        this._collateralTokenList.push(this._settlementToken)
+        _perp.contracts.collateralTokenMap.forEach(token => {
+            this._collateralTokenList.push(
+                new NonSettlementCollateralToken(_perp, token.contract, token.priceFeedContract),
+            )
+        })
     }
 
-    get collateralToken() {
-        return this._collateralToken
+    // NOTE: getters
+    get settlementToken() {
+        return this._settlementToken
     }
 
-    private _createFetchAndEmitAllowanceUpdated(): MemoizedFetcher {
-        return createMemoizedFetcher(
-            () => this._fetchUpdateData(() => this._fetch("collateralAllowance", { cache: false })),
-            () => this.emit("allowanceUpdated", this),
-            (a, b) => (a && b ? hasNumberChange(a, b) : true),
-        )
+    get collateralTokenList() {
+        return this._collateralTokenList
     }
 
-    private _createFetchAndEmitBalanceCollateralUpdated(): MemoizedFetcher {
-        return createMemoizedFetcher(
-            () => this._fetchUpdateData(() => this._fetch("collateralBalance", { cache: false })),
-            () => this.emit("balanceCollateralUpdated", this),
-            (a, b) => (a && b ? hasNumberChange(a, b) : true),
-        )
+    // NOTE: public methods
+    async getAllowanceList({ cache = true } = {}) {
+        return this._fetch("allowanceList", { cache })
     }
 
-    private _createFetchAndEmitBalanceEthUpdated(): MemoizedFetcher {
-        return createMemoizedFetcher(
-            () => this._fetchUpdateData(() => this._fetch("ethBalance", { cache: false })),
-            () => this.emit("balanceEthUpdated", this),
-            (a, b) => (a && b ? hasNumberChange(a, b) : true),
-        )
+    async getBalanceList({ cache = true } = {}) {
+        return this._fetch("balanceList", { cache })
     }
 
-    async approve(amount?: Big) {
-        return this._collateralToken.approve(this.account, this._contractVault.address, amount)
+    async getBalanceEth({ cache = true } = {}) {
+        return this._fetch("balanceEth", { cache })
     }
 
+    async getCollateralTokenPriceList({ cache = true } = {}) {
+        return this._fetch("collateralTokenPriceList", { cache })
+    }
+
+    async approve(token: NonSettlementCollateralToken | SettlementToken, amount?: Big) {
+        return token.approve(this.account, this._contractVault.address, amount)
+    }
+
+    // NOTE: protected methods
     protected _getEventSourceMap() {
-        const fetchAndEmitAllowanceUpdated = this._createFetchAndEmitAllowanceUpdated()
-        const allowanceUpdatedEventSource = new ChannelEventSource<WalletEventName>({
+        const fetchAndEmitAllowanceListUpdated = this._createFetchAndEmitAllowanceListUpdated()
+        const allowanceListUpdated = new ChannelEventSource<WalletEventName>({
             eventSourceStarter: () =>
-                this._collateralToken.on("Approval", async (owner: string, spender: string, allowance: BigNumber) => {
-                    if (owner === this.account && spender === this._contractVault.address) {
-                        this._cache.set("collateralAllowance", bigNumber2Big(allowance))
-                        this.emit("allowanceUpdated", this)
-                    }
-                }),
-            initEventEmitter: () => fetchAndEmitAllowanceUpdated(true),
+                poll(fetchAndEmitAllowanceListUpdated, this._perp.moduleConfigs?.wallet?.period || DEFAULT_PERIOD)
+                    .cancel,
+            initEventEmitter: () => fetchAndEmitAllowanceListUpdated(true),
         })
 
-        const fetchAndEmitBalanceCollateralUpdated = this._createFetchAndEmitBalanceCollateralUpdated()
-        const balanceCollateralUpdatedEventSource = new ChannelEventSource({
+        const fetchAndEmitBalanceListUpdated = this._createFetchAndEmitBalanceListUpdated()
+        const balanceListUpdated = new ChannelEventSource({
             eventSourceStarter: () =>
-                this._collateralToken.on("Transfer", async (from: string, to: string) => {
-                    if (from === this.account || to === this.account) {
-                        fetchAndEmitBalanceCollateralUpdated()
-                    }
-                }),
-            initEventEmitter: () => fetchAndEmitBalanceCollateralUpdated(true),
+                poll(fetchAndEmitBalanceListUpdated, this._perp.moduleConfigs?.wallet?.period || DEFAULT_PERIOD).cancel,
+            initEventEmitter: () => fetchAndEmitBalanceListUpdated(true),
         })
 
         const fetchAndEmitBalanceEthUpdated = this._createFetchAndEmitBalanceEthUpdated()
-        const balanceEthUpdatedEventSource = new ChannelEventSource({
+        const balanceEthUpdated = new ChannelEventSource({
             eventSourceStarter: () =>
                 poll(fetchAndEmitBalanceEthUpdated, this._perp.moduleConfigs?.wallet?.period || DEFAULT_PERIOD).cancel,
             initEventEmitter: () => fetchAndEmitBalanceEthUpdated(true),
         })
 
+        const fetchAndEmitCollateralTokenPriceListUpdated = this._createFetchAndEmitCollateralTokenPriceListUpdated()
+        const collateralTokenPriceListUpdated = new ChannelEventSource({
+            eventSourceStarter: () =>
+                poll(
+                    fetchAndEmitCollateralTokenPriceListUpdated,
+                    this._perp.moduleConfigs?.wallet?.period || DEFAULT_PERIOD,
+                ).cancel,
+            initEventEmitter: () => fetchAndEmitCollateralTokenPriceListUpdated(true),
+        })
+
         return {
-            allowanceUpdated: allowanceUpdatedEventSource,
-            balanceCollateralUpdated: balanceCollateralUpdatedEventSource,
-            balanceEthUpdated: balanceEthUpdatedEventSource,
+            allowanceListUpdated,
+            balanceListUpdated,
+            balanceEthUpdated,
+            collateralTokenPriceListUpdated,
         }
     }
 
+    // NOTE: private methods
     private async _fetchUpdateData<T>(fetcher: () => Promise<T>) {
         try {
             return await fetcher()
@@ -111,19 +127,10 @@ class Wallet extends Channel<WalletEventName> {
         }
     }
 
-    async getCollateralAllowance({ cache = true } = {}) {
-        return this._fetch("collateralAllowance", { cache })
-    }
-
-    async getCollateralBalance({ cache = true } = {}) {
-        return this._fetch("collateralBalance", { cache })
-    }
-
-    async getETHBalance({ cache = true } = {}) {
-        return this._fetch("ethBalance", { cache })
-    }
-
-    private async _fetch(key: CacheKey, obj?: { cache: boolean }): Promise<CacheValue>
+    private async _fetch(key: "allowanceList", obj?: { cache: boolean }): Promise<Big[]>
+    private async _fetch(key: "balanceList", obj?: { cache: boolean }): Promise<Big[]>
+    private async _fetch(key: "balanceEth", obj?: { cache: boolean }): Promise<Big>
+    private async _fetch(key: "collateralTokenPriceList", obj?: { cache: boolean }): Promise<number[]>
     private async _fetch(key: CacheKey, { cache = true } = {}) {
         if (this._cache.has(key) && cache) {
             return this._cache.get(key) as CacheValue
@@ -131,22 +138,62 @@ class Wallet extends Channel<WalletEventName> {
 
         let result
         switch (key) {
-            case "collateralAllowance": {
-                result = await this._collateralToken.getAllowance(this.account, this._contractVault.address)
+            case "allowanceList": {
+                const tokens = this._collateralTokenList
+                const spender = this._contractVault.address
+                result = await Promise.all(tokens.map(token => token.allowance(this.account, spender)))
                 break
             }
-            case "collateralBalance": {
-                result = await this._collateralToken.balanceOf(this.account)
+            case "balanceList": {
+                const tokens = this._collateralTokenList
+                result = await Promise.all(tokens.map(token => token.balanceOf(this.account)))
                 break
             }
-            case "ethBalance": {
+            case "balanceEth": {
                 result = await this._contractReader.getNativeBalance(this.account)
+                break
+            }
+            case "collateralTokenPriceList": {
+                const tokens = this._collateralTokenList
+                result = await Promise.all(tokens.map(token => token.price()))
                 break
             }
         }
         this._cache.set(key, result)
 
         return result
+    }
+
+    private _createFetchAndEmitAllowanceListUpdated(): MemoizedFetcher {
+        return createMemoizedFetcher(
+            () => this._fetchUpdateData(() => this._fetch("allowanceList", { cache: false })),
+            () => this.emit("allowanceListUpdated", this),
+            (a, b) => (a && b ? hasNumberArrChange(a, b) : true),
+        )
+    }
+
+    private _createFetchAndEmitBalanceListUpdated(): MemoizedFetcher {
+        return createMemoizedFetcher(
+            () => this._fetchUpdateData(() => this._fetch("balanceList", { cache: false })),
+            () => this.emit("balanceListUpdated", this),
+            (a, b) => (a && b ? hasNumberArrChange(a, b) : true),
+        )
+    }
+
+    private _createFetchAndEmitBalanceEthUpdated(): MemoizedFetcher {
+        return createMemoizedFetcher(
+            () => this._fetchUpdateData(() => this._fetch("balanceEth", { cache: false })),
+            () => this.emit("balanceEthUpdated", this),
+            (a, b) => (a && b ? hasNumberChange(a, b) : true),
+        )
+    }
+
+    private _createFetchAndEmitCollateralTokenPriceListUpdated(): MemoizedFetcher {
+        return createMemoizedFetcher(
+            () => this._fetchUpdateData(() => this._fetch("collateralTokenPriceList", { cache: false })),
+            () => this.emit("collateralTokenPriceListUpdated", this),
+            (a, b) => (a && b ? a !== b : true),
+        )
     }
 }
 

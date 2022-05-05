@@ -1,7 +1,9 @@
-import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
-import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
-import { ChainId, ChainName } from "../network"
 import "cross-fetch/polyfill"
+
+import { CuriePeripheryMetadataMap, MetadataUrlByChainId } from "../network"
+
+import { FailedPreconditionError } from "../errors"
+import { invariant } from "../utils"
 
 export type Pool = {
     address: string
@@ -9,6 +11,13 @@ export type Pool = {
     baseSymbol: string
     quoteAddress: string
     quoteSymbol: string
+}
+export type Collateral = {
+    address: string
+    decimals: number
+    symbol: string
+    name: string
+    priceFeedAddress: string
 }
 export type Pools = Pool[]
 export type RawPools = Pool[]
@@ -28,6 +37,7 @@ export interface ChainMetadata {
     }
     network: "optimism" | "optimismKovan"
     pools: Pool[]
+    collaterals: Collateral[]
 }
 
 export type Contracts = ChainMetadata["contracts"]
@@ -37,19 +47,56 @@ export class Metadata {
     readonly externalContracts: ExternalContracts
     readonly pools: Pools
     readonly rawPools: RawPools
-    private constructor(contracts: Contracts, externalContracts: ExternalContracts, pools: Pools) {
+    readonly collaterals: Collateral[]
+    private constructor(
+        contracts: Contracts,
+        externalContracts: ExternalContracts,
+        pools: Pools,
+        collaterals: Collateral[],
+    ) {
         this.contracts = contracts
         this.externalContracts = externalContracts
         this.rawPools = pools
         this.pools = this._normalizePools(this.rawPools)
+        this.collaterals = collaterals
     }
 
     static async create(chainId: number) {
         // NOTE: The reason we fetch contract metadata from s3 instead of using node_modules
         // is we don't need to deploy frontend again every we are gonna have a new market.
-        const { contracts, externalContracts, pools } = await Metadata._fetchMarketMetaData(chainId)
-        return new Metadata(contracts, externalContracts, pools)
+        const { contracts, externalContracts, pools, collaterals } = await Metadata._fetchMarketMetaData(chainId)
+        return new Metadata(contracts, externalContracts, pools, collaterals)
     }
+
+    static async _fetchMarketMetaData(chainId: number): Promise<ChainMetadata> {
+        const metadataUrl = MetadataUrlByChainId[chainId]
+        invariant(
+            !!metadataUrl,
+            rawError =>
+                new FailedPreconditionError({
+                    functionName: "_fetchMarketMetaData",
+                    stateName: "metadataUrl",
+                    stateValue: metadataUrl,
+                    rawError,
+                }),
+        )
+
+        const metadata = await fetch(metadataUrl)
+            .then(res => res.json())
+            .then(data => data as ChainMetadata)
+        return {
+            ...metadata,
+            contracts: {
+                ...metadata.contracts,
+                ...CuriePeripheryMetadataMap[chainId]?.contracts,
+            },
+        }
+    }
+
+    findCollateralByAddress(address: string) {
+        return this.collaterals.find(collateral => collateral.address === address)
+    }
+
     /**
      * 1. Make addresses lower case
      * 2. Remove "v" from symbols (vETH -> ETH)
@@ -66,21 +113,5 @@ export class Metadata {
             baseSymbol: pool.baseSymbol.replace(regex, "$1"),
             quoteSymbol: pool.quoteSymbol.replace(regex, "$1"),
         }))
-    }
-
-    static async _fetchMarketMetaData(chainId: number): Promise<ChainMetadata> {
-        const isOptimism = chainId === ChainId.OPTIMISTIC_ETHEREUM
-        const chainName = ChainName[chainId] || ChainName[ChainId.OPTIMISTIC_ETHEREUM]
-        const url = `https://metadata.perp.exchange/v2/${chainName}.json`
-        const metadata = await fetch(url)
-            .then(res => res.json())
-            .then(data => data as ChainMetadata)
-        return {
-            ...metadata,
-            contracts: {
-                ...metadata.contracts,
-                ...(isOptimism ? PeripheryMetadataOptimism.contracts : PeripheryMetadataOptimismKovan.contracts),
-            },
-        }
     }
 }

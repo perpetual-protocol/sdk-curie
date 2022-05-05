@@ -1,11 +1,13 @@
-import Big from "big.js"
-import { UnauthorizedError } from "../../errors"
 import { BIG_ONE, BIG_ZERO } from "../../constants"
 import { Channel, ChannelEventSource, DEFAULT_PERIOD, MemoizedFetcher, createMemoizedFetcher } from "../../internal"
-import { invariant, poll } from "../../utils"
-import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { Position, PositionType } from "./Position"
+import { invariant, poll } from "../../utils"
+
+import Big from "big.js"
+import { MarketMap } from "../market"
+import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { PositionSide } from "./types"
+import { UnauthorizedError } from "../../errors"
 
 export interface FetchPositionsReturn {
     takerPositions: Position[]
@@ -60,30 +62,68 @@ export class Positions extends Channel<PositionsEventName> {
             this._fetch("takerOpenNotionalList", { cache }),
             this._fetch("liquidationPriceList", { cache }),
         ])
-
         Object.values(marketMap).forEach((market, index) => {
-            const takerSize = takerPositionSizeList[index]
-            const takerOpenNotional = takerOpenNotionalList[index]
+            const takerSizeOriginal = takerPositionSizeList[index]
+            const takerOpenNotionalOriginal = takerOpenNotionalList[index]
+            const liquidationPriceOriginal = liquidationPriceList[index]
 
-            const liquidationPrice = liquidationPriceList[index]
-
-            if (!takerSize.eq(0)) {
+            if (!takerSizeOriginal.eq(0)) {
                 takerPositions.push(
                     new Position({
                         perp: this._perp,
                         type: PositionType.TAKER,
                         market,
-                        side: takerSize.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
-                        size: takerSize.abs(),
-                        openNotional: takerOpenNotional,
-                        entryPrice: takerOpenNotional.div(takerSize.abs()),
-                        liquidationPrice,
+                        side: takerSizeOriginal.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
+                        sizeAbs: takerSizeOriginal.abs(),
+                        openNotionalAbs: takerOpenNotionalOriginal.abs(),
+                        entryPrice: takerOpenNotionalOriginal.div(takerSizeOriginal).abs(),
+                        liquidationPrice: liquidationPriceOriginal,
                     }),
                 )
             }
         })
 
         return takerPositions
+    }
+
+    async getMakerPositions({ cache = true } = {}) {
+        const marketMap = this._perp.markets.marketMap
+
+        const [totalPositionSizeList, totalOpenNotionalList] = await Promise.all([
+            this._fetch("totalPositionSizeList", { cache }),
+            this._fetch("totalOpenNotionalList", { cache }),
+        ])
+        const takerPositions = await this.getTakerPositions({ cache })
+
+        const makerPositions: Position[] = []
+        Object.values(marketMap).forEach((market, index) => {
+            const takerPosition = takerPositions.find(
+                takerPosition => takerPosition.market.baseSymbol === market.baseSymbol,
+            )
+            const takerPositionSizeOriginal = takerPosition?.sizeOriginal || BIG_ZERO
+            const takerOpenNotionalOriginal = takerPosition?.openNotionalOriginal || BIG_ZERO
+
+            const totalPositionSizeOriginal = totalPositionSizeList[index]
+            const makerPositionSizeOriginal = totalPositionSizeOriginal.sub(takerPositionSizeOriginal)
+
+            const totalOpenNotionalOriginal = totalOpenNotionalList[index]
+            const makerOpenNotionalOriginal = totalOpenNotionalOriginal.sub(takerOpenNotionalOriginal)
+            if (!makerPositionSizeOriginal.eq(0)) {
+                makerPositions.push(
+                    new Position({
+                        perp: this._perp,
+                        type: PositionType.MAKER,
+                        market,
+                        side: makerPositionSizeOriginal.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
+                        sizeAbs: makerPositionSizeOriginal.abs(),
+                        openNotionalAbs: makerOpenNotionalOriginal.abs(),
+                        entryPrice: makerOpenNotionalOriginal.div(makerPositionSizeOriginal).abs(),
+                    }),
+                )
+            }
+        })
+
+        return makerPositions
     }
 
     async getTakerPositionByTickerSymbol(tickerSymbol: string, { cache = true } = {}) {
@@ -104,45 +144,6 @@ export class Positions extends Channel<PositionsEventName> {
     async getMakerPosition(baseAddress: string, { cache = true } = {}) {
         const positions = await this.getMakerPositions({ cache })
         return positions.find(position => position.market.baseAddress === baseAddress)
-    }
-
-    async getMakerPositions({ cache = true } = {}) {
-        const marketMap = this._perp.markets.marketMap
-
-        const [totalPositionSizeList, totalOpenNotionalList] = await Promise.all([
-            this._fetch("totalPositionSizeList", { cache }),
-            this._fetch("totalOpenNotionalList", { cache }),
-        ])
-
-        const makerPositions: Position[] = []
-        const takerPositions = await this.getTakerPositions({ cache })
-
-        Object.values(marketMap).forEach((market, index) => {
-            const takerPosition = takerPositions.find(
-                takerPosition => takerPosition.market.baseSymbol === market.baseSymbol,
-            )
-            const takerSize = takerPosition?.size.mul(takerPosition.side === PositionSide.LONG ? 1 : -1) || BIG_ZERO
-            const takerOpenNotional = takerPosition?.openNotional || BIG_ZERO
-
-            const makerSize = totalPositionSizeList[index].sub(takerSize)
-            const makerOpenNotional = totalOpenNotionalList[index].sub(takerOpenNotional)
-
-            if (!makerSize.eq(0)) {
-                makerPositions.push(
-                    new Position({
-                        perp: this._perp,
-                        type: PositionType.MAKER,
-                        market,
-                        side: makerSize.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
-                        size: makerSize.abs(),
-                        openNotional: makerOpenNotional,
-                        entryPrice: makerOpenNotional.div(makerSize.abs()),
-                    }),
-                )
-            }
-        })
-
-        return makerPositions
     }
 
     async getTotalPositionValue(baseAddress: string, { cache = true } = {}) {
@@ -167,9 +168,9 @@ export class Positions extends Channel<PositionsEventName> {
         const takerPositions = await this.getTakerPositions({ cache })
         let total = BIG_ZERO
         for (const position of takerPositions) {
-            const size = position.size.mul(position.side === PositionSide.LONG ? 1 : -1)
+            const sizeOriginal = position.sizeOriginal
             const { indexPrice } = await position.market.getPrices({ cache })
-            total = total.add(size.mul(indexPrice))
+            total = total.add(sizeOriginal.mul(indexPrice))
         }
         return total
     }
@@ -178,9 +179,9 @@ export class Positions extends Channel<PositionsEventName> {
         const makerPositions = await this.getMakerPositions({ cache })
         let total = BIG_ZERO
         for (const position of makerPositions) {
-            const size = position.size.mul(position.side === PositionSide.LONG ? 1 : -1)
+            const sizeOriginal = position.sizeOriginal
             const { indexPrice } = await position.market.getPrices({ cache })
-            total = total.add(size.mul(indexPrice))
+            total = total.add(sizeOriginal.mul(indexPrice))
         }
         return total
     }
@@ -223,7 +224,7 @@ export class Positions extends Channel<PositionsEventName> {
             return
         }
 
-        const accountValue = await this._perp.clearingHouse.getAccountValue({ cache })
+        const accountValue = await this._perp.vault.getAccountValue({ cache })
 
         return accountValue.div(totalAbsPositionValue)
     }
@@ -325,7 +326,7 @@ export class Positions extends Channel<PositionsEventName> {
 
         const marketMap = this._perp.markets.marketMap
         const trader = this._perp.wallet.account
-        const args = [marketMap, trader] as const
+        const args: [MarketMap, string] = [marketMap, trader]
 
         let result
         switch (key) {

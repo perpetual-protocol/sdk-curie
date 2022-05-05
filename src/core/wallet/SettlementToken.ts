@@ -1,24 +1,24 @@
 import { Big } from "big.js"
 import { constants } from "ethers"
-import { PerpetualProtocol } from "../PerpetualProtocol"
-import { COLLATERAL_TOKEN_DECIMAL } from "../../constants"
+
+import { SETTLEMENT_TOKEN_DECIMAL } from "../../constants"
 import { ContractName } from "../../contracts"
 import { IERC20Metadata } from "../../contracts/type"
 import { Channel, ChannelEventSource } from "../../internal"
 import { getTransaction } from "../../transactionSender"
 import { big2BigNumber } from "../../utils"
 import { ContractReader } from "../contractReader"
+import { PerpetualProtocol } from "../PerpetualProtocol"
 
 type CollateralEventName = "Approval" | "Transfer"
 
-export class CollateralToken extends Channel<CollateralEventName> {
+export class SettlementToken extends Channel<CollateralEventName> {
     private _contract: IERC20Metadata
     private _contractReader: ContractReader
-    readonly decimal = COLLATERAL_TOKEN_DECIMAL
 
-    constructor(private readonly _perp: PerpetualProtocol) {
+    constructor(private readonly _perp: PerpetualProtocol, contract: IERC20Metadata) {
         super(_perp.channelRegistry)
-        this._contract = _perp.contracts.collateralToken
+        this._contract = contract
         this._contractReader = _perp.contractReader
     }
 
@@ -26,21 +26,46 @@ export class CollateralToken extends Channel<CollateralEventName> {
         return this._contract.address
     }
 
-    async balanceOf(account: string) {
-        return this._contractReader.getCollateralTokenBalance(account)
+    // NOTE: should be a static value
+    async symbol() {
+        return "USDC"
     }
 
-    async getAllowance(account: string, spender: string) {
-        return this._contractReader.getCollateralTokenAllowance(account, spender)
+    // NOTE: should be a static value
+    async name() {
+        return "USD Coin"
+    }
+
+    // NOTE: should be a static value
+    async decimals() {
+        return SETTLEMENT_TOKEN_DECIMAL
+    }
+
+    // NOTE: should be a static value
+    async weight() {
+        return 1
+    }
+
+    async price() {
+        return 1
+    }
+
+    async balanceOf(account: string) {
+        return this._contractReader.getBalanceOfSettlementToken(account)
+    }
+
+    async allowance(account: string, spender: string) {
+        return this._contractReader.getAllowanceOfSettlementToken(account, spender)
     }
 
     async approve(account: string, spender: string, amount?: Big) {
+        const decimals = await this.decimals()
         return getTransaction<IERC20Metadata, "approve">({
             account,
             contract: this._contract,
-            contractName: ContractName.COLLATERAL_TOKEN,
+            contractName: ContractName.SETTLEMENT_TOKEN,
             contractFunctionName: "approve",
-            args: [spender, amount ? big2BigNumber(amount, COLLATERAL_TOKEN_DECIMAL) : constants.MaxUint256],
+            args: [spender, amount ? big2BigNumber(amount, decimals) : constants.MaxUint256],
         })
     }
     protected _getEventSourceMap() {

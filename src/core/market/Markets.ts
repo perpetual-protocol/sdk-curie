@@ -1,8 +1,7 @@
-import type { PerpetualProtocol } from "../PerpetualProtocol"
-
 import { ArgumentError, TypeError } from "../../errors"
 import { Pool } from "../../metadata"
 import { assertExist, getTickerSymbol, invariant, isEmptyObject } from "../../utils"
+import type { PerpetualProtocol } from "../PerpetualProtocol"
 import { Market } from "./Market"
 
 export interface MarketMap {
@@ -13,6 +12,14 @@ export type GetMarketParams =
     | { tickerSymbol: string; baseAddress?: never }
     | { tickerSymbol?: never; baseAddress: string }
 
+export interface marketInfo {
+    id: string
+    pool: string // NOTE: address
+    baseToken: string
+    quoteToken: string
+    tradingVolume: string // NOTE: Total accumulated from day 1.
+    tradingFee: string // NOTE: Total accumulated from day 1.
+}
 class Markets {
     private readonly _perp: PerpetualProtocol
     private readonly _marketMap: MarketMap
@@ -80,6 +87,9 @@ class Markets {
         )
 
         return market
+    }
+    async getMarketsBaseQuoteAmount(marketsInfo: marketInfo[]): Promise<any> {
+        return this._perp.contractReader.getMarketsBaseTokenAndQuoteTokenAmount(marketsInfo)
     }
 }
 

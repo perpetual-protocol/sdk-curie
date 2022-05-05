@@ -1,12 +1,12 @@
-import Big from "big.js"
-
 import { BIG_ZERO, ERC20_DECIMAL_DIGITS } from "../../constants"
-import { FailedPreconditionError } from "../../errors"
 import { ChannelEventSource, ChannelRegistry } from "../../internal"
-import { offsetDecimalLeft, toSqrtX96 } from "../../utils"
-import { PerpetualProtocolConnected } from "../PerpetualProtocol"
-import { Position, PositionSide, PositionType } from "../positions"
 import { LiquidityBase, LiquidityBaseConstructorData, RangeType } from "./LiquidityBase"
+import { Position, PositionSide, PositionType } from "../position"
+import { offsetDecimalLeft, toSqrtX96 } from "../../utils"
+
+import Big from "big.js"
+import { FailedPreconditionError } from "../../errors"
+import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 
 type LiquidityEventName = "updated" | "updateError"
 
@@ -85,8 +85,8 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
         try {
             await this._fetch("liquidityPendingFee", { cache: false })
             this.emit("updated", this)
-        } catch (e) {
-            this.emit("updateError", e)
+        } catch (error) {
+            this.emit("updateError", error)
         }
     }
 
@@ -158,9 +158,9 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
                 type: PositionType.MAKER,
                 market: this.market,
                 side: makerPositionImpermanentRaw.gt(0) ? PositionSide.LONG : PositionSide.SHORT,
-                size: makerPositionImpermanentRaw.abs(),
-                openNotional: makerPositionImpermanentRawOpenNotional,
-                entryPrice: makerPositionImpermanentRawOpenNotional.div(makerPositionImpermanentRaw.abs()),
+                sizeAbs: makerPositionImpermanentRaw.abs(),
+                openNotionalAbs: makerPositionImpermanentRawOpenNotional.abs(),
+                entryPrice: makerPositionImpermanentRawOpenNotional.div(makerPositionImpermanentRaw).abs(),
             })
         }
         return makerPositionImpermanent

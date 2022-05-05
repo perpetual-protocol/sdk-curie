@@ -1,6 +1,5 @@
 import Big from "big.js"
-
-import { PositionSide } from "../positions/types"
+import { PositionSide } from "./types"
 
 interface IPositionHistory {
     txId: string
@@ -8,12 +7,13 @@ interface IPositionHistory {
     baseSymbol: string
     baseTokenAddress: string
     side: PositionSide
-    size: Big // base asset amount
-    positionNotional: Big // quote asset amount
-    swappedPrice: Big
+    size: Big // NOTE: base asset amount
+    positionNotional: Big // NOTE: quote asset amount
+    price: Big
     realizedPnl: Big
     timestamp: number
     tradingFee: Big
+    isClosed?: boolean // NOTE: is a closed position created by quitting a shutdown market.
 }
 
 export class PositionHistory implements IPositionHistory {
@@ -25,9 +25,10 @@ export class PositionHistory implements IPositionHistory {
     readonly size: Big
     readonly positionNotional: Big
     readonly realizedPnl: Big
-    readonly swappedPrice: Big
+    readonly price: Big
     readonly timestamp: number
     readonly tradingFee: Big
+    readonly isClosed: boolean = false
 
     constructor({
         txId,
@@ -38,9 +39,10 @@ export class PositionHistory implements IPositionHistory {
         size,
         positionNotional,
         realizedPnl,
-        swappedPrice,
+        price,
         tradingFee,
         timestamp,
+        isClosed,
     }: IPositionHistory) {
         this.txId = txId
         this.tickerSymbol = tickerSymbol
@@ -49,9 +51,10 @@ export class PositionHistory implements IPositionHistory {
         this.side = side
         this.size = size
         this.positionNotional = positionNotional
-        this.swappedPrice = swappedPrice
+        this.price = price
         this.realizedPnl = realizedPnl
         this.timestamp = timestamp
         this.tradingFee = tradingFee
+        this.isClosed = !!isClosed
     }
 }
