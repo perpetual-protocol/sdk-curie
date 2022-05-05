@@ -85,11 +85,13 @@ export type SDKErrorContractWrite =
     | NotEnoughLiquidityError
     | PriceSlippageCheckError
 
+export type SDKErrorGraph = GraphqlQueryError
+
 export type SDKErrorRpc = RpcClosedError | RpcRejectedError | RpcIntrinsicGasTooLowError
 
 export type SDKErrorGeneral = UnauthorizedError | ArgumentError | FailedPreconditionError | TypeError
 
-export type SDKError = SDKErrorContractRead | SDKErrorContractWrite | SDKErrorRpc | SDKErrorGeneral
+export type SDKError = SDKErrorContractRead | SDKErrorContractWrite | SDKErrorGraph | SDKErrorRpc | SDKErrorGeneral
 
 export function isSDKErrorContractRead(error: any): error is SDKErrorContractRead {
     return error instanceof ContractReadError
@@ -361,6 +363,26 @@ export class UniswapV3Error extends ContractWriteError<ClearingHouse> {
     constructor(data: ContractWriteErrorParams<keyof ClearingHouse>) {
         super(data)
         this.name = ErrorName.UNISWAP_ERROR
+    }
+}
+
+// NOTE: GRAPHQL
+interface GraphqlQueryErrorParams extends SDKBaseErrorParams {
+    functionName: string
+    query: string
+    args?: { [key: string]: any }
+}
+export class GraphqlQueryError extends SDKBaseError {
+    readonly functionName: string
+    readonly query: string
+    readonly args: string
+    constructor(data: GraphqlQueryErrorParams) {
+        super(data)
+        this.name = ErrorName.GRAPHQL_QUERY_ERROR
+        this.message = `Query error, invoke ${data.functionName} failed.`
+        this.functionName = data.functionName
+        this.query = data.query
+        this.args = JSON.stringify(data.args)
     }
 }
 
