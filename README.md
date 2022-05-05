@@ -74,7 +74,7 @@ await perp.init()
 
 ## Open a position
 
-* Remember to provide your singer when connecting.
+* Remember to provide your signer when connecting.
 
 For example:
 
@@ -115,7 +115,7 @@ const position = await perp.positions.getTakerPositionByTickerSymbol(tickerSymbo
 perp.clearingHouse.closePosition(position, slippage)
 ```
 ## Add liquidity
-* Remember to provide your singer when connecting.
+* Remember to provide your signer when connecting.
 
  For example:<br />
   Use `quoteToken` to add liquidity. <br />
