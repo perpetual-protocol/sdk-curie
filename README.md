@@ -79,7 +79,7 @@ await perp.init()
 
 ## Open a position
 
--   Remember to provide your singer when connecting.
+* Remember to provide your signer when connecting.
 
 For example:
 
@@ -122,30 +122,30 @@ perp.clearingHouse.closePosition(position, slippage)
 
 ## Add liquidity
 
--   Remember to provide your singer when connecting.
+* Remember to provide your signer when connecting.
 
-For example:<br />
-Use `quoteToken` to add liquidity. <br />
-baseToken: ETH <br />
-quoteToken: USD
+ For example:<br />
+  Use `quoteToken` to add liquidity. <br />
+  baseToken: ETH <br />
+  quoteToken: USD
 
-```
-const perpParam = {
-  chainId: 10,
-  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
-}
-const perp = new PerpetualProtocol(perpParam)
-await perp.init()
-await perp.connect({ signer })
-```
 
-```
-const tickerSymbol = "ETHUSD"
-const market = perp.markets.getMarket({ tickerSymbol })
-const lowerTick = perp.market.getPriceToTick(lowerTickPrice)
-const upperTick = perp.market.getPriceToTick(upperTickPrice)
+  ```
+  const perpParam = {
+    chainId: 10,
+    providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
+  }
+ const perp = new PerpetualProtocol(perpParam)
+ await perp.init()
+ await perp.connect({ signer })
+ ```
+ ```
+ const tickerSymbol = "ETHUSD"
+ const market = perp.markets.getMarket({ tickerSymbol })
+ const lowerTick = perp.market.getPriceToTick(lowerTickPrice)
+ const upperTick = perp.market.getPriceToTick(upperTickPrice)
 
-const slippage = new Big(0.02) // remember to transformed to Big type
+ const slippage = new Big(0.02) // remember to transformed to Big type
 
 const rawBaseAmount = undefined
 const rawQuoteAmount = new Big(100) // remember to transformed to Big type
