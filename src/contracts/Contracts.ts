@@ -27,11 +27,11 @@ import {
     UniswapV3Pool__factory,
     Vault,
     Vault__factory,
+    IPriceFeed__factory,
 } from "./type"
 import { Collateral, Metadata } from "../metadata"
 import { Contract, constants } from "ethers"
 
-import { PriceFeedABI } from "./GenericABIs"
 import { Provider } from "@ethersproject/providers"
 import { Signer } from "@ethersproject/abstract-signer"
 
@@ -136,7 +136,7 @@ export class Contracts {
         tokenInfos.forEach(tokenInfo =>
             this.collateralTokenMap.set(tokenInfo.address, {
                 contract: IERC20Metadata__factory.connect(tokenInfo.address, provider),
-                priceFeedContract: new Contract(tokenInfo.priceFeedAddress, PriceFeedABI, provider),
+                priceFeedContract: IPriceFeed__factory.connect(tokenInfo.priceFeedAddress, provider),
             }),
         )
     }
