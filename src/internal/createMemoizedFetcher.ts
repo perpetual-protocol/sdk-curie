@@ -15,6 +15,18 @@ export function hasNumbersChange(prev: Record<string, Big>, next: Record<string,
     return prevKeyArr.some(key => hasNumberChange(prev[key], next[key]))
 }
 
+export function hasNumberArrChange(prev: Big[], next: Big[]): boolean {
+    if (prev.length !== next.length) {
+        return true
+    }
+    for (let i = 0; i < prev.length; i++) {
+        if (!prev[i].eq(next[i])) {
+            return true
+        }
+    }
+    return false
+}
+
 export type MemoizedFetcher = (ignoreChangeCheck?: boolean) => Promise<void>
 
 export function createMemoizedFetcher<T>(
@@ -30,10 +42,17 @@ export function createMemoizedFetcher<T>(
             return
         }
 
-        const hasChanged = compareFn(prevResults, nextResults)
-        if (ignoreChangeCheck || hasChanged) {
+        if (ignoreChangeCheck) {
             handler(nextResults)
             prevResults = nextResults
+            return
+        }
+
+        const hasChanged = compareFn(prevResults, nextResults)
+        if (hasChanged) {
+            handler(nextResults)
+            prevResults = nextResults
+            return
         }
     }
 }

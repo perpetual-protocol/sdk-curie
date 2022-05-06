@@ -7,6 +7,7 @@ const setup = () => {
         compareFn: jest.fn().mockImplementation((a: string, b: string) => a !== b),
     }
 }
+
 describe("createMemoizedFetcher", () => {
     it("should not trigger handler when fetcher result is invalid", async () => {
         const { fetcherFactory, handler, compareFn } = setup()
@@ -42,12 +43,11 @@ describe("createMemoizedFetcher", () => {
         expect(fetcher).toBeCalled()
         expect(handler).toHaveBeenCalled()
         expect(handler).toHaveBeenCalledWith("second")
-        expect(compareFn).toHaveBeenCalled()
+        expect(compareFn).not.toBeCalled()
 
         await fn(true)
         expect(fetcher).toBeCalled()
-        expect(compareFn).toHaveBeenCalled()
-        expect(compareFn).toHaveBeenCalledWith("second", "second")
+        expect(compareFn).not.toHaveBeenCalled()
         expect(handler).toHaveBeenCalledTimes(2)
         expect(handler).toHaveBeenCalledWith("second")
     })
@@ -57,23 +57,23 @@ describe("createMemoizedFetcher", () => {
         const fn = createMemoizedFetcher(fetcher, handler, compareFn)
         await fn(true)
         expect(fetcher).toBeCalled()
-        expect(compareFn).toHaveBeenCalledWith(undefined, "first")
+        expect(compareFn).not.toBeCalled()
         expect(handler).toHaveBeenCalled()
         expect(handler).toHaveBeenCalledWith("first")
 
         await fn(true)
         expect(fetcher).toBeCalled()
-        expect(compareFn).toHaveBeenCalledWith("first", "second")
+        expect(compareFn).not.toBeCalled()
         expect(handler).toHaveBeenCalled()
         expect(handler).toHaveBeenCalledWith("second")
     })
-    it("should trigger handler when fetcher result changes and  ignoreChangeCheck is false", async () => {
+    it("should trigger handler when fetcher result changes and ignoreChangeCheck is false", async () => {
         const { fetcherFactory, handler, compareFn } = setup()
         const fetcher = fetcherFactory("first")
         const fn = createMemoizedFetcher(fetcher, handler, compareFn)
         await fn(true)
         expect(fetcher).toBeCalled()
-        expect(compareFn).toHaveBeenCalledWith(undefined, "first")
+        expect(compareFn).not.toBeCalled()
         expect(handler).toHaveBeenCalled()
         expect(handler).toHaveBeenCalledWith("first")
 

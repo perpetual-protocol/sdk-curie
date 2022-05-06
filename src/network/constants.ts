@@ -1,18 +1,25 @@
-import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan/core/metadata.json"
+import { METADATA_URL_OVERRIDE_OPTIMISM, METADATA_URL_OVERRIDE_OPTIMISM_KOVAN } from "../constants"
+
 import MainMetadataOptimism from "@perp/curie-deployments/optimism/core/metadata.json"
+import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan/core/metadata.json"
+import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
+import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
 
 export enum SupportedChainId {
-    OPTIMISTIC_ETHEREUM_TESTNET_KOVAN = MainMetadataOptimismKovan.chainId,
-    OPTIMISTIC_ETHEREUM = MainMetadataOptimism.chainId,
+    OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
+    OPTIMISM = MainMetadataOptimism.chainId,
 }
 
-// TODO ChainId and ChainName might be deprecated later
-export const ChainId = {
-    OPTIMISTIC_ETHEREUM: 10,
-    OPTIMISTIC_ETHEREUM_TESTNET_KOVAN: 69,
+export const CuriePeripheryMetadataMap = {
+    [SupportedChainId.OPTIMISM_KOVAN]: PeripheryMetadataOptimismKovan,
+    [SupportedChainId.OPTIMISM]: PeripheryMetadataOptimism,
 }
 
-export const ChainName = {
-    [ChainId.OPTIMISTIC_ETHEREUM]: "optimism",
-    [ChainId.OPTIMISTIC_ETHEREUM_TESTNET_KOVAN]: "optimism-kovan",
+export const MetadataUrlByChainId = {
+    [SupportedChainId.OPTIMISM_KOVAN]: METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
+        ? METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
+        : "https://metadata.perp.exchange/v2/optimism-kovan.json",
+    [SupportedChainId.OPTIMISM]: METADATA_URL_OVERRIDE_OPTIMISM
+        ? METADATA_URL_OVERRIDE_OPTIMISM
+        : "https://metadata.perp.exchange/v2/optimism.json",
 }

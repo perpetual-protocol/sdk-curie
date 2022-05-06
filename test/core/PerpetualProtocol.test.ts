@@ -3,7 +3,7 @@ import { PerpetualProtocol, SupportedChainId } from "../../src"
 describe("PerpetualProtocol test", () => {
     it("getMarket", async () => {
         const pp = new PerpetualProtocol({
-            chainId: SupportedChainId.OPTIMISTIC_ETHEREUM,
+            chainId: SupportedChainId.OPTIMISM,
             providerConfigs: [
                 {
                     rpcUrl: "https://mainnet.optimism.io",

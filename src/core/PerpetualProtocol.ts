@@ -1,19 +1,19 @@
-import { Signer } from "@ethersproject/abstract-signer"
-import { JsonRpcSigner } from "@ethersproject/providers"
-
-import { Contracts } from "../contracts"
-import { FailedPreconditionError, InitSDKError, UnsupportedChainError } from "../errors"
 import { ChannelRegistry, ModuleConfig } from "../internal"
-import { Metadata } from "../metadata"
-import { ProviderConfig, RetryProvider, SupportedChainId, getRetryProvider, isSupportedChainId } from "../network"
-import { invariant } from "../utils"
 import { ClearingHouse, ClearingHouseConfig } from "./clearingHouse"
+import { FailedPreconditionError, InitSDKError, UnsupportedChainError } from "../errors"
+import { ProviderConfig, RetryProvider, SupportedChainId, getRetryProvider, isSupportedChainId } from "../network"
+
 import { ContractReader } from "./contractReader"
+import { Contracts } from "../contracts"
+import { JsonRpcSigner } from "@ethersproject/providers"
 import { Liquidities } from "./liquidity"
-import { Markets } from "./markets"
-import { Positions } from "./positions"
+import { Markets } from "./market"
+import { Metadata } from "../metadata"
+import { Positions } from "./position"
+import { Signer } from "@ethersproject/abstract-signer"
 import { Vault } from "./vault"
 import { Wallet } from "./wallet"
+import { invariant } from "../utils"
 
 interface ModuleConfigs {
     vault?: ModuleConfig
@@ -148,8 +148,8 @@ class PerpetualProtocol {
             this._markets = new Markets(this)
             this._clearingHouseConfig = await ClearingHouseConfig.create(this.contractReader)
             this._clearingHouse = new ClearingHouse(this)
-        } catch (e) {
-            throw new InitSDKError(e)
+        } catch (error: any) {
+            throw new InitSDKError(error)
         }
     }
 

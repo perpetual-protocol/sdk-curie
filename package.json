@@ -1,107 +1,108 @@
 {
-  "name": "@perp/v2-sdk",
-  "version": "1.0.1",
-  "license": "BSD-3-Clause",
-  "main": "dist/index.js",
-  "module": "dist/v2-sdk.esm.js",
-  "typings": "dist/src/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">= 12.22"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/perpetual-protocol/perp-sdk"
-  },
-  "scripts": {
-    "prepare": "rm -rf .husky/_ && husky install",
-    "lint": "eslint --ext .js,.ts src/",
-    "lint:fix": "eslint --ext .js,.ts --fix src/",
-    "start": "rollup -c rollup.config.js -w",
-    "docs": "typedoc --out docs --theme minimal src",
-    "prebuild": "yarn generate-type",
-    "build": "rimraf dist && rollup -c rollup.config.js",
-    "postbuild": "yarn copy-dts",
-    "test": "jest",
-    "test:watch": "jest --coverage --watch",
-    "test:prod": "npm run lint && npm run test -- --no-cache",
-    "deploy": "rimraf docs/ && npm run docs",
-    "clean-type:sdk": "rm -rf src/contracts/type",
-    "generate-type:sdk": "yarn clean-type:sdk && ts-node script/generate-type-sdk.ts",
-    "generate-type": "yarn generate-type:sdk",
-    "generate-type:staging": "cross-env APP_STAGE=staging yarn generate-type",
-    "generate-type:production": "cross-env APP_STAGE=production yarn generate-type",
-    "generate-type:dev1": "cross-env APP_STAGE=dev1 yarn generate-type",
-    "generate-type:dev2": "cross-env APP_STAGE=dev2 yarn generate-type",
-    "release": "yarn publish --non-interactive --access public",
-    "copy-dts": "copyfiles -f ./src/contracts/type/*.d.ts dist/src/contracts/type"
-  },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "prettier --write",
-      "eslint --fix"
-    ]
-  },
-  "keywords": [
-    "perpetual protocol",
-    "DeFi",
-    "sdk"
-  ],
-  "dependencies": {
-    "@babel/preset-modules": "0.1.5",
-    "@perp/curie-deployments": "2022.3.10-1646893072651",
-    "@perp/curie-periphery": "1.3.1",
-    "@uniswap/v3-core": "1.0.0",
-    "big.js": "6.1.1",
-    "cross-fetch": "3.1.5",
-    "dotenv-flow": "3.2.0",
-    "ethers": "5.4.2"
-  },
-  "devDependencies": {
-    "@babel/preset-env": "7.16.0",
-    "@commitlint/cli": "13.1.0",
-    "@commitlint/config-conventional": "13.1.0",
-    "@rollup/plugin-commonjs": "21.0.1",
-    "@rollup/plugin-json": "4.1.0",
-    "@rollup/plugin-node-resolve": "13.1.3",
-    "@typechain/ethers-v5": "7.0.0",
-    "@types/big.js": "6.1.2",
-    "@types/jest": "27.0.1",
-    "@typescript-eslint/eslint-plugin": "5.12.0",
-    "@typescript-eslint/parser": "5.12.0",
-    "commitizen": "4.2.4",
-    "cross-env": "7.0.3",
-    "cz-conventional-changelog": "3.3.0",
-    "eslint": "8.9.0",
-    "eslint-config-airbnb": "19.0.0",
-    "eslint-config-airbnb-typescript": "15.0.0",
-    "eslint-config-prettier": "8.5.0",
-    "eslint-plugin-import": "2.24.2",
-    "eslint-plugin-node": "11.1.0",
-    "eslint-plugin-prettier": "4.0.0",
-    "eslint-plugin-promise": "4.3.1",
-    "husky": "7.0.2",
-    "jest": "27.1.0",
-    "lint-staged": "11.1.2",
-    "mkdirp": "1.0.4",
-    "rimraf": "3.0.2",
-    "rollup": "2.56.3",
-    "rollup-plugin-sourcemaps": "0.6.3",
-    "rollup-plugin-typescript2": "0.30.0",
-    "standard-version": "9.3.1",
-    "ts-jest": "27.0.5",
-    "ts-lib": "0.0.5",
-    "ts-node": "10.5.0",
-    "typechain": "5.0.0",
-    "typedoc": "0.21.9",
-    "typescript": "4.4.2",
-    "copyfiles":"2.4.1"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+    "name": "@perp/sdk-curie",
+    "version": "1.1.0",
+    "license": "BSD-3-Clause",
+    "main": "dist/index.js",
+    "module": "dist/sdk-curie.esm.js",
+    "typings": "dist/src/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">= 12.22"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/perpetual-protocol/perp-sdk"
+    },
+    "scripts": {
+        "prepare": "rm -rf .husky/_ && husky install",
+        "lint": "eslint --ext .js,.ts src/",
+        "lint:fix": "eslint --ext .js,.ts --fix src/",
+        "start": "rollup -c rollup.config.js -w",
+        "clean": "rimraf dist",
+        "prebuild": "yarn generate-type",
+        "build": "yarn clean && rollup -c rollup.config.js",
+        "postbuild": "yarn copy-dts",
+        "docs": "typedoc --out docs --theme minimal src",
+        "test": "jest",
+        "test:watch": "jest --coverage --watch",
+        "test:prod": "npm run lint && npm run test -- --no-cache",
+        "deploy": "rimraf docs/ && npm run docs",
+        "clean-type:sdk": "rm -rf src/contracts/type",
+        "generate-type:sdk": "yarn clean-type:sdk && ts-node script/generate-type-sdk.ts",
+        "generate-type": "yarn generate-type:sdk",
+        "generate-type:staging": "cross-env APP_STAGE=staging yarn generate-type",
+        "generate-type:production": "cross-env APP_STAGE=production yarn generate-type",
+        "generate-type:dev1": "cross-env APP_STAGE=dev1 yarn generate-type",
+        "generate-type:dev2": "cross-env APP_STAGE=dev2 yarn generate-type",
+        "release": "yarn publish --non-interactive --access public",
+        "copy-dts": "copyfiles -f ./src/contracts/type/*.d.ts dist/src/contracts/type"
+    },
+    "lint-staged": {
+        "src/**/*.ts": [
+            "prettier --write",
+            "eslint --fix"
+        ]
+    },
+    "keywords": [
+        "perpetual protocol",
+        "DeFi",
+        "sdk"
+    ],
+    "dependencies": {
+        "@babel/preset-modules": "0.1.5",
+        "@perp/curie-deployments": "2022.4.29-1651214811720",
+        "@perp/curie-periphery": "1.3.1",
+        "@uniswap/v3-core": "1.0.0",
+        "big.js": "6.1.1",
+        "cross-fetch": "3.1.5",
+        "dotenv-flow": "3.2.0",
+        "ethers": "5.4.2"
+    },
+    "devDependencies": {
+        "@babel/preset-env": "7.16.0",
+        "@commitlint/cli": "13.1.0",
+        "@commitlint/config-conventional": "13.1.0",
+        "@rollup/plugin-commonjs": "21.0.1",
+        "@rollup/plugin-json": "4.1.0",
+        "@rollup/plugin-node-resolve": "13.1.3",
+        "@typechain/ethers-v5": "7.0.0",
+        "@types/big.js": "6.1.2",
+        "@types/jest": "27.0.1",
+        "@typescript-eslint/eslint-plugin": "5.12.0",
+        "@typescript-eslint/parser": "5.12.0",
+        "commitizen": "4.2.4",
+        "copyfiles": "2.4.1",
+        "cross-env": "7.0.3",
+        "cz-conventional-changelog": "3.3.0",
+        "eslint": "8.9.0",
+        "eslint-config-airbnb": "19.0.0",
+        "eslint-config-airbnb-typescript": "15.0.0",
+        "eslint-config-prettier": "8.5.0",
+        "eslint-plugin-import": "2.24.2",
+        "eslint-plugin-node": "11.1.0",
+        "eslint-plugin-prettier": "4.0.0",
+        "eslint-plugin-promise": "4.3.1",
+        "husky": "7.0.2",
+        "jest": "27.1.0",
+        "lint-staged": "11.1.2",
+        "mkdirp": "1.0.4",
+        "rimraf": "3.0.2",
+        "rollup": "2.56.3",
+        "rollup-plugin-sourcemaps": "0.6.3",
+        "rollup-plugin-typescript2": "0.30.0",
+        "standard-version": "9.3.1",
+        "ts-jest": "27.0.5",
+        "ts-lib": "0.0.5",
+        "ts-node": "10.5.0",
+        "typechain": "5.0.0",
+        "typedoc": "0.21.9",
+        "typescript": "4.4.2"
+    },
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
     }
-  }
 }

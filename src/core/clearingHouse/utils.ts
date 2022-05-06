@@ -1,9 +1,8 @@
-import Big from "big.js"
-
 import { BIG_ZERO } from "../../constants"
+import Big from "big.js"
 import { FailedPreconditionError } from "../../errors"
+import { PositionSide } from "../position/types"
 import { invariant } from "../../utils"
-import { PositionSide } from "../positions/types"
 
 interface GetTransactionFeeParams {
     isBaseToQuote: boolean
@@ -23,12 +22,13 @@ export function getTransactionFee({
 
 interface GetUnrealizedPnlParams {
     isLong: boolean
-    openNotional: Big
+    openNotionalAbs: Big
     deltaAvailableQuote: Big
 }
 
-export function getUnrealizedPnl({ isLong, openNotional, deltaAvailableQuote }: GetUnrealizedPnlParams) {
-    return isLong ? deltaAvailableQuote.sub(openNotional.abs()) : openNotional.abs().sub(deltaAvailableQuote)
+// NOTE: deltaAvailableQuote is absolute (always >= 0)
+export function getUnrealizedPnl({ isLong, openNotionalAbs, deltaAvailableQuote }: GetUnrealizedPnlParams) {
+    return isLong ? deltaAvailableQuote.sub(openNotionalAbs) : openNotionalAbs.sub(deltaAvailableQuote)
 }
 
 interface GetSwapRateParams {
@@ -37,7 +37,7 @@ interface GetSwapRateParams {
 }
 
 export function getSwapRate({ amountBase, amountQuote }: GetSwapRateParams) {
-    return amountQuote.div(amountBase)
+    return amountQuote.div(amountBase).abs()
 }
 
 interface GetPriceImpactParams {

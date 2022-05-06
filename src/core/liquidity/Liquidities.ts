@@ -3,7 +3,7 @@ import Big from "big.js"
 import { BIG_ZERO } from "../../constants"
 import { Channel, ChannelEventSource, DEFAULT_PERIOD, MemoizedFetcher, createMemoizedFetcher } from "../../internal"
 import { poll } from "../../utils"
-import { GetOpenLiquidityReturn, GetTotalTokenAmountInPoolAndPendingFeeReturn } from "../contractReader"
+import { GetOpenLiquidityReturn, GetTotalTokenAmountInPoolAndPendingFeeOfAllMarketsReturn } from "../contractReader"
 import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { Liquidity } from "./Liquidity"
 
@@ -14,8 +14,8 @@ export interface UpdatedDataReturn {
 
 type LiquiditiesEventName = "updateError" | "updated"
 
-type CacheKey = "getOpenLiquidities" | "totalTokenAmountInPoolAndPendingFee"
-type CacheValue = GetOpenLiquidityReturn[][] | GetTotalTokenAmountInPoolAndPendingFeeReturn[]
+type CacheKey = "openLiquidities" | "totalTokenAmountInPoolAndPendingFeeOfAllMarkets"
+type CacheValue = GetOpenLiquidityReturn | GetTotalTokenAmountInPoolAndPendingFeeOfAllMarketsReturn
 
 class Liquidities extends Channel<LiquiditiesEventName> {
     private _cache: Map<CacheKey, CacheValue> = new Map()
@@ -109,31 +109,22 @@ class Liquidities extends Channel<LiquiditiesEventName> {
         return liquidityValues.reduce((acc, value) => acc.add(value), BIG_ZERO)
     }
 
+    // total pending fees of all markets
     async getTotalPendingFees({ cache = true } = {}) {
-        const result = await this._fetch("totalTokenAmountInPoolAndPendingFee", { cache })
-        return Object.values(this._perp.markets.marketMap).reduce((acc, market, index) => {
-            acc[market.baseAddress] = result[index].totalPendingFee
+        const result = await this._fetch("totalTokenAmountInPoolAndPendingFeeOfAllMarkets", { cache })
+        return Object.values(this._perp.markets.marketMap).reduce((acc, market) => {
+            acc[market.baseAddress] = result[market.baseAddress].totalPendingFee
             return acc
         }, {} as { [marketBaseAddress: string]: Big })
     }
 
     async getTotalPendingFeeByMarket(baseAddress: string, { cache = true } = {}) {
-        const result = await this._fetch("totalTokenAmountInPoolAndPendingFee", { cache })
-
-        const index = Object.values(this._perp.markets.marketMap).findIndex(
-            market => market.baseAddress === baseAddress,
-        )
-
-        if (index === -1) {
-            return
-        }
-
-        return result[index].totalPendingFee
+        const result = await this.getTotalPendingFees({ cache })
+        return result?.[baseAddress]
     }
 
     async getOpenLiquiditiesFromMarkets({ cache = true } = {}) {
-        const liquidities = await this._fetch("getOpenLiquidities", { cache })
-
+        const liquidities = await this._fetch("openLiquidities", { cache })
         return Object.values(this._perp.markets.marketMap).reduce((acc, market, index) => {
             acc[market.baseAddress] = liquidities[index].map(
                 ({ liquidity, baseDebt, quoteDebt, lowerTick, upperTick }) =>
@@ -156,7 +147,7 @@ class Liquidities extends Channel<LiquiditiesEventName> {
     }
 
     async getOpenLiquiditiesByMarket(baseAddress: string, { cache = true } = {}) {
-        const liquidities = await this._fetch("getOpenLiquidities", { cache })
+        const liquidities = await this._fetch("openLiquidities", { cache })
         const index = Object.values(this._perp.markets.marketMap).findIndex(
             market => market.baseAddress === baseAddress,
         )
@@ -182,11 +173,11 @@ class Liquidities extends Channel<LiquiditiesEventName> {
         )
     }
 
-    private async _fetch(key: "getOpenLiquidities", obj?: { cache: boolean }): Promise<GetOpenLiquidityReturn[][]>
+    private async _fetch(key: "openLiquidities", obj?: { cache: boolean }): Promise<GetOpenLiquidityReturn>
     private async _fetch(
-        key: "totalTokenAmountInPoolAndPendingFee",
+        key: "totalTokenAmountInPoolAndPendingFeeOfAllMarkets",
         obj?: { cache: boolean },
-    ): Promise<GetTotalTokenAmountInPoolAndPendingFeeReturn[]>
+    ): Promise<GetTotalTokenAmountInPoolAndPendingFeeOfAllMarketsReturn>
     private async _fetch(key: CacheKey, { cache = true } = {}) {
         if (this._cache.has(key) && cache) {
             return this._cache.get(key) as CacheValue
@@ -198,12 +189,12 @@ class Liquidities extends Channel<LiquiditiesEventName> {
 
         let result
         switch (key) {
-            case "getOpenLiquidities": {
+            case "openLiquidities": {
                 result = await this._perp.contractReader.getOpenLiquidities(...args)
                 break
             }
-            case "totalTokenAmountInPoolAndPendingFee": {
-                result = await this._perp.contractReader.getTotalTokenAmountInPoolAndPendingFee(...args)
+            case "totalTokenAmountInPoolAndPendingFeeOfAllMarkets": {
+                result = await this._perp.contractReader.getTotalTokenAmountInPoolAndPendingFeeOfAllMarkets(...args)
                 break
             }
         }

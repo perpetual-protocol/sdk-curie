@@ -1,9 +1,9 @@
-import Big from "big.js"
-
-import { Q96 } from "../../constants"
 import { Channel, ChannelEventSource, ChannelRegistry } from "../../internal"
 import { TICK_MAX, TICK_MIN, tickToPrice } from "../../utils"
-import { Market } from "../markets"
+
+import Big from "big.js"
+import { Market } from "../market"
+import { Q96 } from "../../constants"
 
 export enum RangeType {
     RANGE_UNINITIALIZED = "RANGE_UNINITIALIZED",
@@ -24,7 +24,7 @@ export interface LiquidityBaseConstructorData {
     market: Market
 }
 
-export class LiquidityBase<EventName extends string> extends Channel<EventName | LiquidityBaseEventName> {
+export class LiquidityBase<EventName extends string = ""> extends Channel<EventName | LiquidityBaseEventName> {
     readonly market: Market
 
     // TODO: should have init value?
@@ -86,14 +86,14 @@ export class LiquidityBase<EventName extends string> extends Channel<EventName |
         }
     }
 
-    static getLiquidityForBaseToken(markPriceSqrtX96: Big, upperPriceSqrtX96: Big, amount: Big) {
+    static getLiquidityFromBaseToken(markPriceSqrtX96: Big, upperPriceSqrtX96: Big, amount: Big) {
         const numerator = amount.mul(markPriceSqrtX96).mul(upperPriceSqrtX96)
         const denominator = Q96.mul(upperPriceSqrtX96.sub(markPriceSqrtX96))
 
         return numerator.div(denominator)
     }
 
-    static getLiquidityForQuoteToken(markPriceSqrtX96: Big, lowerPriceSqrtX96: Big, amount: Big) {
+    static getLiquidityFromQuoteToken(markPriceSqrtX96: Big, lowerPriceSqrtX96: Big, amount: Big) {
         const numerator = amount.mul(Q96)
         const denominator = markPriceSqrtX96.sub(lowerPriceSqrtX96)
 
@@ -130,9 +130,8 @@ export class LiquidityBase<EventName extends string> extends Channel<EventName |
      * @param sqrtRatioCurrentX96 the current price
      * @param sqrtRatioAX96 price at lower boundary
      * @param sqrtRatioBX96 price at upper boundary
-     * @param amount0 token0 amount
-     * @param amount1 token1 amount
-     * not what core can theoretically support
+     * @param baseAmount base token amount
+     * @param quoteAmount quote token amount
      *
      * NOTE: code can be referenced to uniswap contract and sdk
      * https://github.com/Uniswap/v3-sdk/blob/main/src/utils/maxLiquidityForAmounts.ts#L68
@@ -142,19 +141,31 @@ export class LiquidityBase<EventName extends string> extends Channel<EventName |
         sqrtRatioCurrentX96: Big,
         sqrtRatioAX96: Big,
         sqrtRatioBX96: Big,
-        amount0: Big,
-        amount1: Big,
+        baseAmount: Big,
+        quoteAmount: Big,
     ): Big {
         if (sqrtRatioAX96.gt(sqrtRatioBX96)) {
+            // NOTE: A < B
             ;[sqrtRatioAX96, sqrtRatioBX96] = [sqrtRatioBX96, sqrtRatioAX96]
         }
         if (sqrtRatioCurrentX96.lte(sqrtRatioAX96)) {
-            return LiquidityBase.getLiquidityForBaseToken(sqrtRatioAX96, sqrtRatioBX96, amount0)
+            // NOTE: Current < A < B
+            return LiquidityBase.getLiquidityFromBaseToken(sqrtRatioAX96, sqrtRatioBX96, baseAmount)
         } else if (sqrtRatioCurrentX96.lt(sqrtRatioBX96)) {
-            const liquidity0 = LiquidityBase.getLiquidityForBaseToken(sqrtRatioCurrentX96, sqrtRatioBX96, amount0)
-            const liquidity1 = LiquidityBase.getLiquidityForQuoteToken(sqrtRatioCurrentX96, sqrtRatioAX96, amount1)
-            return liquidity0.lt(liquidity1) ? liquidity0 : liquidity1
+            // NOTE: A < Current < B
+            const liquidityBaseToken = LiquidityBase.getLiquidityFromBaseToken(
+                sqrtRatioCurrentX96,
+                sqrtRatioBX96,
+                baseAmount,
+            )
+            const liquidityQuoteToken = LiquidityBase.getLiquidityFromQuoteToken(
+                sqrtRatioCurrentX96,
+                sqrtRatioAX96,
+                quoteAmount,
+            )
+            return liquidityBaseToken.lt(liquidityQuoteToken) ? liquidityBaseToken : liquidityQuoteToken
         }
-        return LiquidityBase.getLiquidityForQuoteToken(sqrtRatioBX96, sqrtRatioAX96, amount1)
+        // NOTE: A < B < Current
+        return LiquidityBase.getLiquidityFromQuoteToken(sqrtRatioBX96, sqrtRatioAX96, quoteAmount)
     }
 }

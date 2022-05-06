@@ -1,8 +1,8 @@
 import { BaseContract, ethers, utils } from "ethers"
-import { ContractReadError, ContractReadErrorParams } from "../../errors"
-import { ContractName } from "../../contracts"
 
+import { ContractName } from "../../contracts"
 import { Multicall2 } from "../../contracts/type"
+import { ContractReadError, ContractReadErrorParams } from "../../errors"
 
 interface MulticallReaderConfig {
     contract: Multicall2

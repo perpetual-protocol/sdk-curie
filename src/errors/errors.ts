@@ -1,6 +1,5 @@
-import { Contract, Contract as EthersContract } from "@ethersproject/contracts"
-
 import { ClearingHouse, Exchange, OrderBook, Quoter } from "../contracts/type"
+import { Contract, Contract as EthersContract } from "@ethersproject/contracts"
 
 /* CONTRACT */
 export interface ContractNativeError extends Error {
@@ -49,6 +48,7 @@ export enum ErrorName {
     GRAPHQL_QUERY_ERROR = "graphql_query_error",
     RPC_CLOSED_ERROR = "rpc_closed_error",
     RPC_REJECTED_ERROR = "rpc_rejected_error",
+    RPC_TIMEOUT_ERROR = "rpc_timeout_error",
     RPC_MAX_RETRY_ERROR = "rpc_max_retry_error",
     RPC_GAS_TOO_LOW_ERROR = "rpc_gas_too_low_error",
 
@@ -57,6 +57,7 @@ export enum ErrorName {
     INSUFFICIENT_LIQUIDITY_ERROR = "insufficient_liquidity_error",
     UNISWAP_BROKER_INSUFFICIENT_LIQUIDITY_ERROR = "uniswap_broker_insufficient_liquidity_error",
     NOT_ENOUGH_FREE_COLLATERAL_ERROR = "not_enough_free_collateral_error",
+
     /* CONTRACT WRITE */
     CONTRACT_WRITE_ERROR = "contract_write_error",
     PRICE_SLIPPAGE_CHECK_ERROR = "price_slippage_check_error",
@@ -68,6 +69,7 @@ export enum ErrorName {
     ORDERS_NUMBER_EXCEEDS_ERROR = "orders_number_exceeds_error",
     NOT_ENOUGH_LIQUIDITY_ERROR = "not_enough_liquidity_error",
     NON_EXISTENT_OPEN_ORDER_ERROR = "non_existent_open_order_error",
+
     /* UNISWAP Error*/
     UNISWAP_ERROR = "uniswap_error",
 }
@@ -110,19 +112,20 @@ interface SDKBaseErrorParams {
 }
 abstract class SDKBaseError extends Error {
     readonly rawError?: Error
-    constructor(data: SDKBaseErrorParams) {
+    constructor(data?: SDKBaseErrorParams) {
         super()
-        this.rawError = data.rawError
+        this.rawError = data?.rawError
+        this.stack = data?.rawError?.stack
     }
 }
 
 // NOTE: init error
 export class InitSDKError extends Error {
-    constructor(e: any) {
+    constructor(error: Error) {
         super()
         this.name = ErrorName.INIT_SDK_ERROR
         this.message = `Init SDK error.`
-        this.stack = e.stack
+        this.stack = error.stack
     }
 }
 
@@ -367,19 +370,19 @@ export class UniswapV3Error extends ContractWriteError<ClearingHouse> {
 interface GraphqlQueryErrorParams extends SDKBaseErrorParams {
     functionName: string
     query: string
-    arguments?: { [key: string]: any }
+    args?: { [key: string]: any }
 }
 export class GraphqlQueryError extends SDKBaseError {
     readonly functionName: string
     readonly query: string
-    readonly arguments: string
+    readonly args: string
     constructor(data: GraphqlQueryErrorParams) {
         super(data)
         this.name = ErrorName.GRAPHQL_QUERY_ERROR
         this.message = `Query error, invoke ${data.functionName} failed.`
         this.functionName = data.functionName
         this.query = data.query
-        this.arguments = JSON.stringify(arguments)
+        this.args = JSON.stringify(data.args)
     }
 }
 
@@ -433,6 +436,14 @@ export class RpcClosedError extends SDKBaseError {
         super(data)
         this.name = ErrorName.RPC_CLOSED_ERROR
         this.message = `RPC error: websocket closed.`
+    }
+}
+
+export class RpcTimeoutError extends SDKBaseError {
+    constructor(data?: SDKBaseErrorParams) {
+        super(data)
+        this.name = ErrorName.RPC_TIMEOUT_ERROR
+        this.message = `RPC error: request timeout.`
     }
 }
 

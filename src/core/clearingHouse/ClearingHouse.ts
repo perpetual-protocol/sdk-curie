@@ -1,11 +1,3 @@
-import Big from "big.js"
-import { constants, utils } from "ethers"
-
-import { big2BigNum } from "../../utils/formatters"
-import { BIG_ONE } from "../../constants"
-import { ContractName } from "../../contracts"
-import { ClearingHouse as ContractClearingHouse } from "../../contracts/type"
-import { UnauthorizedError } from "../../errors"
 import {
     Channel,
     ChannelEventSource,
@@ -14,13 +6,21 @@ import {
     createMemoizedFetcher,
     hasNumberChange,
 } from "../../internal"
-import { getTransaction } from "../../transactionSender"
+import { PositionDraft, PositionDraftConstructorData } from "../position/PositionDraft"
 import { big2BigNumber, invariant, poll } from "../../utils"
+import { constants, utils } from "ethers"
+
+import { BIG_ONE } from "../../constants"
+import Big from "big.js"
+import { ClearingHouse as ContractClearingHouse } from "../../contracts/type"
+import { ContractName } from "../../contracts"
 import { Liquidity } from "../liquidity/Liquidity"
 import { LiquidityDraft } from "../liquidity/LiquidityDraft"
 import type { PerpetualProtocol } from "../PerpetualProtocol"
-import { Position } from "../positions/Position"
-import { PositionDraft, PositionDraftConstructorData } from "../positions/PositionDraft"
+import { Position } from "../position/Position"
+import { UnauthorizedError } from "../../errors"
+import { big2BigNum } from "../../utils/formatters"
+import { getTransaction } from "../../transactionSender"
 
 interface DraftPositionInput
     extends Omit<
@@ -54,25 +54,25 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
 
     createLiquidityDraft({
         tickerSymbol,
-        rawBaseAmount,
-        rawQuoteAmount,
-        upperTick,
         lowerTick,
+        upperTick,
+        rawQuoteAmount,
+        rawBaseAmount,
     }: {
         tickerSymbol: string
-        rawBaseAmount?: Big
-        rawQuoteAmount?: Big
-        upperTick: number
         lowerTick: number
+        upperTick: number
+        rawQuoteAmount?: Big
+        rawBaseAmount?: Big
     }) {
-        const market = this._perp.markets.getMarket({ tickerSymbol: tickerSymbol })
+        const market = this._perp.markets.getMarket({ tickerSymbol })
         return new LiquidityDraft({
             perp: this._perp,
             market,
             lowerTick,
             upperTick,
-            rawBaseAmount,
             rawQuoteAmount,
+            rawBaseAmount,
         })
     }
 
@@ -183,6 +183,21 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
                     deadline: constants.MaxUint256,
                 },
             ],
+        })
+    }
+
+    async quitMarket(tickerSymbol: string) {
+        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "quitMarket" }))
+
+        const baseAddress = this._perp.markets.getMarket({ tickerSymbol: tickerSymbol }).baseAddress
+        const account = this._perp.wallet.account
+
+        return getTransaction<ContractClearingHouse, "quitMarket">({
+            account: this._perp.wallet.account,
+            contract: this._perp.contracts.clearingHouse,
+            contractName: ContractName.CLEARINGHOUSE,
+            contractFunctionName: "quitMarket",
+            args: [account, baseAddress],
         })
     }
 
