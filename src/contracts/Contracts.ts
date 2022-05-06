@@ -13,6 +13,7 @@ import {
     Exchange__factory,
     IERC20Metadata,
     IERC20Metadata__factory,
+    IPriceFeed__factory,
     MarketRegistry,
     MarketRegistry__factory,
     Multicall2,
@@ -27,7 +28,6 @@ import {
     UniswapV3Pool__factory,
     Vault,
     Vault__factory,
-    IPriceFeed__factory,
 } from "./type"
 import { Collateral, Metadata } from "../metadata"
 import { Contract, constants } from "ethers"
@@ -132,6 +132,10 @@ export class Contracts {
         })
     }
 
+    createIERC20Token(tokenAddress: string) {
+        return IERC20Metadata__factory.connect(tokenAddress, this._provider)
+    }
+
     private _setCollateralTokenMap(tokenInfos: Collateral[], provider: Provider) {
         tokenInfos.forEach(tokenInfo =>
             this.collateralTokenMap.set(tokenInfo.address, {
@@ -139,8 +143,5 @@ export class Contracts {
                 priceFeedContract: IPriceFeed__factory.connect(tokenInfo.priceFeedAddress, provider),
             }),
         )
-    }
-    createIERC20Token(tokenAddress: string) {
-        return IERC20Metadata__factory.connect(tokenAddress, this._provider)
     }
 }
