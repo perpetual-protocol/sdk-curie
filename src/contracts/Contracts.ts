@@ -31,7 +31,7 @@ import {
 import { Collateral, Metadata } from "../metadata"
 import { Contract, constants } from "ethers"
 
-import { PriceFeedABI } from "./ExternalContractABIs"
+import { PriceFeedABI } from "./GenericABIs"
 import { Provider } from "@ethersproject/providers"
 import { Signer } from "@ethersproject/abstract-signer"
 

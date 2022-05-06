@@ -1,5 +1,4 @@
-// TODO: deprecate this & replace with ChainlinkPriceFeed/BandPriceFeed/EmergencyPriceFeed
-
+// NOTE: The generic ABI definition for both the ChainLink and the Band price feed contracts.
 export const PriceFeedABI = [
     {
         inputs: [],
