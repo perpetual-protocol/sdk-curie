@@ -1,4 +1,4 @@
-import { ClearingHouse, Exchange, OrderBook, Quoter } from "../contracts/type"
+import { ClearingHouse, Exchange, OrderBook, Quoter, Vault } from "../contracts/type"
 import { Contract, Contract as EthersContract } from "@ethersproject/contracts"
 
 /* CONTRACT */
@@ -22,6 +22,10 @@ export enum ContractErrorCode {
     PRICE_SLIPPAGE_CHECK_FAILS_TMRS = "CH_TMRS",
     PRICE_SLIPPAGE_CHECK_FAILS_TLRL = "CH_TLRL",
     PRICE_SLIPPAGE_CHECK_FAILS_TMRL = "CH_TMRL",
+
+    // the following 2 error might be occurred when deposit collateral
+    COLLATERAL_DEPOSIT_FAILS_GTDC = "V_GTDC",
+    COLLATERAL_DEPOSIT_FAILS_GTSTBC = "V_GTSTBC",
 
     ALREADY_OVER_PRICE_LIMIT_ONCE = "EX_AOPLO",
     OVER_PRICE_LIMIT_BEFORE_SWAP = "EX_OPLBS",
@@ -61,6 +65,7 @@ export enum ErrorName {
     /* CONTRACT WRITE */
     CONTRACT_WRITE_ERROR = "contract_write_error",
     PRICE_SLIPPAGE_CHECK_ERROR = "price_slippage_check_error",
+    COLLATERAL_DEPOSIT_CAP_ERROR = "collateral_deposit_cap_error",
     ALREADY_OVER_PRICE_LIMIT_ONCE_ERROR = "already_over_price_limit_once_error",
     OVER_PRICE_LIMIT_BEFORE_SWAP_ERROR = "over_price_limit_before_swap_error",
     OVER_PRICE_LIMIT_AFTER_SWAP_ERROR = "over_price_limit_after_swap_error",
@@ -295,9 +300,16 @@ export type ContractWriteErrorParams<ContractFunctionName> = Omit<
     "contractErrorCode"
 >
 
+export class CollateralDepositCapError extends ContractWriteError<Vault> {
+    constructor(data: ContractWriteErrorParams<keyof Vault>) {
+        super({ ...data })
+        this.name = ErrorName.COLLATERAL_DEPOSIT_CAP_ERROR
+    }
+}
+
 export class PriceSlippageCheckError extends ContractWriteError<ClearingHouse> {
     constructor(data: ContractWriteErrorParams<keyof ClearingHouse>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.PRICE_SLIPPAGE_CHECK_FAILS_PSCF })
+        super({ ...data })
         this.name = ErrorName.PRICE_SLIPPAGE_CHECK_ERROR
     }
 }
