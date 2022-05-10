@@ -719,14 +719,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const { base, quote } = await this.contracts.clearingHouse.callStatic.openPosition(args)
-
-                const _deltaBase = bigNumber2Big(base)
-                const _deltaQuote = bigNumber2Big(quote)
-
-                return {
-                    deltaBase: _deltaBase,
-                    deltaQuote: _deltaQuote,
-                }
+                return { deltaBase: bigNumber2Big(base), deltaQuote: bigNumber2Big(quote) }
             },
             (rawError: any) => {
                 const params: ContractReadErrorParams<"openPosition"> = {
@@ -736,15 +729,16 @@ export class ContractReader {
                     rawError,
                 }
 
-                const code = extractContractErrorCode(rawError)
-                if (code === ContractErrorCode.NOT_ENOUGH_FREE_COLLATERAL) {
-                    return new NotEnoughFreeCollateralError(params)
-                } else if (code === ContractErrorCode.UNISWAP_BROKER_INSUFFICIENT_LIQUIDITY) {
-                    return new UniswapBrokerInsufficientLiquidityError(params)
-                } else if (code === ContractErrorCode.OVER_PRICE_LIMIT_AFTER_SWAP) {
+                const contractErrorCode = extractContractErrorCode(rawError)
+                if (contractErrorCode === ContractErrorCode.NOT_ENOUGH_FREE_COLLATERAL) {
+                    return new NotEnoughFreeCollateralError({ ...params, contractErrorCode })
+                } else if (contractErrorCode === ContractErrorCode.UNISWAP_BROKER_INSUFFICIENT_LIQUIDITY) {
+                    return new UniswapBrokerInsufficientLiquidityError({ ...params, contractErrorCode })
+                } else if (contractErrorCode === ContractErrorCode.OVER_PRICE_LIMIT_AFTER_SWAP) {
                     return new OverPriceLimitAfterSwapError({
                         contractName: ContractName.CLEARINGHOUSE,
                         contractFunctionName: "swap",
+                        contractErrorCode,
                         rawError,
                     })
                 }
