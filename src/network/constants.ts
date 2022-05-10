@@ -1,25 +1,67 @@
-import { METADATA_URL_OVERRIDE_OPTIMISM, METADATA_URL_OVERRIDE_OPTIMISM_KOVAN } from "../constants"
+import { METADATA_URL_OVERRIDE_OPTIMISM, METADATA_URL_OVERRIDE_OPTIMISM_KOVAN, TRACK } from "../constants"
 
 import MainMetadataOptimism from "@perp/curie-deployments/optimism/core/metadata.json"
 import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan/core/metadata.json"
+import MainMetadataOptimismKovanDev1 from "@perp/curie-deployments/optimism-kovan-dev1/core/metadata.json"
+import MainMetadataOptimismKovanDev2 from "@perp/curie-deployments/optimism-kovan-dev2/core/metadata.json"
 import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
 import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
 
-export enum SupportedChainId {
+export enum Track {
+    DEV1 = "DEV1",
+    DEV2 = "DEV2",
+    CANARY = "CANARY",
+    BETA = "BETA",
+    PRODUCTION = "PRODUCTION",
+}
+
+export enum ChainId {
     OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
     OPTIMISM = MainMetadataOptimism.chainId,
 }
 
+// export enum SupportedChainIdDev {
+//     OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
+// }
+// export enum SupportedChainIdCanary {
+//     OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
+//     OPTIMISM = MainMetadataOptimism.chainId,
+// }
+// export enum SupportedChainId {
+//     OPTIMISM = MainMetadataOptimism.chainId,
+// }
+
+export const SupportedChainIdByTrack: {
+    [key in Track]: { [key: string]: ChainId }
+} = {
+    [Track.PRODUCTION]: {
+        OPTIMISM: MainMetadataOptimism.chainId,
+    },
+    [Track.BETA]: {
+        OPTIMISM_KOVAN: MainMetadataOptimismKovan.chainId,
+    },
+    [Track.CANARY]: {
+        OPTIMISM_KOVAN: MainMetadataOptimismKovan.chainId,
+        OPTIMISM: MainMetadataOptimism.chainId,
+    },
+    [Track.DEV1]: {
+        OPTIMISM_KOVAN: MainMetadataOptimismKovanDev1.chainId,
+    },
+    [Track.DEV2]: {
+        OPTIMISM_KOVAN: MainMetadataOptimismKovanDev2.chainId,
+    },
+}
+
 export const CuriePeripheryMetadataMap = {
-    [SupportedChainId.OPTIMISM_KOVAN]: PeripheryMetadataOptimismKovan,
-    [SupportedChainId.OPTIMISM]: PeripheryMetadataOptimism,
+    [ChainId.OPTIMISM_KOVAN]: PeripheryMetadataOptimismKovan,
+    [ChainId.OPTIMISM]: PeripheryMetadataOptimism,
 }
 
 export const MetadataUrlByChainId = {
-    [SupportedChainId.OPTIMISM_KOVAN]: METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
+    [ChainId.OPTIMISM_KOVAN]: METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
         ? METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
         : "https://metadata.perp.exchange/v2/optimism-kovan.json",
-    [SupportedChainId.OPTIMISM]: METADATA_URL_OVERRIDE_OPTIMISM
+    [ChainId.OPTIMISM]: METADATA_URL_OVERRIDE_OPTIMISM
         ? METADATA_URL_OVERRIDE_OPTIMISM
         : "https://metadata.perp.exchange/v2/optimism.json",
 }
