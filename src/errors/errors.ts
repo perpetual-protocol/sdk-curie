@@ -15,18 +15,13 @@ export enum ContractErrorCode {
     NOT_ENOUGH_FREE_COLLATERAL = "CH_NEFCI",
 
     /* WRITE */
-    PRICE_SLIPPAGE_CHECK_FAILS_PSCF = "CH_PSCF", // occurs when add/remove liquidity
-
-    // the following 4 error might be occurred when open/close position
+    PRICE_SLIPPAGE_CHECK_FAILS_PSCF = "CH_PSCF",
     PRICE_SLIPPAGE_CHECK_FAILS_TLRS = "CH_TLRS",
     PRICE_SLIPPAGE_CHECK_FAILS_TMRS = "CH_TMRS",
     PRICE_SLIPPAGE_CHECK_FAILS_TLRL = "CH_TLRL",
     PRICE_SLIPPAGE_CHECK_FAILS_TMRL = "CH_TMRL",
-
-    // the following 2 error might be occurred when deposit collateral
     COLLATERAL_DEPOSIT_FAILS_GTDC = "V_GTDC",
     COLLATERAL_DEPOSIT_FAILS_GTSTBC = "V_GTSTBC",
-
     ALREADY_OVER_PRICE_LIMIT_ONCE = "EX_AOPLO",
     OVER_PRICE_LIMIT_BEFORE_SWAP = "EX_OPLBS",
     OVER_PRICE_LIMIT_AFTER_SWAP = "EX_OPLAS",
@@ -36,9 +31,9 @@ export enum ContractErrorCode {
     NOT_ENOUGH_LIQUIDITY = "OB_NEL",
     NON_EXISTENT_OPEN_ORDER = "OB_NEO",
 
-    /* Uniswap error */
+    /* UNISWAP ERROR */
     LIQUIDITY_MATH_ERROR_LS = "LS", // https://github.com/Uniswap/v3-core/blob/f03155670ec1667406b83a539e23dcccf32a03bc/contracts/libraries/LiquidityMath.sol#L12
-    LIQUIDITY_MATH_ERROR_LA = "LA",
+    LIQUIDITY_MATH_ERROR_LA = "LA", // https://github.com/Uniswap/v3-core/blob/f03155670ec1667406b83a539e23dcccf32a03bc/contracts/libraries/LiquidityMath.sol#L14
 }
 
 /* SDK */
@@ -295,10 +290,8 @@ export class ContractWriteError<ContractType extends EthersContract> extends SDK
     }
 }
 
-export type ContractWriteErrorParams<ContractFunctionName> = Omit<
-    ContractWriteBaseErrorParams<ContractFunctionName>,
-    "contractErrorCode"
->
+export type ContractWriteErrorParams<ContractFunctionName> = ContractWriteBaseErrorParams<ContractFunctionName> &
+    Required<Pick<ContractWriteBaseErrorParams<ContractFunctionName>, "contractErrorCode">>
 
 export class CollateralDepositCapError extends ContractWriteError<Vault> {
     constructor(data: ContractWriteErrorParams<keyof Vault>) {
@@ -316,56 +309,56 @@ export class PriceSlippageCheckError extends ContractWriteError<ClearingHouse> {
 
 export class AlreadyOverPriceLimitOnceError extends ContractWriteError<Exchange> {
     constructor(data: ContractWriteErrorParams<keyof Exchange>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.ALREADY_OVER_PRICE_LIMIT_ONCE })
+        super({ ...data })
         this.name = ErrorName.ALREADY_OVER_PRICE_LIMIT_ONCE_ERROR
     }
 }
 
 export class OverPriceLimitBeforeSwapError extends ContractWriteError<Exchange> {
     constructor(data: ContractWriteErrorParams<keyof Exchange>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.OVER_PRICE_LIMIT_BEFORE_SWAP })
+        super({ ...data })
         this.name = ErrorName.OVER_PRICE_LIMIT_BEFORE_SWAP_ERROR
     }
 }
 
 export class OverPriceLimitAfterSwapError extends ContractWriteError<Exchange> {
     constructor(data: ContractWriteErrorParams<keyof Exchange>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.OVER_PRICE_LIMIT_AFTER_SWAP })
+        super({ ...data })
         this.name = ErrorName.OVER_PRICE_LIMIT_AFTER_SWAP_ERROR
     }
 }
 
 export class PositionSizeIsZeroError extends ContractWriteError<ClearingHouse> {
     constructor(data: ContractWriteErrorParams<keyof ClearingHouse>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.POSITION_SIZE_IS_ZERO })
+        super({ ...data })
         this.name = ErrorName.POSITION_SIZE_IS_ZERO_ERROR
     }
 }
 
 export class NotEnoughAccountValueByImRatioError extends ContractWriteError<ClearingHouse> {
     constructor(data: ContractWriteErrorParams<keyof ClearingHouse>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.NOT_ENOUGH_ACCOUNT_VALUE_BY_IM_RATIO })
+        super({ ...data })
         this.name = ErrorName.NOT_ENOUGH_ACCOUNT_VALUE_BY_IM_RATIO_ERROR
     }
 }
 
 export class OrdersNumberExceedsError extends ContractWriteError<OrderBook> {
     constructor(data: ContractWriteErrorParams<keyof OrderBook>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.ORDERS_NUMBER_EXCEEDS })
+        super({ ...data })
         this.name = ErrorName.ORDERS_NUMBER_EXCEEDS_ERROR
     }
 }
 
 export class NotEnoughLiquidityError extends ContractWriteError<OrderBook> {
     constructor(data: ContractWriteErrorParams<keyof OrderBook>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.NOT_ENOUGH_LIQUIDITY })
+        super({ ...data })
         this.name = ErrorName.NOT_ENOUGH_LIQUIDITY_ERROR
     }
 }
 
 export class NonExistentOpenOrderError extends ContractWriteError<OrderBook> {
     constructor(data: ContractWriteErrorParams<keyof OrderBook>) {
-        super({ ...data, contractErrorCode: ContractErrorCode.NON_EXISTENT_OPEN_ORDER })
+        super({ ...data })
         this.name = ErrorName.NON_EXISTENT_OPEN_ORDER_ERROR
     }
 }
@@ -373,7 +366,7 @@ export class NonExistentOpenOrderError extends ContractWriteError<OrderBook> {
 // NOTE: if wanna see the detail message of uniswap error, see the rawError fields
 export class UniswapV3Error extends ContractWriteError<ClearingHouse> {
     constructor(data: ContractWriteErrorParams<keyof ClearingHouse>) {
-        super(data)
+        super({ ...data })
         this.name = ErrorName.UNISWAP_ERROR
     }
 }

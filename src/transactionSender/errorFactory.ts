@@ -1,6 +1,6 @@
-import { ClearingHouse, Exchange, OrderBook } from "../contracts/type"
 import {
     AlreadyOverPriceLimitOnceError,
+    CollateralDepositCapError,
     ContractErrorCode,
     ContractWriteError,
     ErrorName,
@@ -17,8 +17,9 @@ import {
     extractContractErrorCode,
     isRpcNativeGasTooLowError,
     isRpcNativeUserDeniedError,
-    CollateralDepositCapError,
 } from "../errors"
+import { ClearingHouse, Exchange, OrderBook } from "../contracts/type"
+
 import { TransactionMetadata } from "."
 
 export function getTransactionErrorFactory({
