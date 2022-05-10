@@ -1,6 +1,6 @@
-import { ClearingHouse, Exchange, OrderBook } from "../contracts/type"
 import {
     AlreadyOverPriceLimitOnceError,
+    CollateralDepositCapError,
     ContractErrorCode,
     ContractWriteError,
     ErrorName,
@@ -18,6 +18,8 @@ import {
     isRpcNativeGasTooLowError,
     isRpcNativeUserDeniedError,
 } from "../errors"
+import { ClearingHouse, Exchange, OrderBook } from "../contracts/type"
+
 import { TransactionMetadata } from "."
 
 export function getTransactionErrorFactory({
@@ -60,6 +62,11 @@ export function getTransactionErrorFactory({
             ErrorClass = PriceSlippageCheckError
             break
         }
+        case ContractErrorCode.COLLATERAL_DEPOSIT_FAILS_GTDC:
+        case ContractErrorCode.COLLATERAL_DEPOSIT_FAILS_GTSTBC: {
+            ErrorClass = CollateralDepositCapError
+            break
+        }
         case ContractErrorCode.ALREADY_OVER_PRICE_LIMIT_ONCE: {
             ErrorClass = AlreadyOverPriceLimitOnceError
             break
@@ -99,6 +106,7 @@ export function getTransactionErrorFactory({
     return new ErrorClass({
         contractName,
         contractFunctionName,
+        contractErrorCode: errorCode,
         args,
         rawError: error,
         txPayload,
