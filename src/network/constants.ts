@@ -1,4 +1,4 @@
-import { METADATA_URL_OVERRIDE_OPTIMISM, METADATA_URL_OVERRIDE_OPTIMISM_KOVAN, TRACK } from "../constants"
+import { METADATA_URL_OVERRIDE_OPTIMISM, METADATA_URL_OVERRIDE_OPTIMISM_KOVAN, TRACK, Track } from "../constants"
 
 import MainMetadataOptimism from "@perp/curie-deployments/optimism/core/metadata.json"
 import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan/core/metadata.json"
@@ -7,31 +7,12 @@ import MainMetadataOptimismKovanDev2 from "@perp/curie-deployments/optimism-kova
 import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
 import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
 
-export enum Track {
-    DEV1 = "DEV1",
-    DEV2 = "DEV2",
-    CANARY = "CANARY",
-    BETA = "BETA",
-    PRODUCTION = "PRODUCTION",
-}
-
-export enum ChainId {
+enum ChainId {
     OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
     OPTIMISM = MainMetadataOptimism.chainId,
 }
 
-// export enum SupportedChainIdDev {
-//     OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
-// }
-// export enum SupportedChainIdCanary {
-//     OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
-//     OPTIMISM = MainMetadataOptimism.chainId,
-// }
-// export enum SupportedChainId {
-//     OPTIMISM = MainMetadataOptimism.chainId,
-// }
-
-export const SupportedChainIdByTrack: {
+const SupportedChainIdByTrack: {
     [key in Track]: { [key: string]: ChainId }
 } = {
     [Track.PRODUCTION]: {
@@ -51,6 +32,7 @@ export const SupportedChainIdByTrack: {
         OPTIMISM_KOVAN: MainMetadataOptimismKovanDev2.chainId,
     },
 }
+export const SupportedChainId = TRACK ? SupportedChainIdByTrack[TRACK] : {}
 
 export const CuriePeripheryMetadataMap = {
     [ChainId.OPTIMISM_KOVAN]: PeripheryMetadataOptimismKovan,

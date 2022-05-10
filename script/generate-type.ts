@@ -2,13 +2,16 @@ import "dotenv-flow/config"
 
 import { glob, runTypeChain } from "typechain"
 
-const getABIEnv = (track: string | undefined) => {
+const getABIRefByTrack = (track: string | undefined) => {
     switch (track) {
         case "dev1":
             return "optimism-kovan-dev-1"
         case "dev2":
             return "optimism-kovan-dev-2"
         case "canary":
+            // Canary supports both Kovan and Mainnet but we gen-type with Kovan's ABI.
+            // When the Kovan ABI contains new features that has not yet been deployed to Mainnet,
+            // it is expected to fail when using Mainnet.
             return "optimism-kovan"
         case "rc": // release candidate
             return "optimism-kovan"
@@ -22,9 +25,7 @@ const getABIEnv = (track: string | undefined) => {
 async function main() {
     const cwd = process.cwd()
 
-    // NOTE: will not use the stage variable to decide which abi ref to use after we make the SDK bundle script independently
-    const abiRef = getABIEnv(process.env.TRACK)
-
+    const abiRef = getABIRefByTrack(process.env.TRACK)
     // find all files matching the glob
     const allFiles = glob(cwd, [
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/core/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
