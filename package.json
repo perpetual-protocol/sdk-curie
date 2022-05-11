@@ -16,7 +16,7 @@
         "url": "https://github.com/perpetual-protocol/sdk-curie"
     },
     "scripts": {
-        "prepare": "rm -rf .husky/_ && husky install",
+        "commit": "cz",
         "lint": "eslint --ext .js,.ts src/",
         "lint:fix": "eslint --ext .js,.ts --fix src/",
         "start": "rollup -c rollup.config.js -w",
@@ -36,6 +36,7 @@
         "prebuild": "yarn generate-type",
         "build": "yarn clean && rollup -c rollup.config.js",
         "postbuild": "yarn copy-dts",
+        "prepare": "rm -rf .husky/_ && husky install",
         "release": "yarn publish --non-interactive --access public"
     },
     "lint-staged": {
@@ -71,6 +72,7 @@
         "@types/jest": "27.0.1",
         "@typescript-eslint/eslint-plugin": "5.12.0",
         "@typescript-eslint/parser": "5.12.0",
+        "commitizen": "4.2.4",
         "copyfiles": "2.4.1",
         "cross-env": "7.0.3",
         "cz-conventional-changelog": "3.3.0",
