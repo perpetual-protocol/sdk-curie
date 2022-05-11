@@ -121,7 +121,8 @@ export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
                 break
             }
             case "decimals": {
-                result = await this._contract.decimals()
+                const decimals = this._metadataInfo?.decimals
+                result = decimals ? decimals : await this._contract.decimals()
                 break
             }
             case "weight": {
