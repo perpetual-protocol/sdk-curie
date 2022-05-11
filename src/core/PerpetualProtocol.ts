@@ -1,7 +1,7 @@
+import { ChainId, ProviderConfig, RetryProvider, getRetryProvider, isSupportedChainId } from "../network"
 import { ChannelRegistry, ModuleConfig } from "../internal"
 import { ClearingHouse, ClearingHouseConfig } from "./clearingHouse"
 import { FailedPreconditionError, InitSDKError, UnsupportedChainError } from "../errors"
-import { ProviderConfig, RetryProvider, SupportedChainId, getRetryProvider, isSupportedChainId } from "../network"
 
 import { ContractReader } from "./contractReader"
 import { Contracts } from "../contracts"
@@ -25,7 +25,7 @@ interface ModuleConfigs {
 }
 
 interface PerpetualProtocolConfig {
-    chainId: SupportedChainId
+    chainId: ChainId
     providerConfigs: ProviderConfig[]
     moduleConfigs?: ModuleConfigs
 }
@@ -92,7 +92,7 @@ class PerpetualProtocol {
                     stateValue: "uninitialized",
                 }),
         )
-        return this._markets!
+        return this._markets
     }
     get clearingHouseConfig() {
         invariant(
@@ -104,7 +104,7 @@ class PerpetualProtocol {
                     stateValue: "uninitialized",
                 }),
         )
-        return this._clearingHouseConfig!
+        return this._clearingHouseConfig
     }
 
     get clearingHouse() {
@@ -148,8 +148,8 @@ class PerpetualProtocol {
             this._markets = new Markets(this)
             this._clearingHouseConfig = await ClearingHouseConfig.create(this.contractReader)
             this._clearingHouse = new ClearingHouse(this)
-        } catch (error: any) {
-            throw new InitSDKError(error)
+        } catch (error: unknown) {
+            throw new InitSDKError(error as Error)
         }
     }
 

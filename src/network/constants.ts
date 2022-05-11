@@ -7,7 +7,7 @@ import MainMetadataOptimismKovanDev2 from "@perp/curie-deployments/optimism-kova
 import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
 import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
 
-enum ChainId {
+export enum ChainId {
     OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
     OPTIMISM = MainMetadataOptimism.chainId,
 }
@@ -18,7 +18,7 @@ const SupportedChainIdByTrack: {
     [Track.PRODUCTION]: {
         OPTIMISM: MainMetadataOptimism.chainId,
     },
-    [Track.BETA]: {
+    [Track.RC]: {
         OPTIMISM_KOVAN: MainMetadataOptimismKovan.chainId,
     },
     [Track.CANARY]: {
@@ -32,7 +32,7 @@ const SupportedChainIdByTrack: {
         OPTIMISM_KOVAN: MainMetadataOptimismKovanDev2.chainId,
     },
 }
-export const SupportedChainId = TRACK ? SupportedChainIdByTrack[TRACK] : {}
+export const SupportedChainId = SupportedChainIdByTrack[TRACK]
 
 export const CuriePeripheryMetadataMap = {
     [ChainId.OPTIMISM_KOVAN]: PeripheryMetadataOptimismKovan,
