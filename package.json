@@ -16,7 +16,6 @@
         "url": "https://github.com/perpetual-protocol/sdk-curie"
     },
     "scripts": {
-        "commit": "cz",
         "lint": "eslint --ext .js,.ts src/",
         "lint:fix": "eslint --ext .js,.ts --fix src/",
         "start": "rollup -c rollup.config.js -w",
