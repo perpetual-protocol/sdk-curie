@@ -57,7 +57,7 @@ jobs:
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package
-        if: always()
+        if: ${{ always() }}
         needs: [publish-npm-package]
         runs-on: ubuntu-latest
         steps:
