@@ -1,9 +1,9 @@
 import { METADATA_URL_OVERRIDE_OPTIMISM, METADATA_URL_OVERRIDE_OPTIMISM_KOVAN } from "../constants"
 
 // import MainMetadataOptimism from "@perp/curie-deployments/optimism/core/metadata.json"
-import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan/core/metadata.json"
+import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan-dev1/core/metadata.json"
 // import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
-import PeripheryMetadataOptimismKovan from "@perp/curie-periphery/metadata/optimismKovan.json"
+import PeripheryMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan-dev1/periphery/metadata.json"
 
 export enum SupportedChainId {
     OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
