@@ -1,7 +1,6 @@
-name: Publish NPM package
+name: Publish NPM (dev2)
 on:
-    release:
-        types: [created]
+    workflow_dispatch:
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
@@ -29,22 +28,8 @@ jobs:
             - name: Set variables
               id: set-variables
               run: |
-                  echo "@perp/sdk-curie  version ${{ steps.version.outputs.value }}"
                   echo "::set-output name=pkg_version::${{ steps.version.outputs.value }}"
-
-                  if [[ ${{ github.event.release.tag_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
-                  && [[ ${{ github.event.release.target_commitish }} =~ ^release\/[0-9]+\.[0-9]+\.[0-9x]+$ ]]
-                  then
-                    echo "::set-output name=release_env::production"
-
-                  elif [[ ${{ github.event.release.tag_name }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+-alpha$ ]] \
-                  && [[ ${{ github.event.release.target_commitish }} =~ ^release\/[0-9]+\.[0-9]+\.[0-9x]+-alpha$ ]]
-                  then
-                    echo "::set-output name=release_env::staging"
-                  else
-                    echo "Your tag and branch are not matched."
-                    exit 1
-                  fi
+                  echo "::set-output name=release_env::dev2"
 
               # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
             - name: Get Yarn cache directory
@@ -62,7 +47,7 @@ jobs:
               run: yarn install --prefer-offline --frozen-lockfile
 
             - name: Build contract package
-              run: yarn build
+              run: TRACK=dev2 yarn build
               env:
                   APP_STAGE: ${{ steps.set-variables.outputs.release_env }}
 
@@ -77,18 +62,18 @@ jobs:
         needs: [publish-npm-package]
         runs-on: ubuntu-latest
         steps:
-            - name: issue success notificaiton
+            - name: issue success notification
               if: needs.publish-npm-package.result == 'success'
               env:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
+                  args: "**[@perp/sdk-curie: dev2]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
 
-            - name: issue failure notificaiton
-              if: needs.publish-npm-package.result != 'success'
+            - name: issue failure notification
+              if: needs.publish-npm-package.result != 'success' && github.base_ref != 'main' && github.event_name != 'pull_request'
               env:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"
+                  args: "**[@perp/sdk-curie: dev2]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"

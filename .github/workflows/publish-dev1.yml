@@ -1,4 +1,4 @@
-name: Publish NPM package for dev1
+name: Publish NPM (dev1)
 on:
     workflow_dispatch:
 jobs:
@@ -30,6 +30,7 @@ jobs:
               run: |
                   echo "::set-output name=pkg_version::${{ steps.version.outputs.value }}"
                   echo "::set-output name=release_env::dev1"
+
               # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
             - name: Get Yarn cache directory
               id: yarn-cache-dir-path
@@ -46,7 +47,7 @@ jobs:
               run: yarn install --prefer-offline --frozen-lockfile
 
             - name: Build contract package
-              run: yarn build
+              run: TRACK=dev1 yarn build
               env:
                   APP_STAGE: ${{ steps.set-variables.outputs.release_env }}
 
@@ -61,7 +62,7 @@ jobs:
         needs: [publish-npm-package]
         runs-on: ubuntu-latest
         steps:
-            - name: issue success notificaiton
+            - name: issue success notification
               if: needs.publish-npm-package.result == 'success'
               env:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
@@ -69,7 +70,7 @@ jobs:
               with:
                   args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
 
-            - name: issue failure notificaiton
+            - name: issue failure notification
               if: needs.publish-npm-package.result != 'success'
               env:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
