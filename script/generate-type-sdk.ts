@@ -9,9 +9,9 @@ const getABIEnv = (stage: string | undefined) => {
         case "staging":
             return "optimism-kovan"
         case "dev1":
-            return "optimism-kovan-dev-1"
+            return "optimism-kovan-dev1"
         case "dev2":
-            return "optimism-kovan-dev-2"
+            return "optimism-kovan-dev2"
         default:
             return "optimism"
     }
