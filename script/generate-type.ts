@@ -5,9 +5,9 @@ import { glob, runTypeChain } from "typechain"
 const getABIRefByTrack = (track: string | undefined) => {
     switch (track) {
         case "dev1":
-            return "optimism-kovan-dev-1"
+            return "optimism-kovan-dev1"
         case "dev2":
-            return "optimism-kovan-dev-2"
+            return "optimism-kovan-dev2"
         case "canary":
             // Canary supports both Kovan and Mainnet but we gen-type with Kovan's ABI.
             // When the Kovan ABI contains new features that has not yet been deployed to Mainnet,
