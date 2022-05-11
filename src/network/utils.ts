@@ -1,5 +1,5 @@
-import { SupportedChainId } from "./constants"
+import { SupportedChainIds, SupportedChainId } from "./constants"
 
-export function isSupportedChainId(chainId: number) {
-    return Object.values(SupportedChainId).includes(chainId)
+export function isSupportedChainId(chainId: number): chainId is SupportedChainId {
+    return SupportedChainIds.includes(chainId)
 }

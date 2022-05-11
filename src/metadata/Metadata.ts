@@ -1,8 +1,8 @@
 import "cross-fetch/polyfill"
 
-import { CuriePeripheryMetadataMap, MetadataUrlByChainId } from "../network"
+import { isSupportedChainId, CoreMetadataUrlByChainId, PeripheryMetadataUrlByChainId } from "../network"
 
-import { FailedPreconditionError } from "../errors"
+import { FailedPreconditionError, UnsupportedChainError } from "../errors"
 import { invariant } from "../utils"
 
 export type Pool = {
@@ -69,26 +69,47 @@ export class Metadata {
     }
 
     static async _fetchMarketMetaData(chainId: number): Promise<ChainMetadata> {
-        const metadataUrl = MetadataUrlByChainId[chainId]
+        invariant(isSupportedChainId(chainId), () => new UnsupportedChainError())
+        const coreMetadataUrl = CoreMetadataUrlByChainId[chainId]
+        const peripheryMetadataUrl = PeripheryMetadataUrlByChainId[chainId]
+
         invariant(
-            !!metadataUrl,
+            !!coreMetadataUrl,
             rawError =>
                 new FailedPreconditionError({
                     functionName: "_fetchMarketMetaData",
-                    stateName: "metadataUrl",
-                    stateValue: metadataUrl,
+                    stateName: "coreMetadataUrl",
+                    stateValue: coreMetadataUrl,
                     rawError,
                 }),
         )
 
-        const metadata = await fetch(metadataUrl)
-            .then(res => res.json())
-            .then(data => data as ChainMetadata)
+        invariant(
+            !!peripheryMetadataUrl,
+            rawError =>
+                new FailedPreconditionError({
+                    functionName: "_fetchMarketMetaData",
+                    stateName: "peripheryMetadataUrl",
+                    stateValue: peripheryMetadataUrl,
+                    rawError,
+                }),
+        )
+
+        const fetcher = async (url: string) =>
+            fetch(url)
+                .then(res => res.json())
+                .then(data => data as ChainMetadata)
+
+        const [coreMetadata, peripheryMetadata] = await Promise.all([
+            fetcher(coreMetadataUrl),
+            fetcher(peripheryMetadataUrl),
+        ])
+
         return {
-            ...metadata,
+            ...coreMetadata,
             contracts: {
-                ...metadata.contracts,
-                ...CuriePeripheryMetadataMap[chainId]?.contracts,
+                ...coreMetadata.contracts,
+                ...peripheryMetadata.contracts,
             },
         }
     }

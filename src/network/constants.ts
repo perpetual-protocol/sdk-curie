@@ -1,30 +1,32 @@
-import { METADATA_URL_OVERRIDE_OPTIMISM, METADATA_URL_OVERRIDE_OPTIMISM_KOVAN } from "../constants"
-
-// import MainMetadataOptimism from "@perp/curie-deployments/optimism/core/metadata.json"
-import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan-dev1/core/metadata.json"
-// import PeripheryMetadataOptimism from "@perp/curie-periphery/metadata/optimism.json"
-import PeripheryMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan-dev1/periphery/metadata.json"
+import {
+    CORE_METADATA_URL_OVERRIDE_OPTIMISM,
+    CORE_METADATA_URL_OVERRIDE_OPTIMISM_KOVAN,
+    PERIPHERY_METADATA_URL_OVERRIDE_OPTIMISM_KOVAN,
+    PERIPHERY_METADATA_URL_OVERRIDE_OPTIMISM,
+    SUPPORTED_CHAIN_IDS,
+} from "../constants"
 
 export enum SupportedChainId {
-    OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
-    // OPTIMISM = MainMetadataOptimism.chainId,
+    OPTIMISM = 10,
+    OPTIMISTIC_KOVAN = 69,
 }
 
-export const CuriePeripheryMetadataMap = {
-    [SupportedChainId.OPTIMISM_KOVAN]: PeripheryMetadataOptimismKovan,
-    // [SupportedChainId.OPTIMISM]: PeripheryMetadataOptimism,
+export const SupportedChainIds = SUPPORTED_CHAIN_IDS ? SUPPORTED_CHAIN_IDS.split(",").map(Number) : []
+
+export const CoreMetadataUrlByChainId: { [key in SupportedChainId]: string } = {
+    [SupportedChainId.OPTIMISTIC_KOVAN]: CORE_METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
+        ? CORE_METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
+        : "https://metadata.perp.exchange/v2/core/optimism-kovan.json",
+    [SupportedChainId.OPTIMISM]: CORE_METADATA_URL_OVERRIDE_OPTIMISM
+        ? CORE_METADATA_URL_OVERRIDE_OPTIMISM
+        : "https://metadata.perp.exchange/v2/core/optimism.json",
 }
 
-export const MetadataUrlByChainId = {
-    [SupportedChainId.OPTIMISM_KOVAN]: METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
-        ? METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
-        : "https://metadata.perp.exchange/v2/optimism-kovan.json",
-    // [SupportedChainId.OPTIMISM]: METADATA_URL_OVERRIDE_OPTIMISM
-    //     ? METADATA_URL_OVERRIDE_OPTIMISM
-    //     : "https://metadata.perp.exchange/v2/optimism.json",
+export const PeripheryMetadataUrlByChainId: { [key in SupportedChainId]: string } = {
+    [SupportedChainId.OPTIMISTIC_KOVAN]: PERIPHERY_METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
+        ? PERIPHERY_METADATA_URL_OVERRIDE_OPTIMISM_KOVAN
+        : "https://metadata.perp.exchange/v2/periphery/optimism-kovan.json",
+    [SupportedChainId.OPTIMISM]: PERIPHERY_METADATA_URL_OVERRIDE_OPTIMISM
+        ? PERIPHERY_METADATA_URL_OVERRIDE_OPTIMISM
+        : "https://metadata.perp.exchange/v2/periphery/optimism.json",
 }
-
-// TODO: gen type with dev1
-// TODO: select kovan as SupportedChainId & CuriePeripheryMetadata
-// TODO: select kovan dev1 as MetadataUrl
-// TODO: update package versioning
