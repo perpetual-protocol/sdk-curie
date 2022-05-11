@@ -1,4 +1,4 @@
-import { PerpetualProtocol, PositionSide, SupportedChainId } from "../../../src"
+import { PerpetualProtocol, PositionSide, SupportedChainIds } from "../../../src"
 
 import Big from "big.js"
 
@@ -7,7 +7,7 @@ describe("PositionDraft", () => {
 
     beforeAll(async () => {
         perp = new PerpetualProtocol({
-            chainId: SupportedChainId.OPTIMISM_KOVAN,
+            chainId: SupportedChainIds.OPTIMISM_KOVAN,
             providerConfigs: [
                 {
                     rpcUrl: "https://kovan.optimism.io",

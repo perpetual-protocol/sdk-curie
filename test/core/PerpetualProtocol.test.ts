@@ -1,20 +1,26 @@
-import { PerpetualProtocol, SupportedChainId } from "../../src"
+import { PerpetualProtocol, SupportedChainIds } from "../../src"
 
-describe("PerpetualProtocol test", () => {
-    it("getMarket", async () => {
-        const pp = new PerpetualProtocol({
-            chainId: SupportedChainId.OPTIMISM,
+describe("PerpetualProtocol", () => {
+    let perp: PerpetualProtocol
+
+    beforeAll(async () => {
+        perp = new PerpetualProtocol({
+            chainId: SupportedChainIds.OPTIMISM_KOVAN,
             providerConfigs: [
                 {
-                    rpcUrl: "https://mainnet.optimism.io",
+                    rpcUrl: "https://kovan.optimism.io",
                 },
             ],
         })
-        await pp.init()
+        await perp.init()
+    })
 
-        const market = pp.markets.getMarket({
-            tickerSymbol: "ETHUSD",
+    describe("getMarket", () => {
+        it("getMarket", async () => {
+            const market = perp.markets.getMarket({
+                tickerSymbol: "ETHUSD",
+            })
+            expect(market.baseSymbol).toEqual("ETH")
         })
-        expect(market.baseSymbol).toEqual("ETH")
     })
 })

@@ -1,8 +1,8 @@
 import "cross-fetch/polyfill"
 
-import { CuriePeripheryMetadataMap, MetadataUrlByChainId } from "../network"
+import { FailedPreconditionError, UnsupportedChainError } from "../errors"
+import { MetadataUrlCoreByChainId, MetadataUrlPeripheryByChainId, isSupportedChainId } from "../network"
 
-import { FailedPreconditionError } from "../errors"
 import { invariant } from "../utils"
 
 export type Pool = {
@@ -12,6 +12,9 @@ export type Pool = {
     quoteAddress: string
     quoteSymbol: string
 }
+export type Pools = Pool[]
+export type RawPools = Pool[]
+
 export type Collateral = {
     address: string
     decimals: number
@@ -19,8 +22,7 @@ export type Collateral = {
     name: string
     priceFeedAddress: string
 }
-export type Pools = Pool[]
-export type RawPools = Pool[]
+
 export interface ChainMetadata {
     chainId: number
     contracts: {
@@ -62,33 +64,50 @@ export class Metadata {
     }
 
     static async create(chainId: number) {
-        // NOTE: The reason we fetch contract metadata from s3 instead of using node_modules
-        // is we don't need to deploy frontend again every we are gonna have a new market.
-        const { contracts, externalContracts, pools, collaterals } = await Metadata._fetchMarketMetaData(chainId)
+        const { contracts, externalContracts, pools, collaterals } = await Metadata._fetch(chainId)
         return new Metadata(contracts, externalContracts, pools, collaterals)
     }
 
-    static async _fetchMarketMetaData(chainId: number): Promise<ChainMetadata> {
-        const metadataUrl = MetadataUrlByChainId[chainId]
+    private static async _fetch(chainId: number): Promise<ChainMetadata> {
+        invariant(isSupportedChainId(chainId), () => new UnsupportedChainError())
+
+        const metadataUrlCore = MetadataUrlCoreByChainId[chainId]
         invariant(
-            !!metadataUrl,
+            !!metadataUrlCore,
             rawError =>
                 new FailedPreconditionError({
                     functionName: "_fetchMarketMetaData",
                     stateName: "metadataUrl",
-                    stateValue: metadataUrl,
+                    stateValue: metadataUrlCore,
                     rawError,
                 }),
         )
 
-        const metadata = await fetch(metadataUrl)
-            .then(res => res.json())
-            .then(data => data as ChainMetadata)
+        const metadataUrlPeriphery = MetadataUrlPeripheryByChainId[chainId]
+        invariant(
+            !!metadataUrlPeriphery,
+            rawError =>
+                new FailedPreconditionError({
+                    functionName: "_fetchMarketMetaData",
+                    stateName: "metadataUrlPeriphery",
+                    stateValue: metadataUrlPeriphery,
+                    rawError,
+                }),
+        )
+
+        const [metadataCore, metadataPeriphery] = await Promise.all([
+            fetch(metadataUrlCore)
+                .then(res => res.json())
+                .then(data => data as ChainMetadata),
+            fetch(metadataUrlPeriphery)
+                .then(res => res.json())
+                .then(data => data as ChainMetadata),
+        ])
         return {
-            ...metadata,
+            ...metadataCore,
             contracts: {
-                ...metadata.contracts,
-                ...CuriePeripheryMetadataMap[chainId]?.contracts,
+                ...metadataCore.contracts,
+                ...metadataPeriphery.contracts,
             },
         }
     }

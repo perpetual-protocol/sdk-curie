@@ -1,6 +1,7 @@
 import "dotenv-flow/config"
-import { SupportedChainId } from "./constants"
+
+import { SupportedChainIds } from "./constants"
 
 export function isSupportedChainId(chainId: number) {
-    return Object.values(SupportedChainId).includes(chainId)
+    return Object.values(SupportedChainIds).includes(chainId)
 }
