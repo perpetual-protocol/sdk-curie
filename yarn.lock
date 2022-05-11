@@ -2027,11 +2027,6 @@
   resolved "https://registry.yarnpkg.com/@perp/curie-deployments/-/curie-deployments-2022.4.29-1651214811720.tgz#a3197b32fef73d51e7c9e3f12680125c14bf7744"
   integrity sha512-qL6eTPAd3Sk2E9SwSLDrm+2NiDWl8kxjsT7ylT8ohVpyMNUUpADZD9tD5lrckcFelOA257gq4hCm+R5t+viNuw==
 
-"@perp/curie-periphery@1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@perp/curie-periphery/-/curie-periphery-1.3.1.tgz#1c20a1816eaa8aaf2b0237ee4373377374130575"
-  integrity sha512-u1LL8Rhp6HGDXTDywxMD4Rh8Z67H8q9ZKuAtESQuL3Sq9J+RyTDxr/wUmimRNeVEon3fOzBhGYS+w3ue8+rugA==
-
 "@rollup/plugin-commonjs@21.0.1":
   version "21.0.1"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-commonjs/-/plugin-commonjs-21.0.1.tgz#1e57c81ae1518e4df0954d681c642e7d94588fee"

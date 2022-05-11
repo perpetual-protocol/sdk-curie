@@ -30,7 +30,7 @@ async function main() {
     const allFiles = glob(cwd, [
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/core/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/core/artifacts/oracle-contracts/**/+([a-zA-Z0-9_]).json`,
-        `${__dirname}/../node_modules/@perp/curie-periphery/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
+        `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/periphery/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json`,
     ])
 
