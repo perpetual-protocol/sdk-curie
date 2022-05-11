@@ -13,22 +13,17 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/perpetual-protocol/perp-sdk"
+        "url": "https://github.com/perpetual-protocol/sdk-curie"
     },
     "scripts": {
         "prepare": "rm -rf .husky/_ && husky install",
         "lint": "eslint --ext .js,.ts src/",
         "lint:fix": "eslint --ext .js,.ts --fix src/",
         "start": "rollup -c rollup.config.js -w",
-        "clean": "rimraf dist",
-        "prebuild": "yarn generate-type",
-        "build": "yarn clean && rollup -c rollup.config.js",
-        "postbuild": "yarn copy-dts",
-        "docs": "typedoc --out docs --theme minimal src",
         "test": "jest",
         "test:watch": "jest --coverage --watch",
         "test:prod": "npm run lint && npm run test -- --no-cache",
-        "deploy": "rimraf docs/ && npm run docs",
+        "docs": "typedoc --out docs --theme minimal src",
         "clean-type": "rm -rf src/contracts/type",
         "generate-type": "yarn clean-type && ts-node script/generate-type.ts",
         "generate-type:dev1": "cross-env TRACK=dev1 yarn generate-type",
@@ -36,8 +31,12 @@
         "generate-type:canary": "cross-env TRACK=canary yarn generate-type",
         "generate-type:rc": "cross-env TRACK=rc yarn generate-type",
         "generate-type:production": "cross-env TRACK=production yarn generate-type",
-        "release": "yarn publish --non-interactive --access public",
-        "copy-dts": "copyfiles -f ./src/contracts/type/*.d.ts dist/src/contracts/type"
+        "copy-dts": "copyfiles -f ./src/contracts/type/*.d.ts dist/src/contracts/type",
+        "clean": "rimraf dist",
+        "prebuild": "yarn generate-type",
+        "build": "yarn clean && rollup -c rollup.config.js",
+        "postbuild": "yarn copy-dts",
+        "release": "yarn publish --non-interactive --access public"
     },
     "lint-staged": {
         "src/**/*.ts": [
