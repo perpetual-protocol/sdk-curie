@@ -1,4 +1,4 @@
-import { ArgumentError, RpcMaxRetryError, RpcTimeoutError } from "../errors"
+import { ArgumentError, RpcMaxRetryError, RpcTimeoutError, UnauthorizedError } from "../errors"
 import { BaseProvider, JsonRpcProvider } from "@ethersproject/providers"
 
 import { ErrorCode as EthersErrorCode } from "@ethersproject/logger"
@@ -101,29 +101,11 @@ export class RetryProvider extends BaseProvider {
 
     // NOTE: Copied from ethers.js perform()
     private async _handleSendTransaction(params: any) {
-        const results: Array<string | Error> = await Promise.any(
-            this.providerConnectionList.map(({ provider }) => {
-                return provider.sendTransaction(params.signedTransaction).then(
-                    result => {
-                        return result.hash
-                    },
-                    error => {
-                        return error
-                    },
-                )
-            }),
-        )
-
-        // NOTE: Any success is good enough (other errors are likely "already seen" errors)
-        for (let i = 0; i < results.length; i++) {
-            const result = results[i]
-            if (typeof result === "string") {
-                return result
-            }
+        if (!this._userProviderConnection) {
+            throw new UnauthorizedError({ functionName: "sendTransaction" })
         }
-
-        // NOTE: All results are errors, throw the first error.
-        throw results[0]
+        const tx = await this._userProviderConnection?.provider.sendTransaction(params.signedTransaction)
+        return tx?.hash
     }
 
     /**
@@ -175,6 +157,8 @@ export class RetryProvider extends BaseProvider {
             attempts++
 
             const providerConnection = this._getCandidateProviderConnection(this.providerConnectionList)
+            // console.log("debug:", "providerConnection:", providerConnection.provider.network)
+            console.log("debug:", "providerConnection:", providerConnection.provider.connection.url)
             try {
                 const result = await Promise.race([func(providerConnection.provider), this._providerTimeoutBenchmark()])
                 this._updateProviderStatus(providerConnection, true)
