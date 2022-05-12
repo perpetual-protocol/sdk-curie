@@ -157,13 +157,13 @@ export class RetryProvider extends BaseProvider {
             attempts++
 
             const providerConnection = this._getCandidateProviderConnection(this.providerConnectionList)
-            // console.log("debug:", "providerConnection:", providerConnection.provider.network)
-            console.log("debug:", "providerConnection:", providerConnection.provider.connection.url)
+            console.log("debug:", "_iterateProviders:", attempts, providerConnection.provider.connection.url)
             try {
                 const result = await Promise.race([func(providerConnection.provider), this._providerTimeoutBenchmark()])
                 this._updateProviderStatus(providerConnection, true)
                 return result
             } catch (error: any) {
+                console.log("debug:", "_iterateProviders error", attempts, error)
                 if (
                     error.code === EthersErrorCode.SERVER_ERROR ||
                     error.code === EthersErrorCode.TIMEOUT ||
