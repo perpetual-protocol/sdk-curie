@@ -142,10 +142,6 @@ interface MulticallMarketDataArgs {
     twapTimeRange: number
 }
 
-function MethodDecorator(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    console.log("debug reader Method", propertyKey)
-}
-
 // TODO: How to better differentiate STATIC(fetch once) / DYNAMIC(fetch on-demand) / REALTIME(steam of updates) data fetch?
 export class ContractReader {
     readonly contracts: Contracts
@@ -161,7 +157,6 @@ export class ContractReader {
         this._multicallReader = new MulticallReader({ contract: contracts.multicall2 })
     }
 
-    @MethodDecorator
     async getNativeBalance(account: string) {
         return errorGuardAsync(
             async () => {
@@ -178,7 +173,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getAccountValue(account: string) {
         return errorGuardAsync(
             async () => {
@@ -195,7 +189,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getFreeCollateral(account: string) {
         return errorGuardAsync(
             async () => {
@@ -212,7 +205,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getFreeCollateralByToken(account: string, token: NonSettlementCollateralToken | SettlementToken) {
         return errorGuardAsync(
             async () => {
@@ -231,7 +223,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getVaultBalanceOfSettlementToken(account: string) {
         return errorGuardAsync(
             async () => {
@@ -248,7 +239,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getVaultBalanceByToken(account: string, token: NonSettlementCollateralToken) {
         return errorGuardAsync(
             async () => {
@@ -267,7 +257,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getWeightByToken(tokenAddress: string) {
         return errorGuardAsync(
             async () => {
@@ -286,7 +275,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getAllowanceByToken(account: string, spender: string, tokenAddress: string) {
         return errorGuardAsync(
             async () => {
@@ -305,7 +293,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getAllowanceOfSettlementToken(account: string, spender: string) {
         return errorGuardAsync(
             async () => {
@@ -323,7 +310,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getBalanceByToken(account: string, tokenAddress: string, decimals: number) {
         return errorGuardAsync(
             async () => {
@@ -342,7 +328,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getBalanceOfSettlementToken(account: string) {
         return errorGuardAsync(
             async () => {
@@ -364,7 +349,6 @@ export class ContractReader {
      * Check if the market is paused.
      * @param baseTokenAddress - token address of baseToken
      */
-    @MethodDecorator
     async isMarketPaused(baseTokenAddress: string): Promise<boolean> {
         return errorGuardAsync(
             async () => {
@@ -385,7 +369,6 @@ export class ContractReader {
      * Check if the market is closed.
      * @param baseTokenAddress - token address of baseToken
      */
-    @MethodDecorator
     async isMarketClosed(baseTokenAddress: string): Promise<boolean> {
         return errorGuardAsync(
             async () => {
@@ -406,7 +389,6 @@ export class ContractReader {
      * Check if the market is paused or closed.
      * @param baseTokenAddress - token address of baseToken
      */
-    @MethodDecorator
     async getMarketStatus(baseTokenAddress: string): Promise<{ isPaused: boolean; isClosed: boolean }> {
         const contractCalls = [
             {
@@ -443,7 +425,6 @@ export class ContractReader {
      * @param {string} baseTokenAddress -  token address of baseToken
      * @param {number} interval - interval of twap
      */
-    @MethodDecorator
     async getIndexPrice(baseTokenAddress: string, interval = 0) {
         return errorGuardAsync(
             async () => {
@@ -462,7 +443,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getSlot0(poolAddress: string) {
         return errorGuardAsync(
             () => this.contracts.pool.attach(poolAddress).slot0(),
@@ -475,7 +455,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getQuoterSwap({
         baseTokenAddress,
         isBaseToQuote,
@@ -538,7 +517,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getLiquidityPendingFee({ trader, baseTokenAddress, lowerTick, upperTick }: GetLiquidityPendingFeeParams) {
         return errorGuardAsync(
             async () => {
@@ -555,7 +533,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getOpenLiquidityIdsByMarket({ trader, baseTokenAddress }: GetOpenLiquiditiesParams) {
         return errorGuardAsync(
             async () => {
@@ -571,7 +548,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getOpenLiquidityIds(marketMap: MarketMap, account: string) {
         const contractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.orderBook,
@@ -595,7 +571,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getOpenLiquidities(marketMap: MarketMap, account: string): Promise<GetOpenLiquidityReturn> {
         const idsByMarkets = await this.getOpenLiquidityIds(marketMap, account)
         const contractCalls: ContractCall[] = []
@@ -638,7 +613,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getOpenLiquiditiesByMarket({ trader, baseTokenAddress }: GetOpenLiquiditiesParams) {
         const ids = await this.getOpenLiquidityIdsByMarket({ trader, baseTokenAddress })
         const openLiquidityCalls = ids.map(id => ({
@@ -669,7 +643,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getOpenOrder({ trader, baseTokenAddress, lowerTick, upperTick }: GetOpenLiquidityParams) {
         return errorGuardAsync(
             async () => {
@@ -692,7 +665,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getTotalTokenAmountInPoolAndPendingFeeOfAllMarkets(marketMap: MarketMap, trader: string) {
         const contractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.orderBook,
@@ -726,7 +698,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async simulateOpenPosition({
         baseTokenAddress,
         isBaseToQuote,
@@ -775,8 +746,6 @@ export class ContractReader {
             },
         )
     }
-
-    @MethodDecorator
     async getMarketsBaseTokenAndQuoteTokenAmount(marketsInfo: marketInfo[]) {
         const baseTokens = marketsInfo.map(market => {
             const { baseToken, pool } = market
@@ -824,7 +793,6 @@ export class ContractReader {
         )
     }
     /* ===== Multicall Reader ===== */
-    @MethodDecorator
     async getClearingHouseMetadata() {
         const mmRatioMulticallArgs = {
             contract: this.contracts.clearingHouseConfig,
@@ -911,7 +879,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getTakerPositionSizeList(marketMap: MarketMap, account: string) {
         const getAllPositionSizeContractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.accountBalance,
@@ -934,7 +901,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getTotalPositionSizeList(marketMap: MarketMap, account: string) {
         const getAllPositionSizeContractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.accountBalance,
@@ -957,7 +923,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getTakerOpenNotionalList(marketMap: MarketMap, account: string) {
         const getAllOpenNotionalContractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.accountBalance,
@@ -980,7 +945,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getTotalOpenNotionalList(marketMap: MarketMap, account: string) {
         const getAllOpenNotionalContractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.accountBalance,
@@ -1003,7 +967,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getTotalPositionValueList(marketMap: MarketMap, account: string) {
         const getTotalPositionValueCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.accountBalance,
@@ -1026,7 +989,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getPendingFundingPayments(marketMap: MarketMap, account: string) {
         const contractCallParams = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.exchange,
@@ -1055,7 +1017,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getMarketData(args: MulticallMarketDataArgs) {
         const contractCalls = [
             {
@@ -1104,7 +1065,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getPositionDraftRelatedData({
         trader,
         marketBaseAddresses,
@@ -1230,7 +1190,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getAccountValues(account: string) {
         const contractCalls = [
             {
@@ -1266,7 +1225,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getTotalPositionValue(trader: string, baseToken: string) {
         return errorGuardAsync(
             async () => {
@@ -1283,7 +1241,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getTotalAbsPositionValue(trader: string) {
         return errorGuardAsync(
             async () => {
@@ -1300,7 +1257,6 @@ export class ContractReader {
         )
     }
 
-    @MethodDecorator
     async getLiquidationPrice(trader: string, baseToken: string) {
         return errorGuardAsync(
             async () => {
@@ -1317,7 +1273,6 @@ export class ContractReader {
         )
     }
     // only taker position need this
-    @MethodDecorator
     async getLiquidationPriceList(marketMap: MarketMap, account: string) {
         const contractCalls = Object.values(marketMap).map(({ baseAddress }) => ({
             contract: this.contracts.perpPortal,
