@@ -27,24 +27,45 @@ export function hasNumberArrChange(prev: Big[], next: Big[]): boolean {
     return false
 }
 
-export type MemoizedFetcher = (ignoreChangeCheck?: boolean) => Promise<void>
+export type MemoizedFetcher = (ignoreChangeCheck?: boolean, prevResultFirst?: boolean) => Promise<void>
 
 export function createMemoizedFetcher<T>(
     fetcher: () => Promise<T>,
     handler: (args: T) => void,
     compareFn: (a: T, b: T) => boolean,
-): MemoizedFetcher {
+) {
     let prevResults: T
+    let isFetching = false
 
-    return async function (ignoreChangeCheck = false) {
+    return async function (ignoreChangeCheck = false, prevResultFirst = false) {
+        if (prevResultFirst && prevResults) {
+            handler(prevResults)
+            return
+        }
+
+        // If we're already fetching, wait for the result, timeout = 10s
+        if (prevResultFirst && isFetching) {
+            for (let i = 0; i < 10; i++) {
+                await new Promise(resolve => setTimeout(resolve, 1000))
+                if (prevResults) {
+                    handler(prevResults)
+                    return
+                }
+            }
+        }
+
+        isFetching = true
         const nextResults = await fetcher()
+
         if (!nextResults) {
+            isFetching = false
             return
         }
 
         if (ignoreChangeCheck) {
             handler(nextResults)
             prevResults = nextResults
+            isFetching = false
             return
         }
 
@@ -52,7 +73,10 @@ export function createMemoizedFetcher<T>(
         if (hasChanged) {
             handler(nextResults)
             prevResults = nextResults
+            isFetching = false
             return
         }
+
+        isFetching = false
     }
 }
