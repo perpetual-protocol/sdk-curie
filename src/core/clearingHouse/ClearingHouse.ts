@@ -207,7 +207,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
             eventSourceStarter: () =>
                 poll(fetchAndEmitAccountValueUpdated, this._perp.moduleConfigs?.clearingHouse?.period || DEFAULT_PERIOD)
                     .cancel,
-            initEventEmitter: () => fetchAndEmitAccountValueUpdated(true),
+            initEventEmitter: () => fetchAndEmitAccountValueUpdated(true, true),
         })
 
         return {

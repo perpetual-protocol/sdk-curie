@@ -112,14 +112,14 @@ class Vault extends Channel<VaultEventName> {
         const accountValueUpdated = new ChannelEventSource({
             eventSourceStarter: () =>
                 poll(fetchAndEmitAccountValueUpdated, this._perp.moduleConfigs?.vault?.period || DEFAULT_PERIOD).cancel,
-            initEventEmitter: () => fetchAndEmitAccountValueUpdated(true),
+            initEventEmitter: () => fetchAndEmitAccountValueUpdated(true, true),
         })
 
         const fetchAndEmitBalanceListUpdated = this._createFetchAndEmitBalanceListUpdated()
         const balanceListUpdated = new ChannelEventSource({
             eventSourceStarter: () =>
                 poll(fetchAndEmitBalanceListUpdated, this._perp.moduleConfigs?.vault?.period || DEFAULT_PERIOD).cancel,
-            initEventEmitter: () => fetchAndEmitBalanceListUpdated(true),
+            initEventEmitter: () => fetchAndEmitBalanceListUpdated(true, true),
         })
 
         const fetchAndEmitFreeCollateralUpdated = this._createFetchAndEmitFreeCollateralUpdated()
@@ -127,7 +127,7 @@ class Vault extends Channel<VaultEventName> {
             eventSourceStarter: () =>
                 poll(fetchAndEmitFreeCollateralUpdated, this._perp.moduleConfigs?.vault?.period || DEFAULT_PERIOD)
                     .cancel,
-            initEventEmitter: () => fetchAndEmitFreeCollateralUpdated(true),
+            initEventEmitter: () => fetchAndEmitFreeCollateralUpdated(true, true),
         })
 
         const fetchAndEmitFreeCollateralListUpdated = this._createFetchAndEmitFreeCollateralListUpdated()
@@ -135,7 +135,7 @@ class Vault extends Channel<VaultEventName> {
             eventSourceStarter: () =>
                 poll(fetchAndEmitFreeCollateralListUpdated, this._perp.moduleConfigs?.vault?.period || DEFAULT_PERIOD)
                     .cancel,
-            initEventEmitter: () => fetchAndEmitFreeCollateralListUpdated(true),
+            initEventEmitter: () => fetchAndEmitFreeCollateralListUpdated(true, true),
         })
 
         return {
