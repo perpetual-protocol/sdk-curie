@@ -80,7 +80,7 @@ class Market extends Channel<MarketEventName> {
                 const { cancel } = poll(fetchAndEmitUpdated, this._perp.moduleConfigs?.market?.period || DEFAULT_PERIOD)
                 return cancel
             },
-            initEventEmitter: () => fetchAndEmitUpdated(true),
+            initEventEmitter: () => fetchAndEmitUpdated(true, true),
         })
 
         // TODO: eventName typing protection, should error when invalid eventName is provided

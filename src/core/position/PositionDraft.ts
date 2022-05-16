@@ -146,10 +146,10 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
                     () => new UnauthorizedError({ functionName: "_getEventSourceMap" }),
                 )
                 const removeVaultUpdated = this._perp.vault.on("updated", () => {
-                    fetchAndEmitUpdated()
+                    fetchAndEmitUpdated(false, true)
                 })
                 const removePositionsUpdated = this._perp.positions.on("updated", () => {
-                    fetchAndEmitUpdated()
+                    fetchAndEmitUpdated(false, true)
                 })
                 return () => {
                     removeVaultUpdated()
