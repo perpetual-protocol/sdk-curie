@@ -4,6 +4,7 @@ import { nodeResolve } from "@rollup/plugin-node-resolve"
 import pkg from "./package.json"
 import sourceMaps from "rollup-plugin-sourcemaps"
 import typescript from "rollup-plugin-typescript2"
+import replace from "@rollup/plugin-replace"
 
 const libraryName = "index"
 
@@ -26,6 +27,23 @@ export default {
         console.warn(warning.message)
     },
     plugins: [
+        replace({
+            values: {
+                "process.env.TRACK": JSON.stringify(process.env.TRACK),
+                "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN": JSON.stringify(
+                    process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN,
+                ),
+                "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM": JSON.stringify(
+                    process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM,
+                ),
+                "process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN": JSON.stringify(
+                    process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN,
+                ),
+                "process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM": JSON.stringify(
+                    process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM,
+                ),
+            },
+        }),
         // Allow json resolution
         json(),
         // Compile TypeScript files
