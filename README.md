@@ -1,8 +1,9 @@
-![image](https://user-images.githubusercontent.com/105896/160322474-95f4da01-c6f4-46d2-a9c2-b6695f140615.png)
+![Cover](https://user-images.githubusercontent.com/5022617/167766554-055c9785-00ec-4a5a-86ac-a4b3e1a42e76.png)
 
-# Perpetual Protocol V2 SDK
+# Perpetual Protocol Curie SDK (BETA)
 
-An SDK for Perpetual Protocol V2
+A Javascript SDK for Perpetual Protocol Curie.
+`This repo is still in beta.`
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 

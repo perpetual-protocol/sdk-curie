@@ -59,7 +59,7 @@ class Liquidities extends Channel<LiquiditiesEventName> {
         const updateDataEventSource = new ChannelEventSource<LiquiditiesEventName>({
             eventSourceStarter: () =>
                 poll(this._fetchAndEmitUpdated, this._perp.moduleConfigs?.orders?.period || DEFAULT_PERIOD).cancel,
-            initEventEmitter: () => this._fetchAndEmitUpdated(),
+            initEventEmitter: () => this._fetchAndEmitUpdated(false, true),
         })
         return {
             updated: updateDataEventSource,

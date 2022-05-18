@@ -43,7 +43,7 @@ export class Positions extends Channel<PositionsEventName> {
             eventSourceStarter: () => {
                 return poll(fetchAndEmitUpdated, this._perp.moduleConfigs?.positions?.period || DEFAULT_PERIOD).cancel
             },
-            initEventEmitter: () => fetchAndEmitUpdated(true),
+            initEventEmitter: () => fetchAndEmitUpdated(true, true),
         })
 
         // TODO: eventName typing protection, should error when invalid eventName is provided

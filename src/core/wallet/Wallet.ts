@@ -83,21 +83,21 @@ class Wallet extends Channel<WalletEventName> {
             eventSourceStarter: () =>
                 poll(fetchAndEmitAllowanceListUpdated, this._perp.moduleConfigs?.wallet?.period || DEFAULT_PERIOD)
                     .cancel,
-            initEventEmitter: () => fetchAndEmitAllowanceListUpdated(true),
+            initEventEmitter: () => fetchAndEmitAllowanceListUpdated(true, true),
         })
 
         const fetchAndEmitBalanceListUpdated = this._createFetchAndEmitBalanceListUpdated()
         const balanceListUpdated = new ChannelEventSource({
             eventSourceStarter: () =>
                 poll(fetchAndEmitBalanceListUpdated, this._perp.moduleConfigs?.wallet?.period || DEFAULT_PERIOD).cancel,
-            initEventEmitter: () => fetchAndEmitBalanceListUpdated(true),
+            initEventEmitter: () => fetchAndEmitBalanceListUpdated(true, true),
         })
 
         const fetchAndEmitBalanceEthUpdated = this._createFetchAndEmitBalanceEthUpdated()
         const balanceEthUpdated = new ChannelEventSource({
             eventSourceStarter: () =>
                 poll(fetchAndEmitBalanceEthUpdated, this._perp.moduleConfigs?.wallet?.period || DEFAULT_PERIOD).cancel,
-            initEventEmitter: () => fetchAndEmitBalanceEthUpdated(true),
+            initEventEmitter: () => fetchAndEmitBalanceEthUpdated(true, true),
         })
 
         const fetchAndEmitCollateralTokenPriceListUpdated = this._createFetchAndEmitCollateralTokenPriceListUpdated()
@@ -107,7 +107,7 @@ class Wallet extends Channel<WalletEventName> {
                     fetchAndEmitCollateralTokenPriceListUpdated,
                     this._perp.moduleConfigs?.wallet?.period || DEFAULT_PERIOD,
                 ).cancel,
-            initEventEmitter: () => fetchAndEmitCollateralTokenPriceListUpdated(true),
+            initEventEmitter: () => fetchAndEmitCollateralTokenPriceListUpdated(true, true),
         })
 
         return {
