@@ -50,7 +50,7 @@ jobs:
                   yarn bump-version
                   PKG_VERSION=$(node -p "require('./package.json').version")
                   RELEASE_ENV=canary
-                  FULL_PKG_VERSION=$PKG_VERSION-$RELEASE_ENV
+                  FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_ENV}"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
                   echo "::set-output name=release_env::$RELEASE_ENV"
                   echo "::set-output name=full_pkg_version::$FULL_PKG_VERSION"
@@ -68,10 +68,10 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+                  # TODO: move back to publish yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.bump-version.outputs.full_pkg_version }}"
+
             - name: Git push version change
-              run:
-                  echo "Git push"
-                  # yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.bump-version.outputs.full_pkg_version }}"
+              run: echo "Git push"
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package
