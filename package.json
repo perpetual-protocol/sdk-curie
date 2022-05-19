@@ -32,6 +32,7 @@
         "start": "rollup -c rollup.config.js -w",
         "prebuild": "yarn generate-type",
         "build": "yarn clean && rollup -c rollup.config.js",
+        "bump-version": "standard-version -- --no-verify",
         "release": "yarn publish --non-interactive --access public",
         "prepare": "husky install"
     },
@@ -81,7 +82,7 @@
         "rollup": "2.56.3",
         "rollup-plugin-sourcemaps": "0.6.3",
         "rollup-plugin-typescript2": "0.30.0",
-        "standard-version": "9.3.1",
+        "standard-version": "9.5.0",
         "ts-jest": "27.0.5",
         "ts-lib": "0.0.5",
         "ts-node": "10.5.0",
