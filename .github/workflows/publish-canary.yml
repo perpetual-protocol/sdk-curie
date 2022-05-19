@@ -48,9 +48,12 @@ jobs:
               # update package.json version, add CHANGELOG & commit changes
               run: |
                   yarn bump-version
-                  echo "::set-output name=pkg_version::$(node -p "require('./package.json').version")"
-                  echo "::set-output name=release_env::canary"
-                  echo "::set-output name=full_pkg_version::${{ steps.bump-version.outputs.pkg_version }}-${{ steps.bump-version.outputs.release_env }}"
+                  PKG_VERSION=$(node -p "require('./package.json').version")
+                  RELEASE_ENV=canary
+                  FULL_PKG_VERSION=$PKG_VERSION-$RELEASE_ENV
+                  echo "::set-output name=pkg_version::$PKG_VERSION"
+                  echo "::set-output name=release_env::$RELEASE_ENV"
+                  echo "::set-output name=full_pkg_version::$FULL_PKG_VERSION"
 
             - name: Build package
               run: TRACK=canary yarn build
