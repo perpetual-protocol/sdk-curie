@@ -66,8 +66,8 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Git push version change
-            run: echo "Git push"
-
+              run:
+                  echo "Git push"
                   # yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.publish-package.outputs.full_pkg_version }}"
 
     discord-notification-npm-package:
