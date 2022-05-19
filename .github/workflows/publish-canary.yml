@@ -36,8 +36,12 @@ jobs:
             - name: Install dependencies
               run: yarn install --prefer-offline --frozen-lockfile
 
-            # add a step to bump version
-            - name: Get bump version by commitizen
+            - name: Config Git
+              run: |
+                  git config --global user.email "dev@perp.fi"
+                  git config --global user.name "Perpetual Protocol"
+
+            - name: Bump version
               id: bump-version
               # update package.json version, add CHANGELOG & commit changes
               run: |
@@ -56,9 +60,11 @@ jobs:
                   echo "::set-output name=full_pkg_version::${{ steps.bump-version.outputs.pkg_version }}-${{ steps.bump-version.outputs.release_env }}"
                   echo ${{ steps.bump-version.outputs.release_env }}
                   echo ${{ steps.publish-package.outputs.full_pkg_version }}
-
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Git push version change
+            run: echo "Git push"
 
                   # yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.publish-package.outputs.full_pkg_version }}"
 
