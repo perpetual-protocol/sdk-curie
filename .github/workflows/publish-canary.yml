@@ -9,7 +9,7 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             pkg_version: ${{ steps.bump-version.outputs.pkg_version }}
-            full_pkg_version: ${{ steps.publish-package.outputs.full_pkg_version }}
+            full_pkg_version: ${{ steps.bump-version.outputs.full_pkg_version }}
         steps:
             - uses: actions/checkout@v2
               with:
@@ -50,6 +50,7 @@ jobs:
                   yarn bump-version
                   echo "::set-output name=pkg_version::$(node -p "require('./package.json').version")"
                   echo "::set-output name=release_env::canary"
+                  echo "::set-output name=full_pkg_version::${{ steps.bump-version.outputs.pkg_version }}-${{ steps.bump-version.outputs.release_env }}"
 
             - name: Build package
               run: TRACK=canary yarn build
@@ -59,16 +60,15 @@ jobs:
             - name: Publish package
               id: publish-package
               run: |
-                  echo "::set-output name=full_pkg_version::${{ steps.bump-version.outputs.pkg_version }}-${{ steps.bump-version.outputs.release_env }}"
                   echo ${{ steps.bump-version.outputs.release_env }}
-                  echo ${{ steps.publish-package.outputs.full_pkg_version }}
+                  echo ${{ steps.bump-version.outputs.full_pkg_version }}
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Git push version change
               run:
                   echo "Git push"
-                  # yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.publish-package.outputs.full_pkg_version }}"
+                  # yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.bump-version.outputs.full_pkg_version }}"
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package
