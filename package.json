@@ -16,6 +16,8 @@
         "url": "https://github.com/perpetual-protocol/sdk-curie"
     },
     "scripts": {
+        "prepare": "husky install",
+        "commit": "git-cz",
         "clean-type": "rm -rf src/contracts/type",
         "generate-type": "yarn clean-type && ts-node script/generate-type.ts",
         "generate-type:dev1": "cross-env TRACK=dev1 yarn generate-type",
@@ -33,8 +35,7 @@
         "prebuild": "yarn generate-type",
         "build": "yarn clean && rollup -c rollup.config.js",
         "bump-version": "standard-version -- --no-verify",
-        "release": "yarn publish --non-interactive --access public",
-        "prepare": "husky install"
+        "release": "yarn publish --non-interactive --access public"
     },
     "lint-staged": {
         "src/**/*.ts": [
@@ -58,6 +59,9 @@
     },
     "devDependencies": {
         "@babel/preset-env": "7.16.0",
+        "@commitlint/cli": "17.0.0",
+        "@commitlint/config-conventional": "17.0.0",
+        "@commitlint/cz-commitlint": "17.0.0",
         "@rollup/plugin-commonjs": "21.0.1",
         "@rollup/plugin-json": "4.1.0",
         "@rollup/plugin-node-resolve": "13.1.3",
@@ -70,7 +74,6 @@
         "commitizen": "4.2.4",
         "copyfiles": "2.4.1",
         "cross-env": "7.0.3",
-        "cz-conventional-changelog": "3.3.0",
         "eslint": "8.9.0",
         "eslint-config-prettier": "8.5.0",
         "eslint-plugin-prettier": "4.0.0",
@@ -92,7 +95,7 @@
     },
     "config": {
         "commitizen": {
-            "path": "./node_modules/cz-conventional-changelog"
+            "path": "@commitlint/cz-commitlint"
         }
     }
 }
