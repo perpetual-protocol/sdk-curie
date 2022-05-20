@@ -1,13 +1,16 @@
 name: Publish NPM (dev1)
 on:
     workflow_dispatch:
+        branches:
+            - op-kovan-dev1
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
         outputs:
-            pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
+            pkg_version: ${{ steps.bump-version.outputs.pkg_version }}
+            full_pkg_version: ${{ steps.bump-version.outputs.full_pkg_version }}
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
               with:
                   persist-credentials: false
 
@@ -18,18 +21,6 @@ jobs:
                   registry-url: "https://registry.npmjs.org"
                   # Defaults to the user or organization that owns the workflow file
                   scope: "@perp"
-
-            - name: Extract version from package.json
-              uses: sergeysova/jq-action@v2
-              id: version
-              with:
-                  cmd: "jq .version package.json -r"
-
-            - name: Set variables
-              id: set-variables
-              run: |
-                  echo "::set-output name=pkg_version::${{ steps.version.outputs.value }}"
-                  echo "::set-output name=release_env::dev1"
 
               # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
             - name: Get Yarn cache directory
@@ -43,18 +34,42 @@ jobs:
                   path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
                   key: ${{ runner.os }}-yarn-${{ matrix.node-version }}-${{ hashFiles('**/yarn.lock') }}
 
-            - name: Install package dependencies
+            - name: Install dependencies
               run: yarn install --prefer-offline --frozen-lockfile
 
-            - name: Build contract package
-              run: TRACK=dev1 yarn build
-              env:
-                  APP_STAGE: ${{ steps.set-variables.outputs.release_env }}
+            - name: Config Git
+              run: |
+                  git config --global user.email "dev@perp.fi"
+                  git config --global user.name "Perpetual Protocol"
 
-            - name: Publish npm package
-              run: yarn release
+            # update package.json version, add CHANGELOG & commit changes
+            - name: Bump version
+              id: bump-version
+              run: |
+                  yarn bump-version
+                  RELEASE_ENV=dev1
+                  PKG_VERSION=$(node -p "require('./package.json').version")
+                  FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_ENV}"
+                  echo "::set-output name=pkg_version::$PKG_VERSION"
+                  echo "::set-output name=release_env::$RELEASE_ENV"
+                  echo "::set-output name=full_pkg_version::$FULL_PKG_VERSION"
+
+            - name: Build package
+              run: TRACK=${{ steps.bump-version.outputs.release_env }} yarn build
+              env:
+                  APP_STAGE: ${{ steps.bump-version.outputs.release_env }}
+
+            - name: Publish package
+              id: publish-package
+              run: |
+                  echo tag: ${{ steps.bump-version.outputs.release_env }}
+                  echo version: ${{ steps.bump-version.outputs.full_pkg_version }}
+                  yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.bump-version.outputs.full_pkg_version }}"
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Git push version change
+              run: git push
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package
@@ -68,7 +83,7 @@ jobs:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
+                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}**  published successfully ✅"
 
             - name: issue failure notification
               if: needs.publish-npm-package.result != 'success'
@@ -76,4 +91,4 @@ jobs:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"
+                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}** failed to publish 🛑"
