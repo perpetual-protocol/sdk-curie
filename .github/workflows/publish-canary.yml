@@ -47,15 +47,15 @@ jobs:
               id: bump-version
               run: |
                   yarn bump-version
-                  PKG_VERSION=$(node -p "require('./package.json').version")
                   RELEASE_ENV=canary
+                  PKG_VERSION=$(node -p "require('./package.json').version")
                   FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_ENV}"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
                   echo "::set-output name=release_env::$RELEASE_ENV"
                   echo "::set-output name=full_pkg_version::$FULL_PKG_VERSION"
 
             - name: Build package
-              run: TRACK=canary yarn build
+              run: TRACK=${{ steps.bump-version.outputs.release_env }} yarn build
               env:
                   APP_STAGE: ${{ steps.bump-version.outputs.release_env }}
 
