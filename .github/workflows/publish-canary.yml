@@ -2,7 +2,7 @@ name: Publish NPM (canary)
 on:
     workflow_dispatch:
         branches:
-            - release
+            - release/latest
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
@@ -42,9 +42,9 @@ jobs:
                   git config --global user.email "dev@perp.fi"
                   git config --global user.name "Perpetual Protocol"
 
+            # update package.json version, add CHANGELOG & commit changes
             - name: Bump version
               id: bump-version
-              # update package.json version, add CHANGELOG & commit changes
               run: |
                   yarn bump-version
                   PKG_VERSION=$(node -p "require('./package.json').version")
