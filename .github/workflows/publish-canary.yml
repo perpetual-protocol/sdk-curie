@@ -1,9 +1,8 @@
 name: Publish NPM (canary)
 on:
     workflow_dispatch:
-    pull_request: #TODO: clean up
         branches:
-            - main
+            - release
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
@@ -92,4 +91,4 @@ jobs:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"
+                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}** failed to publish 🛑"
