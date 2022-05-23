@@ -1,11 +1,16 @@
-# TODO: manually select target track (dev1 / dev2)
-# TODO: manually select branch to publish from
-
 name: Publish NPM (dev)
 on:
     workflow_dispatch:
+        inputs:
+            track:
+              description: 'Track'
+              required: true
+              type: choice
+              options:
+                - dev1
+                - dev2
         branches:
-            - feat/*
+            - '*'
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
@@ -50,7 +55,7 @@ jobs:
               id: bump-version
               run: |
                   yarn bump-version
-                  RELEASE_ENV=dev1
+                  RELEASE_ENV=${{ github.event.inputs.track }}
                   PKG_VERSION=$(node -p "require('./package.json').version")
                   FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_ENV}"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
@@ -86,7 +91,7 @@ jobs:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}**  published successfully ✅"
+                  args: "**[@perp/sdk-curie: ${{ github.event.inputs.track }}]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}**  published successfully ✅"
 
             - name: issue failure notification
               if: needs.publish-npm-package.result != 'success'
@@ -94,4 +99,4 @@ jobs:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}** failed to publish 🛑"
+                  args: "**[@perp/sdk-curie: ${{ github.event.inputs.track }}]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}** failed to publish 🛑"
