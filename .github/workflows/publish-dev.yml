@@ -1,8 +1,11 @@
-name: Publish NPM (dev2)
+# TODO: manually select target track (dev1 / dev2)
+# TODO: manually select branch to publish from
+
+name: Publish NPM (dev)
 on:
     workflow_dispatch:
         branches:
-            - op-kovan-dev2
+            - feat/*
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
@@ -47,7 +50,7 @@ jobs:
               id: bump-version
               run: |
                   yarn bump-version
-                  RELEASE_ENV=dev2
+                  RELEASE_ENV=dev1
                   PKG_VERSION=$(node -p "require('./package.json').version")
                   FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_ENV}"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
