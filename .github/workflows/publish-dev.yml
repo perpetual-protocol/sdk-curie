@@ -1,9 +1,9 @@
-name: Publish NPM (dev)
+name: Publish NPM (Dev)
 on:
     workflow_dispatch:
         inputs:
             track:
-              description: 'Track'
+              description: 'Release Track'
               required: true
               type: choice
               options:
@@ -20,7 +20,7 @@ jobs:
         steps:
             - uses: actions/checkout@v3
               with:
-                  persist-credentials: false
+                  fetch-depth: '0' # For bump-version to have all the commit history
 
             - name: Use Node.js 16.x
               uses: actions/setup-node@v2
@@ -55,24 +55,22 @@ jobs:
               id: bump-version
               run: |
                   yarn bump-version
-                  RELEASE_ENV=${{ github.event.inputs.track }}
+                  RELEASE_TRACK=${{ github.event.inputs.track }}
                   PKG_VERSION=$(node -p "require('./package.json').version")
-                  FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_ENV}"
+                  FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_TRACK}"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
-                  echo "::set-output name=release_env::$RELEASE_ENV"
+                  echo "::set-output name=release_track::$RELEASE_TRACK"
                   echo "::set-output name=full_pkg_version::$FULL_PKG_VERSION"
 
             - name: Build package
-              run: TRACK=${{ steps.bump-version.outputs.release_env }} yarn build
-              env:
-                  APP_STAGE: ${{ steps.bump-version.outputs.release_env }}
+              run: TRACK=${{ steps.bump-version.outputs.release_track }} yarn build
 
             - name: Publish package
               id: publish-package
               run: |
-                  echo tag: ${{ steps.bump-version.outputs.release_env }}
+                  echo tag: ${{ steps.bump-version.outputs.release_track }}
                   echo version: ${{ steps.bump-version.outputs.full_pkg_version }}
-                  yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.bump-version.outputs.full_pkg_version }}"
+                  yarn release --tag ${{ steps.bump-version.outputs.release_track }} --new-version "${{ steps.bump-version.outputs.full_pkg_version }}"
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

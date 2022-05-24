@@ -1,4 +1,4 @@
-name: Publish NPM (canary)
+name: Publish NPM (Canary)
 on:
     push:
         branches:
@@ -8,6 +8,7 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             pkg_version: ${{ steps.bump-version.outputs.pkg_version }}
+            release_track: ${{ steps.bump-version.outputs.release_track }}
             full_pkg_version: ${{ steps.bump-version.outputs.full_pkg_version }}
         steps:
             - uses: actions/checkout@v3
@@ -47,22 +48,22 @@ jobs:
               id: bump-version
               run: |
                   yarn bump-version
-                  RELEASE_ENV=canary
+                  RELEASE_TRACK=canary
                   PKG_VERSION=$(node -p "require('./package.json').version")
-                  FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_ENV}"
+                  FULL_PKG_VERSION="${PKG_VERSION}-${RELEASE_TRACK}"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
-                  echo "::set-output name=release_env::$RELEASE_ENV"
+                  echo "::set-output name=release_track::$RELEASE_TRACK"
                   echo "::set-output name=full_pkg_version::$FULL_PKG_VERSION"
 
             - name: Build package
-              run: TRACK=${{ steps.bump-version.outputs.release_env }} yarn build
+              run: TRACK=${{ steps.bump-version.outputs.release_track }} yarn build
 
             - name: Publish package
               id: publish-package
               run: |
-                  echo tag: ${{ steps.bump-version.outputs.release_env }}
+                  echo tag: ${{ steps.bump-version.outputs.release_track }}
                   echo version: ${{ steps.bump-version.outputs.full_pkg_version }}
-                  yarn release --tag ${{ steps.bump-version.outputs.release_env }} --new-version "${{ steps.bump-version.outputs.full_pkg_version }}"
+                  yarn release --tag ${{ steps.bump-version.outputs.release_track }} --new-version "${{ steps.bump-version.outputs.full_pkg_version }}"
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -81,7 +82,7 @@ jobs:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}**  published successfully ✅"
+                  args: "**[@perp/sdk-curie: ${{ needs.publish-npm-package.outputs.release_track }}]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}**  published successfully ✅"
 
             - name: issue failure notification
               if: needs.publish-npm-package.result != 'success'
@@ -89,4 +90,4 @@ jobs:
                   DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
               uses: Ilshidur/action-discord@master
               with:
-                  args: "**[@perp/sdk-curie: dev1]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}** failed to publish 🛑"
+                  args: "**[@perp/sdk-curie: ${{ needs.publish-npm-package.outputs.release_track }}]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.full_pkg_version }}** failed to publish 🛑"
