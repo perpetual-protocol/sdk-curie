@@ -1,6 +1,8 @@
 name: Publish NPM (Dev2)
-on: workflow_dispatch
-
+on:
+    workflow_dispatch:
+        branches:
+            - '*'
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest

@@ -1,6 +1,8 @@
 name: Publish NPM (Production)
-on: workflow_dispatch
-    # NOTE: Seems no way to restrict to only accept "release/*" branches.
+on:
+    workflow_dispatch:
+        branches:
+            - 'release/*' # NOTE: Seems no way to restrict to only accept "release/*" branches.
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
