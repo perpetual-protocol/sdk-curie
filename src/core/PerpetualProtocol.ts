@@ -13,6 +13,7 @@ import { Positions } from "./position"
 import { Signer } from "@ethersproject/abstract-signer"
 import { Vault } from "./vault"
 import { Wallet } from "./wallet"
+import { DelegateApproval, DelegateApprovalConfigs } from "./clearingHouse/DelegateApproval"
 import { invariant } from "../utils"
 
 interface ModuleConfigs {
@@ -22,6 +23,7 @@ interface ModuleConfigs {
     market?: ModuleConfig
     orders?: ModuleConfig
     positions?: ModuleConfig
+    delegateApproval?: DelegateApprovalConfigs
 }
 
 interface PerpetualProtocolConfig {
@@ -64,6 +66,7 @@ class PerpetualProtocol {
     private _clearingHouse?: ClearingHouse
     private _positions?: Positions
     private _liquidities?: Liquidities
+    private _delegateApproval?: DelegateApproval
 
     get metadata() {
         return this._metadata as Metadata
@@ -123,6 +126,10 @@ class PerpetualProtocol {
         return this._channelRegistry
     }
 
+    get delegateApproval() {
+        return this._delegateApproval
+    }
+
     constructor({ chainId, providerConfigs, moduleConfigs }: PerpetualProtocolConfig) {
         // NOTE: throw error if the user try to use an unsupported chainId to init the sdk
         if (!isSupportedChainId(chainId)) {
@@ -171,6 +178,7 @@ class PerpetualProtocol {
         this._vault = new Vault(this, account)
 
         if (this.hasConnected()) {
+            this._delegateApproval = new DelegateApproval(this, account, this.moduleConfigs?.delegateApproval)
             this._positions = new Positions(this)
             this._liquidities = new Liquidities(this)
         }

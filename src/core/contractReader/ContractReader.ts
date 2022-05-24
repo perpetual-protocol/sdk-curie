@@ -1309,4 +1309,18 @@ export class ContractReader {
                 }),
         )
     }
+
+    async canOpenPositionFor(trader: string, delegate: string) {
+        return errorGuardAsync(
+            async () => {
+                return this.contracts.delegateApproval.canOpenPositionFor(trader, delegate)
+            },
+            rawError =>
+                new ContractReadError<DelegateApproval>({
+                    contractName: ContractName.DelegateApproval,
+                    contractFunctionName: "canOpenPositionFor",
+                    rawError,
+                }),
+        )
+    }
 }
