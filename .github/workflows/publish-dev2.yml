@@ -1,14 +1,6 @@
-name: Publish NPM (Dev)
+name: Publish NPM (Dev2)
 on:
     workflow_dispatch:
-        inputs:
-            release_track:
-              description: 'Release Track'
-              required: true
-              type: choice
-              options:
-                - dev1
-                - dev2
         branches:
             - '*'
 jobs:
@@ -54,7 +46,7 @@ jobs:
             - name: Bump version
               id: bump-version
               run: |
-                  RELEASE_TRACK=${{ github.event.inputs.release_track }}
+                  RELEASE_TRACK=dev2
                   yarn bump-version --prerelease ${RELEASE_TRACK}
                   PKG_VERSION=$(node -p "require('./package.json').version")
                   echo "::set-output name=release_track::$RELEASE_TRACK"

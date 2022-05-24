@@ -1,8 +1,8 @@
-name: Publish NPM (Production)
+name: Publish NPM (Dev1)
 on:
     workflow_dispatch:
         branches:
-            - 'release/*'
+            - '*'
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
@@ -46,8 +46,8 @@ jobs:
             - name: Bump version
               id: bump-version
               run: |
-                  RELEASE_TRACK=production
-                  yarn bump-version
+                  RELEASE_TRACK=dev1
+                  yarn bump-version --prerelease ${RELEASE_TRACK}
                   PKG_VERSION=$(node -p "require('./package.json').version")
                   echo "::set-output name=release_track::$RELEASE_TRACK"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
@@ -58,9 +58,9 @@ jobs:
             - name: Publish package
               id: publish-package
               run: |
-                  echo tag: N/A (using the default 'latest' tag for production)
+                  echo tag: ${{ steps.bump-version.outputs.release_track }}
                   echo version: ${{ steps.bump-version.outputs.pkg_version }}
-                  yarn release
+                  yarn release --tag ${{ steps.bump-version.outputs.release_track }}
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
