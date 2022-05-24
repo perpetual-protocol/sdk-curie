@@ -1,8 +1,6 @@
 name: Publish NPM (Production)
-on:
-    workflow_dispatch:
-        branches:
-            - 'release/*'
+on: workflow_dispatch
+    # NOTE: Seems no way to restrict to only accept "release/*" branches.
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
@@ -58,8 +56,8 @@ jobs:
             - name: Publish package
               id: publish-package
               run: |
-                  echo tag: N/A (using the default 'latest' tag for production)
-                  echo version: ${{ steps.bump-version.outputs.pkg_version }}
+                  echo "tag: N/A (using the default 'latest' tag for production)"
+                  echo "version: ${{ steps.bump-version.outputs.pkg_version }}"
                   yarn release
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
