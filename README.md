@@ -7,67 +7,33 @@ A Javascript SDK for Perpetual Protocol Curie.
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-# Setup
+# Development
 
-Install the lib
+## Setup
+
+Install dependencies:
 
 ```bash
 yarn add @perp/sdk-curie
 ```
 
-Commit:
+## Commit
 
-Use commitlint and commitizen to regulate commit message.
+We use `commitizen` and `commitlint` to regulate commit message.
 
 ```bash
- git ci
+yarn commit
 ```
 
-Test:
+## Test
 
 ```
  yarn test
 ```
 
-# Layers
-
--   **Market:**
-
-    -   `indexPrice`
-    -   `markPrice`
-    -   `indexTwapPrice`
-
--   **Liquidity**: Addable pairs for liquidity.
-
-    -   `liquidityPendingFee`
-    -   `totalTokenAmountInPoolAndPendingFee`
-    -   `getMakerPositionImpermanent`
-
--   **Wallet:** Manages user’s assets in his/her connected web3 wallet. (e.g. MetaMask)
-
-    -   `Wallet`
-    -   `DepositHistory`
-    -   `WithdrawHistory`
-
--   **Vault:** Manages user’s assets stored inside Perpetual Protocol.
-
-    -   `deposit`
-    -   `withdraw`
-
--   **ClearingHouse:** Manage transactions.
-    -   `openPosition`
-    -   `closePosition`
-    -   `addLiquidity`
-    -   `removeLiquidity`
--   **Position:**
-    -   `Position`
-    -   `PositionDraft`
-    -   `PositionHistory`
-    -   `FundingPaymentHistory`
-
 # Usage
 
-## Create a perpetualProtocol instance.
+## Create a PerpetualProtocol instance
 
 -   Now we only support **optimism**
 

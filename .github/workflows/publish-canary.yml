@@ -1,0 +1,90 @@
+name: Publish NPM (Canary)
+on:
+    push:
+        branches:
+            - 'release/*'
+jobs:
+    publish-npm-package:
+        runs-on: ubuntu-latest
+        outputs:
+            release_track: ${{ steps.bump-version.outputs.release_track }}
+            pkg_version: ${{ steps.bump-version.outputs.pkg_version }}
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  fetch-depth: '0' # For bump-version to have all the commit history
+
+            - name: Use Node.js 16.x
+              uses: actions/setup-node@v2
+              with:
+                  node-version: 16.x
+                  registry-url: "https://registry.npmjs.org"
+                  # Defaults to the user or organization that owns the workflow file
+                  scope: "@perp"
+
+              # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
+            - name: Get Yarn cache directory
+              id: yarn-cache-dir-path
+              run: echo "::set-output name=dir::$(yarn cache dir)"
+
+            - name: Use Yarn cache
+              uses: actions/cache@v2
+              id: yarn-cache
+              with:
+                  path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+                  key: ${{ runner.os }}-yarn-${{ matrix.node-version }}-${{ hashFiles('**/yarn.lock') }}
+
+            - name: Install dependencies
+              run: yarn install --prefer-offline --frozen-lockfile
+
+            - name: Config Git
+              run: |
+                  git config --global user.email "dev@perp.fi"
+                  git config --global user.name "Perpetual Protocol"
+
+            # update package.json version, add CHANGELOG & commit changes
+            - name: Bump version
+              id: bump-version
+              run: |
+                  RELEASE_TRACK=canary
+                  yarn bump-version --prerelease ${RELEASE_TRACK}
+                  PKG_VERSION=$(node -p "require('./package.json').version")
+                  echo "::set-output name=release_track::$RELEASE_TRACK"
+                  echo "::set-output name=pkg_version::$PKG_VERSION"
+
+            - name: Build package
+              run: TRACK=${{ steps.bump-version.outputs.release_track }} yarn build
+
+            - name: Publish package
+              id: publish-package
+              run: |
+                  echo tag: ${{ steps.bump-version.outputs.release_track }}
+                  echo version: ${{ steps.bump-version.outputs.pkg_version }}
+                  yarn release --tag ${{ steps.bump-version.outputs.release_track }}
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Git push version change
+              run: git push --follow-tags
+
+    discord-notification-npm-package:
+        name: Discord Notification for publishing npm package
+        if: ${{ always() }}
+        needs: [publish-npm-package]
+        runs-on: ubuntu-latest
+        steps:
+            - name: issue success notification
+              if: needs.publish-npm-package.result == 'success'
+              env:
+                  DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+              uses: Ilshidur/action-discord@master
+              with:
+                  args: "**[@perp/sdk-curie: ${{ needs.publish-npm-package.outputs.release_track }}]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}**  published successfully ✅"
+
+            - name: issue failure notification
+              if: needs.publish-npm-package.result != 'success'
+              env:
+                  DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+              uses: Ilshidur/action-discord@master
+              with:
+                  args: "**[@perp/sdk-curie: ${{ needs.publish-npm-package.outputs.release_track }}]** @perp/sdk-curie version: **${{ needs.publish-npm-package.outputs.pkg_version }}** failed to publish 🛑"
