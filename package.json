@@ -1,6 +1,6 @@
 {
     "name": "@perp/sdk-curie",
-    "version": "1.1.1",
+    "version": "1.4.0-canary.4",
     "license": "BSD-3-Clause",
     "main": "dist/index.js",
     "module": "dist/sdk-curie.esm.js",
@@ -34,8 +34,8 @@
         "start": "rollup -c rollup.config.js -w",
         "prebuild": "yarn generate-type",
         "build": "yarn clean && rollup -c rollup.config.js",
-        "bump-version": "standard-version -- --no-verify",
-        "release": "yarn publish --non-interactive --access public"
+        "bump-version": "standard-version --no-verify",
+        "release": "yarn publish --access public --non-interactive --no-commit-hooks"
     },
     "lint-staged": {
         "src/**/*.ts": [
