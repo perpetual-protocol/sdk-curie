@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.2-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.4.1-canary.1...v1.4.2-canary.0) (2022-05-24)
+
+
+### Others
+
+* rebase version ([71eedff](https://github.com/perpetual-protocol/sdk-curie/commit/71eedff898a66baf74b8a9ecdbec126545b30b74))
+* rebase version ([c5c6c1a](https://github.com/perpetual-protocol/sdk-curie/commit/c5c6c1ae3dc4bd74f81477ba4da6560fdbfb47ef))
+
 ### [1.4.1-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.4.0-canary.4...v1.4.1-canary.1) (2022-05-24)
 
 
