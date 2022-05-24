@@ -28,6 +28,8 @@ import {
     UniswapV3Pool__factory,
     Vault,
     Vault__factory,
+    LimitOrderBook__factory,
+    LimitOrderBook,
 } from "./type"
 import { Collateral, Metadata } from "../metadata"
 import { Contract, constants } from "ethers"
@@ -53,6 +55,7 @@ export enum ContractName {
     PerpPortal = "PerpPortal",
     Token0 = "Token0", // baseToken in uniswap
     Token1 = "Token1", // quoteToken in uniswap
+    LimitOrderBook = "LimitOrderBook",
 }
 
 interface ContractsConfig {
@@ -77,6 +80,8 @@ export class Contracts {
     accountBalance: AccountBalance
     multicall2: Multicall2
     perpPortal: PerpPortal
+    limitOrderBook: LimitOrderBook
+
     private readonly _provider: Provider
 
     constructor({ metadata, provider }: ContractsConfig) {
@@ -92,6 +97,7 @@ export class Contracts {
             Multicall2,
             PerpPortal,
             CollateralManager,
+            LimitOrderBook,
         } = metadata.contracts
 
         const { USDC: settlementTokenAddress } = metadata.externalContracts
@@ -116,6 +122,7 @@ export class Contracts {
         this.accountBalance = AccountBalance__factory.connect(AccountBalance.address, provider)
         this.multicall2 = Multicall2__factory.connect(Multicall2.address, provider)
         this.perpPortal = PerpPortal__factory.connect(PerpPortal.address, provider)
+        this.limitOrderBook = LimitOrderBook__factory.connect(LimitOrderBook.address, provider)
         this._provider = provider
     }
 
