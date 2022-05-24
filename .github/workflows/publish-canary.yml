@@ -12,7 +12,6 @@ jobs:
         steps:
             - uses: actions/checkout@v3
               with:
-                  persist-credentials: false
                   fetch-depth: '0' # For bump-version to have all the commit history
 
             - name: Use Node.js 16.x
@@ -57,8 +56,6 @@ jobs:
 
             - name: Build package
               run: TRACK=${{ steps.bump-version.outputs.release_env }} yarn build
-              env:
-                  APP_STAGE: ${{ steps.bump-version.outputs.release_env }}
 
             - name: Publish package
               id: publish-package
