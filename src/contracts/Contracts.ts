@@ -30,6 +30,8 @@ import {
     Vault__factory,
     LimitOrderBook__factory,
     LimitOrderBook,
+    DelegateApproval,
+    DelegateApproval__factory,
 } from "./type"
 import { Collateral, Metadata } from "../metadata"
 import { Contract, constants } from "ethers"
@@ -56,6 +58,7 @@ export enum ContractName {
     Token0 = "Token0", // baseToken in uniswap
     Token1 = "Token1", // quoteToken in uniswap
     LimitOrderBook = "LimitOrderBook",
+    DelegateApproval = "DelegateApproval",
 }
 
 interface ContractsConfig {
@@ -81,6 +84,7 @@ export class Contracts {
     multicall2: Multicall2
     perpPortal: PerpPortal
     limitOrderBook: LimitOrderBook
+    delegateApproval: DelegateApproval
 
     private readonly _provider: Provider
 
@@ -98,6 +102,7 @@ export class Contracts {
             PerpPortal,
             CollateralManager,
             LimitOrderBook,
+            DelegateApproval,
         } = metadata.contracts
 
         const { USDC: settlementTokenAddress } = metadata.externalContracts
@@ -123,6 +128,7 @@ export class Contracts {
         this.multicall2 = Multicall2__factory.connect(Multicall2.address, provider)
         this.perpPortal = PerpPortal__factory.connect(PerpPortal.address, provider)
         this.limitOrderBook = LimitOrderBook__factory.connect(LimitOrderBook.address, provider)
+        this.delegateApproval = DelegateApproval__factory.connect(DelegateApproval.address, provider)
         this._provider = provider
     }
 

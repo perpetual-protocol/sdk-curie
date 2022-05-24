@@ -2,6 +2,7 @@ import {
     BaseToken,
     ClearingHouse,
     CollateralManager,
+    DelegateApproval,
     IERC20Metadata,
     Multicall2,
     OrderBook,
@@ -1290,6 +1291,20 @@ export class ContractReader {
                     contractName: ContractName.MULTICALL2,
                     contractFunctionName: "tryAggregate",
                     args: contractCallsParserForErrorHandling(contractCalls),
+                    rawError,
+                }),
+        )
+    }
+
+    async getClearingHouseOpenPositionAction() {
+        return errorGuardAsync(
+            async () => {
+                return this.contracts.delegateApproval.getClearingHouseOpenPositionAction()
+            },
+            rawError =>
+                new ContractReadError<DelegateApproval>({
+                    contractName: ContractName.DelegateApproval,
+                    contractFunctionName: "getClearingHouseOpenPositionAction",
                     rawError,
                 }),
         )
