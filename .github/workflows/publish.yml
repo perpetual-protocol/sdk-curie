@@ -68,7 +68,7 @@ jobs:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Git push version change
-              run: git push
+              run: git push --tags
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package
