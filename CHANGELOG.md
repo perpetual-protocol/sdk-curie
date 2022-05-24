@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0-dev2.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.4.0-dev1.1...v1.4.0-dev2.1) (2022-05-24)
+
+
+### CI
+
+* **github workflow:** rebase dev2 version ([94ce7b2](https://github.com/perpetual-protocol/sdk-curie/commit/94ce7b26bd963f90d068dcaa7d1b517bf088a36d))
+* **github workflow:** rebase dev2 version ([c9455ee](https://github.com/perpetual-protocol/sdk-curie/commit/c9455eed7da81a1387b379d7b18d02ddc623c6f3))
+
 ## [1.4.0-dev1.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.4.0-canary.4...v1.4.0-dev1.1) (2022-05-24)
 
 
