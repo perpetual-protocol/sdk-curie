@@ -42,6 +42,7 @@ export interface PerpetualProtocolConnected extends PerpetualProtocolInitialized
     positions: Positions
     liquidities: Liquidities
     vault: Vault
+    delegateApproval: DelegateApproval
 }
 
 /**

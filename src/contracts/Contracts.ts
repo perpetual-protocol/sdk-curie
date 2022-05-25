@@ -143,6 +143,7 @@ export class Contracts {
                 contract: value.contract.connect(signer),
             })
         })
+        this.delegateApproval = this.delegateApproval.connect(signer)
     }
 
     createIERC20Token(tokenAddress: string) {

@@ -20,7 +20,7 @@ export interface DelegateApprovalConfigs {
 export class DelegateApproval extends Channel<DelegateApprovalEventName> {
     private readonly _contractReader: ContractReader
     private _cache: Map<CacheKey, CacheValue> = new Map()
-    private _delegate: string
+    public delegate: string
 
     constructor(
         protected readonly _perp: PerpetualProtocol,
@@ -29,15 +29,20 @@ export class DelegateApproval extends Channel<DelegateApprovalEventName> {
     ) {
         super(_perp.channelRegistry)
         this._contractReader = _perp.contractReader
-        this._delegate = configs ? configs.delegate : _perp.metadata.contracts.LimitOrderBook.address
+        this.delegate = configs ? configs.delegate : _perp.metadata.contracts.LimitOrderBook.address
     }
 
-    async approveOpenPosition(delegate: string) {
+    async approveOpenPosition() {
         const openPositionAction = await this._perp.contractReader.getClearingHouseOpenPositionAction()
-        await this.approve(delegate, openPositionAction)
+        return this.approve(openPositionAction)
     }
 
-    async approve(delegate: string, actions: number) {
+    async revokeOpenPosition() {
+        const openPositionAction = await this._perp.contractReader.getClearingHouseOpenPositionAction()
+        return this.revoke(openPositionAction)
+    }
+
+    async approve(actions: number) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "approve" }))
 
         return getTransaction<ContractDelegateApproval, "approve">({
@@ -45,20 +50,24 @@ export class DelegateApproval extends Channel<DelegateApprovalEventName> {
             contract: this._perp.contracts.delegateApproval,
             contractName: ContractName.DelegateApproval,
             contractFunctionName: "approve",
-            args: [delegate, actions],
+            args: [this.delegate, actions],
         })
     }
 
-    async revoke(delegate: string, actions: number) {
-        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "approve" }))
+    async revoke(actions: number) {
+        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "revoke" }))
 
         return getTransaction<ContractDelegateApproval, "revoke">({
             account: this._perp.wallet.account,
             contract: this._perp.contracts.delegateApproval,
             contractName: ContractName.DelegateApproval,
             contractFunctionName: "revoke",
-            args: [delegate, actions],
+            args: [this.delegate, actions],
         })
+    }
+
+    async delegateApprovalForOpenPosition({ cache = true } = {}) {
+        return await this._fetch("openPosition", { cache })
     }
 
     protected _getEventSourceMap() {
@@ -95,7 +104,7 @@ export class DelegateApproval extends Channel<DelegateApprovalEventName> {
         let result
         switch (key) {
             case "openPosition": {
-                result = await this._contractReader.canOpenPositionFor(this.account, this._delegate)
+                result = await this._contractReader.canOpenPositionFor(this.account, this.delegate)
                 break
             }
         }
