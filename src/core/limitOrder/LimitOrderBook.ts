@@ -28,9 +28,49 @@ export interface ILimitOrder {
 export class LimitOrderBook {
     constructor(protected readonly _perp: PerpetualProtocol) {}
 
-    // NOTE: slippage might be useful in the future. we don't use this parameter so far
-    async cancelLimitOrder(order: ILimitOrder, slippage: Big = BIG_ZERO) {
-        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "cancelLimiOrder" }))
+    async fillLimitOrder(
+        order: ILimitOrder,
+        signature: string,
+        roundIdWhenTriggered: BigNumber,
+        // NOTE: slippage might be useful in the future. we don't use this parameter so far
+        slippage: Big = BIG_ZERO,
+    ) {
+        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "fillLimitOrder" }))
+
+        const referralCodeAsBytes = order.referralCode
+            ? utils.formatBytes32String(order.referralCode)
+            : constants.HashZero
+
+        return getTransaction<ContractLimitOrderBook, "fillLimitOrder">({
+            account: this._perp.wallet.account,
+            contract: this._perp.contracts.limitOrderBook,
+            contractName: ContractName.CLEARINGHOUSE,
+            contractFunctionName: "fillLimitOrder",
+            args: [
+                {
+                    orderType: order.orderType,
+                    salt: big2BigNumber(order.salt),
+                    trader: order.trader,
+                    baseToken: order.baseToken,
+                    isBaseToQuote: order.isBaseToQuote,
+                    isExactInput: order.isExactInput,
+                    amount: big2BigNumber(order.amount),
+                    oppositeAmountBound: big2BigNumber(order.oppositeAmountBound),
+                    deadline: big2BigNumber(order.deadline),
+                    sqrtPriceLimitX96: big2BigNumber(order.sqrtPriceLimitX96),
+                    referralCode: referralCodeAsBytes,
+                    reduceOnly: order.reduceOnly,
+                    roundIdWhenCreated: big2BigNumber(order.roundIdWhenCreated),
+                    triggerPrice: big2BigNumber(order.triggerPrice),
+                },
+                signature,
+                roundIdWhenTriggered,
+            ],
+        })
+    }
+
+    async cancelLimitOrder(order: ILimitOrder) {
+        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "cancelLimitOrder" }))
 
         const referralCodeAsBytes = order.referralCode
             ? utils.formatBytes32String(order.referralCode)
