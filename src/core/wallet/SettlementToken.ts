@@ -50,6 +50,11 @@ export class SettlementToken extends Channel<CollateralEventName> {
         return 1
     }
 
+    // if there's no cap, return undefined
+    async cap() {
+        return undefined
+    }
+
     async balanceOf(account: string) {
         return this._contractReader.getBalanceOfSettlementToken(account)
     }

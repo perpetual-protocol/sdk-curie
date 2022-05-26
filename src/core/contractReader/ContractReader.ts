@@ -263,15 +263,17 @@ export class ContractReader {
                 const collateralManager = this.contracts.collateralManager
                 const collateralConfig = await collateralManager.getCollateralConfig(tokenAddress)
                 const priceFeed = collateralConfig.priceFeed
+
+                // collateralRatio & discountRatio are scaled up by 10^6 in contract, thus using offsetDecimalLeft to scale down
                 const collateralRatio = collateralConfig.collateralRatio
                 const discountRatio = collateralConfig.discountRatio
+
                 const depositCap = collateralConfig.depositCap
                 return {
                     priceFeed: priceFeed,
                     collateralRatio: offsetDecimalLeft(Big(collateralRatio), RATIO_DECIMAL).toNumber(),
                     discountRatio: offsetDecimalLeft(Big(discountRatio), RATIO_DECIMAL).toNumber(),
-                    // TODO: figure out the decimals
-                    depositCap: offsetDecimalLeft(bigNumber2Big(depositCap), COLLATERAL_TOKEN_DECIMAL),
+                    depositCap: bigNumber2Big(depositCap),
                 }
             },
             rawError =>
