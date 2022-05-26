@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0-canary.0...v1.5.0-canary.1) (2022-05-26)
+
+
+### Features
+
+* decimals considered for depositCap ([2d955cb](https://github.com/perpetual-protocol/sdk-curie/commit/2d955cb00bcd578260a4700775e2af2baa3f5e2e))
+
 ## [1.5.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.4.3...v1.5.0-canary.0) (2022-05-26)
 
 
