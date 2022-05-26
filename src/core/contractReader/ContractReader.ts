@@ -275,11 +275,13 @@ export class ContractReader {
                 const discountRatio = collateralConfig.discountRatio
 
                 const depositCap = collateralConfig.depositCap
+                const collateralToken = this.contracts.collateralTokenMap.get(tokenAddress)
+                const decimals = await collateralToken?.contract.decimals()
                 return {
                     priceFeed: priceFeed,
                     collateralRatio: scaleDownDecimals(Big(collateralRatio), RATIO_DECIMAL).toNumber(),
                     discountRatio: scaleDownDecimals(Big(discountRatio), RATIO_DECIMAL).toNumber(),
-                    depositCap: bigNumber2BigAndScaleDown(depositCap),
+                    depositCap: bigNumber2BigAndScaleDown(depositCap, decimals),
                 }
             },
             rawError =>
