@@ -12,8 +12,8 @@ import { PerpetualProtocol } from "../PerpetualProtocol"
 
 type CollateralEventName = "Approval" | "Transfer"
 
-type CacheKey = "symbol" | "decimals" | "weight" | "name" | "price"
-type CacheValue = number | string
+type CacheKey = "symbol" | "decimals" | "weight" | "cap" | "name" | "price"
+type CacheValue = number | string | Big
 
 export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
     private _cache: Map<CacheKey, CacheValue> = new Map()
@@ -52,6 +52,11 @@ export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
     // NOTE: should be a static value
     async weight({ cache = true } = {}) {
         return this._fetch("weight", { cache })
+    }
+
+    // NOTE: should be a static value
+    async cap({ cache = true } = {}) {
+        return this._fetch("cap", { cache })
     }
 
     async price({ cache = true } = {}) {
@@ -102,6 +107,7 @@ export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
     private async _fetch(key: "symbol", obj?: { cache: boolean }): Promise<string>
     private async _fetch(key: "decimals", obj?: { cache: boolean }): Promise<number>
     private async _fetch(key: "weight", obj?: { cache: boolean }): Promise<number>
+    private async _fetch(key: "cap", obj?: { cache: boolean }): Promise<Big>
     private async _fetch(key: "price", obj?: { cache: boolean }): Promise<number>
     private async _fetch(key: CacheKey, { cache = true } = {}) {
         if (this._cache.has(key) && cache) {
@@ -126,7 +132,11 @@ export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
                 break
             }
             case "weight": {
-                result = await this._contractReader.getWeightByToken(this.address)
+                result = (await this._contractReader.getCollateralConfig(this.address)).collateralRatio
+                break
+            }
+            case "cap": {
+                result = (await this._contractReader.getCollateralConfig(this.address)).depositCap
                 break
             }
             case "price": {

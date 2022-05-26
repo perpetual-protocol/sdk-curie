@@ -257,13 +257,22 @@ export class ContractReader {
         )
     }
 
-    async getWeightByToken(tokenAddress: string) {
+    async getCollateralConfig(tokenAddress: string) {
         return errorGuardAsync(
             async () => {
                 const collateralManager = this.contracts.collateralManager
-                const collateralRatio = (await collateralManager.getCollateralConfig(tokenAddress)).collateralRatio
-                // TODO(mc): convert to the correct decimals
-                return offsetDecimalLeft(Big(collateralRatio), RATIO_DECIMAL).toNumber()
+                const collateralConfig = await collateralManager.getCollateralConfig(tokenAddress)
+                const priceFeed = collateralConfig.priceFeed
+                const collateralRatio = collateralConfig.collateralRatio
+                const discountRatio = collateralConfig.discountRatio
+                const depositCap = collateralConfig.depositCap
+                return {
+                    priceFeed: priceFeed,
+                    collateralRatio: offsetDecimalLeft(Big(collateralRatio), RATIO_DECIMAL).toNumber(),
+                    discountRatio: offsetDecimalLeft(Big(discountRatio), RATIO_DECIMAL).toNumber(),
+                    // TODO: figure out the decimals
+                    depositCap: offsetDecimalLeft(bigNumber2Big(depositCap), COLLATERAL_TOKEN_DECIMAL),
+                }
             },
             rawError =>
                 new ContractReadError<CollateralManager>({
