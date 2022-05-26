@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.4.3...v1.5.0-canary.0) (2022-05-26)
+
+
+### Features
+
+* depositCap formatted ([8ad24c5](https://github.com/perpetual-protocol/sdk-curie/commit/8ad24c53a5f19a22ce630716b93f3c0a2b1c6756))
+* expose the entire CollateralConfig ([aef0be4](https://github.com/perpetual-protocol/sdk-curie/commit/aef0be416324716679c003b288ce8d433a1936cd))
+
+
+### Code Refactoring
+
+* formatter refactored ([8ca9aab](https://github.com/perpetual-protocol/sdk-curie/commit/8ca9aab71f098d38d21ba3fe8bce87f3e4015415))
+
 ### [1.4.3](https://github.com/perpetual-protocol/sdk-curie/compare/v1.4.3-canary.0...v1.4.3) (2022-05-24)
 
 ### [1.4.3-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.4.2-canary.3...v1.4.3-canary.0) (2022-05-24)
