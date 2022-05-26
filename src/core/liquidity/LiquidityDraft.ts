@@ -3,11 +3,11 @@ import { constants } from "ethers"
 
 import { BIG_ZERO } from "../../constants"
 import { tickToPrice, toSqrtX96 } from "../../utils"
-import { bigNum2Big } from "../../utils/formatters"
+import { bigNumber2BigAndScaleDown } from "../../utils/formatters"
 import { PerpetualProtocol } from "../PerpetualProtocol"
 import { LiquidityBase, LiquidityBaseConstructorData, RangeType } from "./LiquidityBase"
 
-const AMOUNT_MAX = bigNum2Big(constants.MaxUint256, 1)
+const AMOUNT_MAX = bigNumber2BigAndScaleDown(constants.MaxUint256, 1)
 
 export interface EventPayloadLiquidityAmountUpdated {
     quoteAmount?: Big

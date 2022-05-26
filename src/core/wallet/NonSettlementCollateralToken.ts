@@ -6,7 +6,7 @@ import { IERC20Metadata } from "../../contracts/type"
 import { Channel, ChannelEventSource } from "../../internal"
 import { Collateral } from "../../metadata"
 import { getTransaction } from "../../transactionSender"
-import { big2BigNumber, bigNumber2Big } from "../../utils"
+import { big2BigNumberAndScaleUp, bigNumber2BigAndScaleDown } from "../../utils"
 import { ContractReader } from "../contractReader"
 import { PerpetualProtocol } from "../PerpetualProtocol"
 
@@ -79,7 +79,7 @@ export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
             contract: this._contract,
             contractName: ContractName.COLLATERAL_TOKENS,
             contractFunctionName: "approve",
-            args: [spender, amount ? big2BigNumber(amount, decimals) : constants.MaxUint256],
+            args: [spender, amount ? big2BigNumberAndScaleUp(amount, decimals) : constants.MaxUint256],
         })
     }
     protected _getEventSourceMap() {
@@ -144,7 +144,7 @@ export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
                     this._priceFeedContract.getPrice(0),
                     this._priceFeedContract.decimals(),
                 ])
-                result = bigNumber2Big(price, decimals).toNumber()
+                result = bigNumber2BigAndScaleDown(price, decimals).toNumber()
                 break
             }
         }

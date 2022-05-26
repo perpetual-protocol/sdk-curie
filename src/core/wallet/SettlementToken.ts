@@ -6,7 +6,7 @@ import { ContractName } from "../../contracts"
 import { IERC20Metadata } from "../../contracts/type"
 import { Channel, ChannelEventSource } from "../../internal"
 import { getTransaction } from "../../transactionSender"
-import { big2BigNumber } from "../../utils"
+import { big2BigNumberAndScaleUp } from "../../utils"
 import { ContractReader } from "../contractReader"
 import { PerpetualProtocol } from "../PerpetualProtocol"
 
@@ -70,7 +70,7 @@ export class SettlementToken extends Channel<CollateralEventName> {
             contract: this._contract,
             contractName: ContractName.SETTLEMENT_TOKEN,
             contractFunctionName: "approve",
-            args: [spender, amount ? big2BigNumber(amount, decimals) : constants.MaxUint256],
+            args: [spender, amount ? big2BigNumberAndScaleUp(amount, decimals) : constants.MaxUint256],
         })
     }
     protected _getEventSourceMap() {
