@@ -2,7 +2,7 @@ import { BIG_ZERO, ERC20_DECIMAL_DIGITS } from "../../constants"
 import { ChannelEventSource, ChannelRegistry } from "../../internal"
 import { LiquidityBase, LiquidityBaseConstructorData, RangeType } from "./LiquidityBase"
 import { Position, PositionSide, PositionType } from "../position"
-import { offsetDecimalLeft, toSqrtX96 } from "../../utils"
+import { scaleDownDecimals, toSqrtX96 } from "../../utils"
 
 import Big from "big.js"
 import { FailedPreconditionError } from "../../errors"
@@ -226,8 +226,8 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
         }
 
         return {
-            amountQuote: offsetDecimalLeft(erc20DecimalAmountQuote, ERC20_DECIMAL_DIGITS),
-            amountBase: offsetDecimalLeft(erc20DecimalAmountBase, ERC20_DECIMAL_DIGITS),
+            amountQuote: scaleDownDecimals(erc20DecimalAmountQuote, ERC20_DECIMAL_DIGITS),
+            amountBase: scaleDownDecimals(erc20DecimalAmountBase, ERC20_DECIMAL_DIGITS),
         }
     }
 

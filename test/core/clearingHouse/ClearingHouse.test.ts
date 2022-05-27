@@ -1,4 +1,11 @@
-import { PerpetualProtocol, PositionSide, SupportedChainIds, Wallet, big2BigNumber, getTransaction } from "../../../src"
+import {
+    PerpetualProtocol,
+    PositionSide,
+    SupportedChainIds,
+    Wallet,
+    big2BigNumberAndScaleUp,
+    getTransaction,
+} from "../../../src"
 
 import Big from "big.js"
 import { ContractName } from "../../../src/contracts"
@@ -55,8 +62,8 @@ describe("ClearingHouse", () => {
                         baseToken: "0x5802918dc503c465f969da0847b71e3fbe9b141c",
                         isBaseToQuote: false,
                         isExactInput: true,
-                        amount: big2BigNumber(amountInput),
-                        oppositeAmountBound: big2BigNumber(oppositeAmountBound!),
+                        amount: big2BigNumberAndScaleUp(amountInput),
+                        oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound!),
                         sqrtPriceLimitX96: 0,
                         deadline: constants.MaxUint256,
                         referralCode: "0x0000000000000000000000000000000000000000000000000000000000000000",

@@ -7,7 +7,7 @@ import {
     hasNumberChange,
 } from "../../internal"
 import { PositionDraft, PositionDraftConstructorData } from "../position/PositionDraft"
-import { big2BigNumber, invariant, poll } from "../../utils"
+import { big2BigNumberAndScaleUp, invariant, poll } from "../../utils"
 import { constants, utils } from "ethers"
 
 import { BIG_ONE } from "../../constants"
@@ -19,7 +19,6 @@ import { LiquidityDraft } from "../liquidity/LiquidityDraft"
 import type { PerpetualProtocol } from "../PerpetualProtocol"
 import { Position } from "../position/Position"
 import { UnauthorizedError } from "../../errors"
-import { big2BigNum } from "../../utils/formatters"
 import { getTransaction } from "../../transactionSender"
 
 interface DraftPositionInput
@@ -92,8 +91,8 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
                     baseToken: positionDraft.market.baseAddress,
                     isBaseToQuote: positionDraft.isBaseToQuote,
                     isExactInput: positionDraft.isExactInput,
-                    amount: big2BigNumber(positionDraft.amountInput),
-                    oppositeAmountBound: big2BigNumber(oppositeAmountBound),
+                    amount: big2BigNumberAndScaleUp(positionDraft.amountInput),
+                    oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound),
                     sqrtPriceLimitX96: 0, // NOTE: this is for partial filled, disable by giving zero.
                     deadline: constants.MaxUint256, // NOTE: not important yet
                     referralCode: referralCodeAsBytes,
@@ -116,7 +115,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
             args: [
                 {
                     baseToken: position.market.baseAddress,
-                    oppositeAmountBound: big2BigNumber(oppositeAmountBound),
+                    oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound),
                     sqrtPriceLimitX96: 0, // NOTE: this is for partial filled, disable by giving zero.
                     deadline: constants.MaxUint256, // NOTE: not important yet
                     referralCode: referralCodeAsBytes,
@@ -131,10 +130,10 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         const baseAmount = await liquidityDraft.getBaseAmount()
         const quoteAmount = await liquidityDraft.getQuoteAmount()
 
-        const base = big2BigNum(baseAmount)
-        const quote = big2BigNum(quoteAmount)
-        const minBase = big2BigNum(baseAmount.mul(BIG_ONE.sub(slippage)))
-        const minQuote = big2BigNum(quoteAmount.mul(BIG_ONE.sub(slippage)))
+        const base = big2BigNumberAndScaleUp(baseAmount)
+        const quote = big2BigNumberAndScaleUp(quoteAmount)
+        const minBase = big2BigNumberAndScaleUp(baseAmount.mul(BIG_ONE.sub(slippage)))
+        const minQuote = big2BigNumberAndScaleUp(quoteAmount.mul(BIG_ONE.sub(slippage)))
 
         return getTransaction<ContractClearingHouse, "addLiquidity">({
             account: this._perp.wallet.account,
@@ -164,8 +163,8 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
 
         // TODO: so far we calculate minBase/minQuote by slippage directly
         // instead of querying contract call like position do
-        const minBase = big2BigNum(amountBase.mul(ratio).mul(BIG_ONE.sub(slippage)))
-        const minQuote = big2BigNum(amountQuote.mul(ratio).mul(BIG_ONE.sub(slippage)))
+        const minBase = big2BigNumberAndScaleUp(amountBase.mul(ratio).mul(BIG_ONE.sub(slippage)))
+        const minQuote = big2BigNumberAndScaleUp(amountQuote.mul(ratio).mul(BIG_ONE.sub(slippage)))
 
         return getTransaction<ContractClearingHouse, "removeLiquidity">({
             account: this._perp.wallet.account,
@@ -177,7 +176,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
                     baseToken: liquidity.market.baseAddress,
                     lowerTick: liquidity.lowerTick,
                     upperTick: liquidity.upperTick,
-                    liquidity: big2BigNum(liquidity.liquidity.mul(ratio), 0),
+                    liquidity: big2BigNumberAndScaleUp(liquidity.liquidity.mul(ratio), 0),
                     minBase,
                     minQuote,
                     deadline: constants.MaxUint256,
