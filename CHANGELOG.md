@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0...v1.6.0-canary.1) (2022-05-27)
+
+
+### Features
+
+* **error:** add MARKET_NUMBER_EXCEEDS_ERROR ([0e58879](https://github.com/perpetual-protocol/sdk-curie/commit/0e5887940edc9a786379aecce392ef104dfd19d7))
+
+
+### Bug Fixes
+
+* **contract reader:** parse MARKET_NUMBER_EXCEEDS_ERROR in simulateOpenPosition ([ad7aaae](https://github.com/perpetual-protocol/sdk-curie/commit/ad7aaae07631b3f66b9115e81325df2a4a952fbf))
+
+
+### Build System
+
+* rebase version ([c1e609e](https://github.com/perpetual-protocol/sdk-curie/commit/c1e609e80bc9885f446ca415b72d5cfcf88d5a8c))
+
 ## [1.5.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0-canary.1...v1.5.0) (2022-05-27)
 
 ## [1.5.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0-canary.0...v1.5.0-canary.1) (2022-05-26)
