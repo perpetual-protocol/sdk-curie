@@ -21,6 +21,7 @@ import {
     OverPriceLimitAfterSwapError,
     UniswapBrokerInsufficientLiquidityError,
     extractContractErrorCode,
+    MarketNumberExceedsError,
 } from "../../errors"
 import { ContractName, Contracts } from "../../contracts"
 import { NonSettlementCollateralToken, SettlementToken } from "../wallet"
@@ -757,6 +758,13 @@ export class ContractReader {
                     return new OverPriceLimitAfterSwapError({
                         contractName: ContractName.CLEARINGHOUSE,
                         contractFunctionName: "swap",
+                        contractErrorCode,
+                        rawError,
+                    })
+                } else if (contractErrorCode === ContractErrorCode.MARKET_NUMBER_EXCEEDS) {
+                    return new MarketNumberExceedsError({
+                        contractName: ContractName.ACCOUNT_BALANCE,
+                        contractFunctionName: "registerBaseToken",
                         contractErrorCode,
                         rawError,
                     })
