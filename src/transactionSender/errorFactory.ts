@@ -17,6 +17,7 @@ import {
     extractContractErrorCode,
     isRpcNativeGasTooLowError,
     isRpcNativeUserDeniedError,
+    MarketNumberExceedsError,
 } from "../errors"
 import { ClearingHouse, Exchange, OrderBook } from "../contracts/type"
 
@@ -94,6 +95,10 @@ export function getTransactionErrorFactory({
         case ContractErrorCode.LIQUIDITY_MATH_ERROR_LA:
         case ContractErrorCode.LIQUIDITY_MATH_ERROR_LS: {
             ErrorClass = UniswapV3Error
+            break
+        }
+        case ContractErrorCode.MARKET_NUMBER_EXCEEDS: {
+            ErrorClass = MarketNumberExceedsError
             break
         }
         default: {

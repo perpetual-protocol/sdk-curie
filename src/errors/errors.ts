@@ -1,4 +1,4 @@
-import { ClearingHouse, Exchange, OrderBook, Quoter, Vault } from "../contracts/type"
+import { AccountBalance, ClearingHouse, Exchange, OrderBook, Quoter, Vault } from "../contracts/type"
 import { Contract, Contract as EthersContract } from "@ethersproject/contracts"
 
 /* CONTRACT */
@@ -30,6 +30,7 @@ export enum ContractErrorCode {
     ORDERS_NUMBER_EXCEEDS = "OB_ONE",
     NOT_ENOUGH_LIQUIDITY = "OB_NEL",
     NON_EXISTENT_OPEN_ORDER = "OB_NEO",
+    MARKET_NUMBER_EXCEEDS = "AB_MNE",
 
     /* UNISWAP ERROR */
     LIQUIDITY_MATH_ERROR_LS = "LS", // https://github.com/Uniswap/v3-core/blob/f03155670ec1667406b83a539e23dcccf32a03bc/contracts/libraries/LiquidityMath.sol#L12
@@ -69,6 +70,7 @@ export enum ErrorName {
     ORDERS_NUMBER_EXCEEDS_ERROR = "orders_number_exceeds_error",
     NOT_ENOUGH_LIQUIDITY_ERROR = "not_enough_liquidity_error",
     NON_EXISTENT_OPEN_ORDER_ERROR = "non_existent_open_order_error",
+    MARKET_NUMBER_EXCEEDS_ERROR = "market_number_exceeds_error",
 
     /* UNISWAP Error*/
     UNISWAP_ERROR = "uniswap_error",
@@ -360,6 +362,13 @@ export class NonExistentOpenOrderError extends ContractWriteError<OrderBook> {
     constructor(data: ContractWriteErrorParams<keyof OrderBook>) {
         super({ ...data })
         this.name = ErrorName.NON_EXISTENT_OPEN_ORDER_ERROR
+    }
+}
+
+export class MarketNumberExceedsError extends ContractWriteError<AccountBalance> {
+    constructor(data: ContractWriteErrorParams<keyof AccountBalance>) {
+        super({ ...data })
+        this.name = ErrorName.MARKET_NUMBER_EXCEEDS_ERROR
     }
 }
 
