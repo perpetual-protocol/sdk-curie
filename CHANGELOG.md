@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.1-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.0-canary.1...v1.6.1-canary.0) (2022-05-30)
+
+
+### Bug Fixes
+
+* rebase version ([bc24374](https://github.com/perpetual-protocol/sdk-curie/commit/bc243742d276449087bd549329bf61fe218606c5))
+
 ## [1.6.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0...v1.6.0-canary.1) (2022-05-27)
 
 
