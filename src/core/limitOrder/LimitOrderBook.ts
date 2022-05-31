@@ -37,10 +37,6 @@ export class LimitOrderBook {
     ) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "fillLimitOrder" }))
 
-        const referralCodeAsBytes = order.referralCode
-            ? utils.formatBytes32String(order.referralCode)
-            : constants.HashZero
-
         return getTransaction<ContractLimitOrderBook, "fillLimitOrder">({
             account: this._perp.wallet.account,
             contract: this._perp.contracts.limitOrderBook,
@@ -58,7 +54,7 @@ export class LimitOrderBook {
                     oppositeAmountBound: big2BigNumber(order.oppositeAmountBound),
                     deadline: big2BigNumber(order.deadline),
                     sqrtPriceLimitX96: big2BigNumber(order.sqrtPriceLimitX96),
-                    referralCode: referralCodeAsBytes,
+                    referralCode: order.referralCode,
                     reduceOnly: order.reduceOnly,
                     roundIdWhenCreated: big2BigNumber(order.roundIdWhenCreated),
                     triggerPrice: big2BigNumber(order.triggerPrice),
@@ -71,10 +67,6 @@ export class LimitOrderBook {
 
     async cancelLimitOrder(order: ILimitOrder) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "cancelLimitOrder" }))
-
-        const referralCodeAsBytes = order.referralCode
-            ? utils.formatBytes32String(order.referralCode)
-            : constants.HashZero
 
         return getTransaction<ContractLimitOrderBook, "cancelLimitOrder">({
             account: this._perp.wallet.account,
@@ -91,9 +83,10 @@ export class LimitOrderBook {
                     isExactInput: order.isExactInput,
                     amount: big2BigNumber(order.amount),
                     oppositeAmountBound: big2BigNumber(order.oppositeAmountBound),
-                    deadline: big2BigNumber(order.deadline),
+                    deadline: big2BigNumber(order.deadline, 0),
                     sqrtPriceLimitX96: big2BigNumber(order.sqrtPriceLimitX96),
-                    referralCode: referralCodeAsBytes,
+                    // NOTE: referralCode must be byte32string which is returned from appsync
+                    referralCode: order.referralCode,
                     reduceOnly: order.reduceOnly,
                     roundIdWhenCreated: big2BigNumber(order.roundIdWhenCreated),
                     triggerPrice: big2BigNumber(order.triggerPrice),

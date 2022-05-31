@@ -144,6 +144,7 @@ export class Contracts {
             })
         })
         this.delegateApproval = this.delegateApproval.connect(signer)
+        this.limitOrderBook = this.limitOrderBook.connect(signer)
     }
 
     createIERC20Token(tokenAddress: string) {
