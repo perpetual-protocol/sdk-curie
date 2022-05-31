@@ -2,39 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [1.6.0-dev1.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0...v1.6.0-dev1.0) (2022-05-31)
+### [1.6.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1-canary.0...v1.6.1) (2022-05-31)
 
-
-### Features
-
-* add DelegateApproval contract ([069a088](https://github.com/perpetual-protocol/sdk-curie/commit/069a088ceb965a0c55c9d6ee076bdbf88deeebf9))
-* add fillLimitOrder() ([84a492e](https://github.com/perpetual-protocol/sdk-curie/commit/84a492e448929f48052b60ec479e759560b79110))
-* add limit order into perp/sdk ([4bb1ae0](https://github.com/perpetual-protocol/sdk-curie/commit/4bb1ae0eda292a52098516f5e6b3d1382ecbf68b))
-* add LimitOrderBook contract ([3391b5f](https://github.com/perpetual-protocol/sdk-curie/commit/3391b5fa4fb44bbba1e7cfcb1c1368803eb3be65))
-* finish DelegateApproval (WIP) ([8621399](https://github.com/perpetual-protocol/sdk-curie/commit/86213999525ba053d38ef0c39f3128cf261fc541))
+### [1.6.1-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.0-canary.1...v1.6.1-canary.0) (2022-05-30)
 
 
 ### Bug Fixes
 
-* breaking change for formatters ([21a9c5b](https://github.com/perpetual-protocol/sdk-curie/commit/21a9c5b58d4da2796f3e9e030387c76f704cdaa8))
-* signer issue ([5c3a3eb](https://github.com/perpetual-protocol/sdk-curie/commit/5c3a3eb0550d9ff6ff7152dfc629c4e48b60ce61))
+* rebase version ([bc24374](https://github.com/perpetual-protocol/sdk-curie/commit/bc243742d276449087bd549329bf61fe218606c5))
+
+## [1.6.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0...v1.6.0-canary.1) (2022-05-27)
 
 
-### Code Refactoring
+### Features
 
-* make delegate public ([b0ad5c3](https://github.com/perpetual-protocol/sdk-curie/commit/b0ad5c39e5d5e35a772f9b1e454c0514405ea247))
-
-
-### Others
-
-* add .env ([8f941a2](https://github.com/perpetual-protocol/sdk-curie/commit/8f941a20821854a628d4b64591ade339cad56d2a))
-* update npm script ([3cb2e69](https://github.com/perpetual-protocol/sdk-curie/commit/3cb2e69e189581d0d0028a57ca738edcca80c196))
-* update prebuild script for ci testing job ([453520b](https://github.com/perpetual-protocol/sdk-curie/commit/453520b496e3383b4187254d8de1d25424cd3ceb))
+* **error:** add MARKET_NUMBER_EXCEEDS_ERROR ([0e58879](https://github.com/perpetual-protocol/sdk-curie/commit/0e5887940edc9a786379aecce392ef104dfd19d7))
 
 
-### CI
+### Bug Fixes
 
-* update workflow with environment variables ([3242dfc](https://github.com/perpetual-protocol/sdk-curie/commit/3242dfc70d387db36d4d7990a1d00170f0f25faa))
+* **contract reader:** parse MARKET_NUMBER_EXCEEDS_ERROR in simulateOpenPosition ([ad7aaae](https://github.com/perpetual-protocol/sdk-curie/commit/ad7aaae07631b3f66b9115e81325df2a4a952fbf))
+
+
+### Build System
+
+* rebase version ([c1e609e](https://github.com/perpetual-protocol/sdk-curie/commit/c1e609e80bc9885f446ca415b72d5cfcf88d5a8c))
 
 ## [1.5.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0-canary.1...v1.5.0) (2022-05-27)
 
