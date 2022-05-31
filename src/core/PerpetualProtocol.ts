@@ -15,6 +15,8 @@ import { Vault } from "./vault"
 import { Wallet } from "./wallet"
 import { DelegateApproval, DelegateApprovalConfigs } from "./clearingHouse/DelegateApproval"
 import { invariant } from "../utils"
+import { LimitOrderBook } from "./limitOrder"
+import { LimitOrderBook__factory } from "../contracts/type"
 
 interface ModuleConfigs {
     vault?: ModuleConfig
@@ -43,6 +45,7 @@ export interface PerpetualProtocolConnected extends PerpetualProtocolInitialized
     liquidities: Liquidities
     vault: Vault
     delegateApproval: DelegateApproval
+    limitOrderBook: LimitOrderBook
 }
 
 /**
@@ -68,6 +71,7 @@ class PerpetualProtocol {
     private _positions?: Positions
     private _liquidities?: Liquidities
     private _delegateApproval?: DelegateApproval
+    private _limitOrderBook?: LimitOrderBook
 
     get metadata() {
         return this._metadata as Metadata
@@ -131,6 +135,10 @@ class PerpetualProtocol {
         return this._delegateApproval
     }
 
+    get limitOrderBook() {
+        return this._limitOrderBook
+    }
+
     constructor({ chainId, providerConfigs, moduleConfigs }: PerpetualProtocolConfig) {
         // NOTE: throw error if the user try to use an unsupported chainId to init the sdk
         if (!isSupportedChainId(chainId)) {
@@ -179,7 +187,8 @@ class PerpetualProtocol {
         this._vault = new Vault(this, account)
 
         if (this.hasConnected()) {
-            this._delegateApproval = new DelegateApproval(this, account, this.moduleConfigs?.delegateApproval)
+            this._delegateApproval = new DelegateApproval(this, this.moduleConfigs?.delegateApproval)
+            this._limitOrderBook = new LimitOrderBook(this)
             this._positions = new Positions(this)
             this._liquidities = new Liquidities(this)
         }

@@ -56,6 +56,7 @@ export enum ErrorName {
     INSUFFICIENT_LIQUIDITY_ERROR = "insufficient_liquidity_error",
     UNISWAP_BROKER_INSUFFICIENT_LIQUIDITY_ERROR = "uniswap_broker_insufficient_liquidity_error",
     NOT_ENOUGH_FREE_COLLATERAL_ERROR = "not_enough_free_collateral_error",
+    REDUCE_POSITION_TOO_MUCH_ERROR = "reduce_position_too_much_error",
 
     /* CONTRACT WRITE */
     CONTRACT_WRITE_ERROR = "contract_write_error",
@@ -243,6 +244,13 @@ export class NotEnoughFreeCollateralError extends ContractReadError<ClearingHous
     constructor(data: ContractReadErrorParams<keyof ClearingHouse>) {
         super(data)
         this.name = ErrorName.NOT_ENOUGH_FREE_COLLATERAL_ERROR
+    }
+}
+
+export class ReducePositionInvalidError extends ContractReadError<ClearingHouse> {
+    constructor(data: ContractReadErrorParams<keyof ClearingHouse>) {
+        super(data)
+        this.name = ErrorName.REDUCE_POSITION_TOO_MUCH_ERROR
     }
 }
 

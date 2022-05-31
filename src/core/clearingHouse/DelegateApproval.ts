@@ -1,7 +1,7 @@
 import { invariant, poll } from "../../utils"
 import { DelegateApproval as ContractDelegateApproval } from "../../contracts/type"
 import { ContractName } from "../../contracts"
-import type { PerpetualProtocol } from "../PerpetualProtocol"
+import type { PerpetualProtocol, PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { UnauthorizedError } from "../../errors"
 import { ContractReader } from "../contractReader"
 import { getTransaction } from "../../transactionSender"
@@ -20,15 +20,13 @@ export interface DelegateApprovalConfigs {
 export class DelegateApproval extends Channel<DelegateApprovalEventName> {
     private readonly _contractReader: ContractReader
     private _cache: Map<CacheKey, CacheValue> = new Map()
+    private readonly _account: string
     public delegate: string
 
-    constructor(
-        protected readonly _perp: PerpetualProtocol,
-        readonly account: string,
-        configs?: DelegateApprovalConfigs,
-    ) {
+    constructor(protected readonly _perp: PerpetualProtocolConnected, configs?: DelegateApprovalConfigs) {
         super(_perp.channelRegistry)
         this._contractReader = _perp.contractReader
+        this._account = _perp.wallet.account
         this.delegate = configs ? configs.delegate : _perp.metadata.contracts.LimitOrderBook.address
     }
 
@@ -104,7 +102,7 @@ export class DelegateApproval extends Channel<DelegateApprovalEventName> {
         let result
         switch (key) {
             case "openPosition": {
-                result = await this._contractReader.canOpenPositionFor(this.account, this.delegate)
+                result = await this._contractReader.canOpenPositionFor(this._account, this.delegate)
                 break
             }
         }
