@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0-dev1.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0...v1.6.0-dev1.0) (2022-05-31)
+
+
+### Features
+
+* add DelegateApproval contract ([069a088](https://github.com/perpetual-protocol/sdk-curie/commit/069a088ceb965a0c55c9d6ee076bdbf88deeebf9))
+* add fillLimitOrder() ([84a492e](https://github.com/perpetual-protocol/sdk-curie/commit/84a492e448929f48052b60ec479e759560b79110))
+* add limit order into perp/sdk ([4bb1ae0](https://github.com/perpetual-protocol/sdk-curie/commit/4bb1ae0eda292a52098516f5e6b3d1382ecbf68b))
+* add LimitOrderBook contract ([3391b5f](https://github.com/perpetual-protocol/sdk-curie/commit/3391b5fa4fb44bbba1e7cfcb1c1368803eb3be65))
+* finish DelegateApproval (WIP) ([8621399](https://github.com/perpetual-protocol/sdk-curie/commit/86213999525ba053d38ef0c39f3128cf261fc541))
+
+
+### Bug Fixes
+
+* breaking change for formatters ([21a9c5b](https://github.com/perpetual-protocol/sdk-curie/commit/21a9c5b58d4da2796f3e9e030387c76f704cdaa8))
+* signer issue ([5c3a3eb](https://github.com/perpetual-protocol/sdk-curie/commit/5c3a3eb0550d9ff6ff7152dfc629c4e48b60ce61))
+
+
+### Code Refactoring
+
+* make delegate public ([b0ad5c3](https://github.com/perpetual-protocol/sdk-curie/commit/b0ad5c39e5d5e35a772f9b1e454c0514405ea247))
+
+
+### Others
+
+* add .env ([8f941a2](https://github.com/perpetual-protocol/sdk-curie/commit/8f941a20821854a628d4b64591ade339cad56d2a))
+* update npm script ([3cb2e69](https://github.com/perpetual-protocol/sdk-curie/commit/3cb2e69e189581d0d0028a57ca738edcca80c196))
+* update prebuild script for ci testing job ([453520b](https://github.com/perpetual-protocol/sdk-curie/commit/453520b496e3383b4187254d8de1d25424cd3ceb))
+
+
+### CI
+
+* update workflow with environment variables ([3242dfc](https://github.com/perpetual-protocol/sdk-curie/commit/3242dfc70d387db36d4d7990a1d00170f0f25faa))
+
 ## [1.5.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0-canary.1...v1.5.0) (2022-05-27)
 
 ## [1.5.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.5.0-canary.0...v1.5.0-canary.1) (2022-05-26)
