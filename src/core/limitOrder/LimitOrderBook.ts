@@ -1,6 +1,6 @@
 import { BigNumber, utils, constants } from "ethers"
 import Big from "big.js"
-import { big2BigNumber, invariant, poll } from "../../utils"
+import { big2BigNumberAndScaleUp, invariant, poll } from "../../utils"
 import { LimitOrderBook as ContractLimitOrderBook } from "../../contracts/type"
 import { ContractName } from "../../contracts"
 import type { PerpetualProtocol } from "../PerpetualProtocol"
@@ -45,19 +45,19 @@ export class LimitOrderBook {
             args: [
                 {
                     orderType: order.orderType,
-                    salt: big2BigNumber(order.salt),
+                    salt: big2BigNumberAndScaleUp(order.salt),
                     trader: order.trader,
                     baseToken: order.baseToken,
                     isBaseToQuote: order.isBaseToQuote,
                     isExactInput: order.isExactInput,
-                    amount: big2BigNumber(order.amount),
-                    oppositeAmountBound: big2BigNumber(order.oppositeAmountBound),
-                    deadline: big2BigNumber(order.deadline),
-                    sqrtPriceLimitX96: big2BigNumber(order.sqrtPriceLimitX96),
+                    amount: big2BigNumberAndScaleUp(order.amount),
+                    oppositeAmountBound: big2BigNumberAndScaleUp(order.oppositeAmountBound),
+                    deadline: big2BigNumberAndScaleUp(order.deadline),
+                    sqrtPriceLimitX96: big2BigNumberAndScaleUp(order.sqrtPriceLimitX96),
                     referralCode: order.referralCode,
                     reduceOnly: order.reduceOnly,
-                    roundIdWhenCreated: big2BigNumber(order.roundIdWhenCreated),
-                    triggerPrice: big2BigNumber(order.triggerPrice),
+                    roundIdWhenCreated: big2BigNumberAndScaleUp(order.roundIdWhenCreated),
+                    triggerPrice: big2BigNumberAndScaleUp(order.triggerPrice),
                 },
                 signature,
                 roundIdWhenTriggered,
@@ -76,20 +76,20 @@ export class LimitOrderBook {
             args: [
                 {
                     orderType: order.orderType,
-                    salt: big2BigNumber(order.salt),
+                    salt: big2BigNumberAndScaleUp(order.salt),
                     trader: order.trader,
                     baseToken: order.baseToken,
                     isBaseToQuote: order.isBaseToQuote,
                     isExactInput: order.isExactInput,
-                    amount: big2BigNumber(order.amount),
-                    oppositeAmountBound: big2BigNumber(order.oppositeAmountBound),
-                    deadline: big2BigNumber(order.deadline, 0),
-                    sqrtPriceLimitX96: big2BigNumber(order.sqrtPriceLimitX96),
+                    amount: big2BigNumberAndScaleUp(order.amount),
+                    oppositeAmountBound: big2BigNumberAndScaleUp(order.oppositeAmountBound),
+                    deadline: big2BigNumberAndScaleUp(order.deadline, 0),
+                    sqrtPriceLimitX96: big2BigNumberAndScaleUp(order.sqrtPriceLimitX96),
                     // NOTE: referralCode must be byte32string which is returned from appsync
                     referralCode: order.referralCode,
                     reduceOnly: order.reduceOnly,
-                    roundIdWhenCreated: big2BigNumber(order.roundIdWhenCreated),
-                    triggerPrice: big2BigNumber(order.triggerPrice),
+                    roundIdWhenCreated: big2BigNumberAndScaleUp(order.roundIdWhenCreated),
+                    triggerPrice: big2BigNumberAndScaleUp(order.triggerPrice),
                 },
             ],
         })
