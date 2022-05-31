@@ -3,20 +3,20 @@ import { ERC20_DECIMAL_DIGITS, Q96 } from "../constants"
 import Big from "big.js"
 import { BigNumber } from "ethers"
 
-export function bigNumber2Big(val: BigNumber, decimals: number = ERC20_DECIMAL_DIGITS) {
-    return new Big(val.toString()).div(new Big(10).pow(decimals))
+function bigNumber2Big(value: BigNumber): Big {
+    return new Big(value.toString())
 }
-export function bigNum2Big(val: BigNumber, decimals: number = ERC20_DECIMAL_DIGITS): Big {
-    return new Big(val.toString()).div(new Big(10).pow(decimals))
+
+export function bigNumber2BigAndScaleDown(value: BigNumber, decimals: number = ERC20_DECIMAL_DIGITS): Big {
+    return scaleDownDecimals(bigNumber2Big(value), decimals)
 }
-export function big2BigNumber(val: Big, decimals: number = ERC20_DECIMAL_DIGITS) {
-    return BigNumber.from(val.mul(new Big(10).pow(decimals)).toFixed(0))
+
+export function big2BigNumberAndScaleUp(value: Big, decimals: number = ERC20_DECIMAL_DIGITS): BigNumber {
+    return BigNumber.from(scaleUpDecimals(value, decimals).toFixed(0))
 }
-export function big2BigNum(val: Big, decimals: number = ERC20_DECIMAL_DIGITS): BigNumber {
-    return BigNumber.from(val.mul(new Big(10).pow(decimals)).toFixed(0))
-}
+
 export function fromSqrtX96(value: BigNumber) {
-    return bigNumber2Big(value, 0).div(Q96).pow(2)
+    return bigNumber2Big(value).div(Q96).pow(2)
 }
 
 export function toSqrtX96(value: Big) {
@@ -27,12 +27,12 @@ export function encodePriceSqrt(amount1: Big, amount0: Big) {
     return BigNumber.from(amount1.div(amount0).sqrt().mul(Q96).round().toString())
 }
 
-export function offsetDecimalLeft(number: Big, decimal: number) {
-    return number.div(new Big(10).pow(decimal))
+export function scaleDownDecimals(number: Big, decimals: number) {
+    return number.div(new Big(10).pow(decimals))
 }
 
-export function offsetDecimalRight(number: Big, decimal: number) {
-    return number.mul(new Big(10).pow(decimal))
+export function scaleUpDecimals(number: Big, decimals: number) {
+    return number.mul(new Big(10).pow(decimals))
 }
 
 /**

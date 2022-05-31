@@ -41,6 +41,8 @@ jobs:
               run: |
                   git config --global user.email "dev@perp.fi"
                   git config --global user.name "Perpetual Protocol"
+                  echo $GITHUB_REF
+                  echo $GITHUB_SHA
 
             # update package.json version, add CHANGELOG & commit changes
             - name: Bump version
@@ -58,8 +60,8 @@ jobs:
             - name: Publish package
               id: publish-package
               run: |
-                  echo tag: N/A (using the default 'latest' tag for production)
-                  echo version: ${{ steps.bump-version.outputs.pkg_version }}
+                  echo "tag: N/A (using the default 'latest' tag for production)"
+                  echo "version: ${{ steps.bump-version.outputs.pkg_version }}"
                   yarn release
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

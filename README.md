@@ -130,7 +130,7 @@ const liquidityDraft = perp.clearingHouse.createLiquidityDraft({
 perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
 ```
 
-## Close liquidity
+## Remove liquidity
 
 -   `ratio` means how much ratio you would like to remove. 1 means 100%
 -   Use `filterFn` to filter out liquidity you would like to remove.

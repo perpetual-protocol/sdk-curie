@@ -14,7 +14,7 @@ import {
     hasNumberChange,
 } from "../../internal"
 import { getTransaction } from "../../transactionSender"
-import { big2BigNumber, invariant, poll } from "../../utils"
+import { big2BigNumberAndScaleUp, invariant, poll } from "../../utils"
 import { ContractReader } from "../contractReader"
 import type { PerpetualProtocol } from "../PerpetualProtocol"
 import { NonSettlementCollateralToken } from "../wallet/NonSettlementCollateralToken"
@@ -69,13 +69,13 @@ class Vault extends Channel<VaultEventName> {
             contract: this._contract,
             contractName: ContractName.VAULT,
             contractFunctionName: "deposit",
-            args: [address, big2BigNumber(amount, decimals)],
+            args: [address, big2BigNumberAndScaleUp(amount, decimals)],
         })
     }
 
     async depositETH(amount: Big) {
         return getTransaction<ContractVault, "depositEther">({
-            value: big2BigNumber(amount, ETH_DECIMAL_DIGITS),
+            value: big2BigNumberAndScaleUp(amount, ETH_DECIMAL_DIGITS),
             account: this.account,
             contract: this._contract,
             contractName: ContractName.VAULT,
@@ -92,7 +92,7 @@ class Vault extends Channel<VaultEventName> {
             contract: this._contract,
             contractName: ContractName.VAULT,
             contractFunctionName: "withdraw",
-            args: [address, big2BigNumber(amount, decimals)],
+            args: [address, big2BigNumberAndScaleUp(amount, decimals)],
         })
     }
 
@@ -102,7 +102,7 @@ class Vault extends Channel<VaultEventName> {
             contract: this._contract,
             contractName: ContractName.VAULT,
             contractFunctionName: "withdrawEther",
-            args: [big2BigNumber(amount, ETH_DECIMAL_DIGITS)],
+            args: [big2BigNumberAndScaleUp(amount, ETH_DECIMAL_DIGITS)],
         })
     }
 

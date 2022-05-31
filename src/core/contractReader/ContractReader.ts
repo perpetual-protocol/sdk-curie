@@ -25,7 +25,13 @@ import {
 } from "../../errors"
 import { ContractName, Contracts } from "../../contracts"
 import { NonSettlementCollateralToken, SettlementToken } from "../wallet"
-import { big2BigNumber, bigNumber2Big, errorGuardAsync, fromSqrtX96, offsetDecimalLeft } from "../../utils"
+import {
+    big2BigNumberAndScaleUp,
+    bigNumber2BigAndScaleDown,
+    errorGuardAsync,
+    fromSqrtX96,
+    scaleDownDecimals,
+} from "../../utils"
 import { contractCallsParserForErrorHandling, genKeyFromContractAndFuncName } from "./utils"
 
 import Big from "big.js"
@@ -162,7 +168,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const balance = await this._provider.getBalance(account)
-                return bigNumber2Big(balance)
+                return bigNumber2BigAndScaleDown(balance)
             },
             rawError =>
                 new ContractReadError({
@@ -178,7 +184,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const accountValue = await this.contracts.vault.getAccountValue(account)
-                return bigNumber2Big(accountValue, SETTLEMENT_TOKEN_DECIMAL)
+                return bigNumber2BigAndScaleDown(accountValue, SETTLEMENT_TOKEN_DECIMAL)
             },
             rawError =>
                 new ContractReadError<Vault>({
@@ -194,7 +200,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const freeCollateral = await this.contracts.vault.getFreeCollateral(account)
-                return bigNumber2Big(freeCollateral, COLLATERAL_TOKEN_DECIMAL)
+                return bigNumber2BigAndScaleDown(freeCollateral, COLLATERAL_TOKEN_DECIMAL)
             },
             rawError =>
                 new ContractReadError<Vault>({
@@ -212,7 +218,7 @@ export class ContractReader {
                 const tokenAddress = token.address
                 const tokenDecimals = await token.decimals()
                 const freeCollateral = await this.contracts.vault.getFreeCollateralByToken(account, tokenAddress)
-                return bigNumber2Big(freeCollateral, tokenDecimals)
+                return bigNumber2BigAndScaleDown(freeCollateral, tokenDecimals)
             },
             rawError =>
                 new ContractReadError<Vault>({
@@ -228,7 +234,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const freeCollateral = await this.contracts.vault.getSettlementTokenValue(account)
-                return bigNumber2Big(freeCollateral, SETTLEMENT_TOKEN_DECIMAL)
+                return bigNumber2BigAndScaleDown(freeCollateral, SETTLEMENT_TOKEN_DECIMAL)
             },
             rawError =>
                 new ContractReadError<Vault>({
@@ -246,7 +252,7 @@ export class ContractReader {
                 const tokenAddress = token.address
                 const tokenDecimals = await token.decimals()
                 const freeCollateral = await this.contracts.vault.getBalanceByToken(account, tokenAddress)
-                return bigNumber2Big(freeCollateral, tokenDecimals)
+                return bigNumber2BigAndScaleDown(freeCollateral, tokenDecimals)
             },
             rawError =>
                 new ContractReadError<Vault>({
@@ -258,13 +264,26 @@ export class ContractReader {
         )
     }
 
-    async getWeightByToken(tokenAddress: string) {
+    async getCollateralConfig(tokenAddress: string) {
         return errorGuardAsync(
             async () => {
                 const collateralManager = this.contracts.collateralManager
-                const collateralRatio = (await collateralManager.getCollateralConfig(tokenAddress)).collateralRatio
-                // TODO(mc): convert to the correct decimals
-                return offsetDecimalLeft(Big(collateralRatio), RATIO_DECIMAL).toNumber()
+                const collateralConfig = await collateralManager.getCollateralConfig(tokenAddress)
+                const priceFeed = collateralConfig.priceFeed
+
+                // collateralRatio & discountRatio are scaled up by 10^6 in contract, thus using scaleDownDecimals to scale down
+                const collateralRatio = collateralConfig.collateralRatio
+                const discountRatio = collateralConfig.discountRatio
+
+                const depositCap = collateralConfig.depositCap
+                const collateralToken = this.contracts.collateralTokenMap.get(tokenAddress)
+                const decimals = await collateralToken?.contract.decimals()
+                return {
+                    priceFeed: priceFeed,
+                    collateralRatio: scaleDownDecimals(Big(collateralRatio), RATIO_DECIMAL).toNumber(),
+                    discountRatio: scaleDownDecimals(Big(discountRatio), RATIO_DECIMAL).toNumber(),
+                    depositCap: bigNumber2BigAndScaleDown(depositCap, decimals),
+                }
             },
             rawError =>
                 new ContractReadError<CollateralManager>({
@@ -282,7 +301,7 @@ export class ContractReader {
                 const token = this.contracts.collateralTokenMap.get(tokenAddress)?.contract
                 if (!token) throw new Error(`Collateral token ${tokenAddress} not found`)
                 const [allowance, decimals] = await Promise.all([token.allowance(account, spender), token.decimals()])
-                return bigNumber2Big(allowance, decimals)
+                return bigNumber2BigAndScaleDown(allowance, decimals)
             },
             rawError =>
                 new ContractReadError<IERC20Metadata>({
@@ -299,7 +318,7 @@ export class ContractReader {
             async () => {
                 const token = this.contracts.settlementToken
                 const allowance = await token.allowance(account, spender)
-                return bigNumber2Big(allowance, SETTLEMENT_TOKEN_DECIMAL)
+                return bigNumber2BigAndScaleDown(allowance, SETTLEMENT_TOKEN_DECIMAL)
             },
             rawError =>
                 new ContractReadError<IERC20Metadata>({
@@ -317,7 +336,7 @@ export class ContractReader {
                 const token = this.contracts.collateralTokenMap.get(tokenAddress)?.contract
                 if (!token) throw new Error(`Collateral token ${tokenAddress} not found`)
                 const balance = await token.balanceOf(account)
-                return bigNumber2Big(balance, decimals)
+                return bigNumber2BigAndScaleDown(balance, decimals)
             },
             rawError =>
                 new ContractReadError<IERC20Metadata>({
@@ -334,7 +353,7 @@ export class ContractReader {
             async () => {
                 const token = this.contracts.settlementToken
                 const balance = await token.balanceOf(account)
-                return bigNumber2Big(balance, SETTLEMENT_TOKEN_DECIMAL)
+                return bigNumber2BigAndScaleDown(balance, SETTLEMENT_TOKEN_DECIMAL)
             },
             rawError =>
                 new ContractReadError<IERC20Metadata>({
@@ -431,7 +450,7 @@ export class ContractReader {
             async () => {
                 const contract = this.contracts.baseToken.attach(baseTokenAddress)
                 const indexPrice = await contract.getIndexPrice(interval)
-                return bigNumber2Big(indexPrice)
+                return bigNumber2BigAndScaleDown(indexPrice)
             },
             rawError =>
                 new ContractReadError<BaseToken>({
@@ -469,14 +488,14 @@ export class ContractReader {
                         baseToken: baseTokenAddress,
                         isBaseToQuote,
                         isExactInput,
-                        amount: big2BigNumber(amount),
+                        amount: big2BigNumberAndScaleUp(amount),
                         sqrtPriceLimitX96: 0,
                     })
 
-                const _deltaAvailableBase = bigNumber2Big(deltaAvailableBase)
-                const _deltaAvailableQuote = bigNumber2Big(deltaAvailableQuote)
-                const _exchangedPositionNotional = bigNumber2Big(exchangedPositionNotional)
-                const _exchangedPositionSize = bigNumber2Big(exchangedPositionSize)
+                const _deltaAvailableBase = bigNumber2BigAndScaleDown(deltaAvailableBase)
+                const _deltaAvailableQuote = bigNumber2BigAndScaleDown(deltaAvailableQuote)
+                const _exchangedPositionNotional = bigNumber2BigAndScaleDown(exchangedPositionNotional)
+                const _exchangedPositionSize = bigNumber2BigAndScaleDown(exchangedPositionSize)
                 // NOTE:
                 // 1. isBaseToQuote = T, isExactInput = T, => deltaQuote
                 // 2. isBaseToQuote = T, isExactInput = F, => deltaBase
@@ -500,7 +519,7 @@ export class ContractReader {
                         baseToken: baseTokenAddress,
                         isBaseToQuote,
                         isExactInput,
-                        amount: big2BigNumber(amount),
+                        amount: big2BigNumberAndScaleUp(amount),
                         sqrtPriceLimitX96: 0,
                     },
                     rawError,
@@ -522,7 +541,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const fee = await this.contracts.orderBook.getPendingFee(trader, baseTokenAddress, lowerTick, upperTick)
-                return bigNumber2Big(fee)
+                return bigNumber2BigAndScaleDown(fee)
             },
             rawError =>
                 new ContractReadError<OrderBook>({
@@ -596,8 +615,8 @@ export class ContractReader {
                     const result = orders.slice(pointer, pointer + len)
                     pointer += len
                     return result.map(({ baseDebt, quoteDebt, liquidity, lowerTick, upperTick }) => ({
-                        baseDebt: bigNumber2Big(baseDebt),
-                        quoteDebt: bigNumber2Big(quoteDebt),
+                        baseDebt: bigNumber2BigAndScaleDown(baseDebt),
+                        quoteDebt: bigNumber2BigAndScaleDown(quoteDebt),
                         liquidity: new Big(liquidity),
                         lowerTick,
                         upperTick,
@@ -627,9 +646,9 @@ export class ContractReader {
             async () => {
                 const liquidities = await this._multicallReader.execute(openLiquidityCalls)
                 return liquidities.map(({ baseDebt, quoteDebt, liquidity, lowerTick, upperTick }) => ({
-                    baseDebt: bigNumber2Big(baseDebt),
-                    quoteDebt: bigNumber2Big(quoteDebt),
-                    liquidity: bigNumber2Big(liquidity),
+                    baseDebt: bigNumber2BigAndScaleDown(baseDebt),
+                    quoteDebt: bigNumber2BigAndScaleDown(quoteDebt),
+                    liquidity: bigNumber2BigAndScaleDown(liquidity),
                     lowerTick,
                     upperTick,
                 }))
@@ -649,9 +668,9 @@ export class ContractReader {
             async () => {
                 const info = await this.contracts.orderBook.getOpenOrder(trader, baseTokenAddress, lowerTick, upperTick)
                 return {
-                    baseDebt: bigNumber2Big(info.baseDebt),
-                    quoteDebt: bigNumber2Big(info.quoteDebt),
-                    liquidity: bigNumber2Big(info.liquidity),
+                    baseDebt: bigNumber2BigAndScaleDown(info.baseDebt),
+                    quoteDebt: bigNumber2BigAndScaleDown(info.quoteDebt),
+                    liquidity: bigNumber2BigAndScaleDown(info.liquidity),
                     lowerTick: info.lowerTick,
                     upperTick: info.upperTick,
                 }
@@ -683,8 +702,8 @@ export class ContractReader {
                     return {
                         ...acc,
                         [market.baseAddress]: {
-                            totalTokenAmount: bigNumber2Big(_totalTokenAmount),
-                            totalPendingFee: bigNumber2Big(_totalPendingFee),
+                            totalTokenAmount: bigNumber2BigAndScaleDown(_totalTokenAmount),
+                            totalPendingFee: bigNumber2BigAndScaleDown(_totalPendingFee),
                         },
                     }
                 }, {} as GetTotalTokenAmountInPoolAndPendingFeeOfAllMarketsReturn)
@@ -710,8 +729,8 @@ export class ContractReader {
             baseToken: baseTokenAddress,
             isBaseToQuote,
             isExactInput,
-            amount: big2BigNumber(amount),
-            oppositeAmountBound: big2BigNumber(oppositeAmountBound),
+            amount: big2BigNumberAndScaleUp(amount),
+            oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound),
             sqrtPriceLimitX96: 0, // NOTE: this is for partial filled, disable by giving zero.
             deadline: constants.MaxUint256, // NOTE: not important yet
             referralCode: constants.HashZero, // NOTE: not important yet
@@ -720,7 +739,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const { base, quote } = await this.contracts.clearingHouse.callStatic.openPosition(args)
-                return { deltaBase: bigNumber2Big(base), deltaQuote: bigNumber2Big(quote) }
+                return { deltaBase: bigNumber2BigAndScaleDown(base), deltaQuote: bigNumber2BigAndScaleDown(quote) }
             },
             (rawError: any) => {
                 const params: ContractReadErrorParams<"openPosition"> = {
@@ -778,8 +797,8 @@ export class ContractReader {
                     return {
                         ...curr,
                         [pool]: {
-                            quoteAmount: bigNumber2Big(quoteAmount[index]).toString(),
-                            baseAmount: bigNumber2Big(baseAmount[index]).toString(),
+                            quoteAmount: bigNumber2BigAndScaleDown(quoteAmount[index]).toString(),
+                            baseAmount: bigNumber2BigAndScaleDown(baseAmount[index]).toString(),
                         },
                     }
                 }, {})
@@ -849,11 +868,11 @@ export class ContractReader {
                 const rawTickSpacings = result[genKeyFromContractAndFuncName(tickSpacingMulticallArgs[0])]
 
                 const exchangeFeeRatios = baseAddresses.reduce((obj, curr, index) => {
-                    obj[curr] = offsetDecimalLeft(new Big(marketInfoList[index].exchangeFeeRatio), RATIO_DECIMAL)
+                    obj[curr] = scaleDownDecimals(new Big(marketInfoList[index].exchangeFeeRatio), RATIO_DECIMAL)
                     return obj
                 }, {} as Record<string, Big>)
                 const insuranceFundFeeRatios = baseAddresses.reduce((obj, curr, index) => {
-                    obj[curr] = offsetDecimalLeft(new Big(marketInfoList[index].insuranceFundFeeRatio), RATIO_DECIMAL)
+                    obj[curr] = scaleDownDecimals(new Big(marketInfoList[index].insuranceFundFeeRatio), RATIO_DECIMAL)
                     return obj
                 }, {} as Record<string, Big>)
                 const tickSpacings = poolAddresses.reduce((obj, curr, index) => {
@@ -890,7 +909,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const rawPositionSizeList = await this._multicallReader.execute([...getAllPositionSizeContractCalls])
-                return rawPositionSizeList.map(size => bigNumber2Big(size))
+                return rawPositionSizeList.map(size => bigNumber2BigAndScaleDown(size))
             },
             rawError =>
                 new ContractReadError<Multicall2>({
@@ -912,7 +931,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const rawPositionSizeList = await this._multicallReader.execute([...getAllPositionSizeContractCalls])
-                return rawPositionSizeList.map(size => bigNumber2Big(size))
+                return rawPositionSizeList.map(size => bigNumber2BigAndScaleDown(size))
             },
             rawError =>
                 new ContractReadError<Multicall2>({
@@ -934,7 +953,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const rawOpenNotionalList = await this._multicallReader.execute([...getAllOpenNotionalContractCalls])
-                return rawOpenNotionalList.map(openNotional => bigNumber2Big(openNotional))
+                return rawOpenNotionalList.map(openNotional => bigNumber2BigAndScaleDown(openNotional))
             },
             rawError =>
                 new ContractReadError<Multicall2>({
@@ -956,7 +975,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const rawOpenNotionalList = await this._multicallReader.execute([...getAllOpenNotionalContractCalls])
-                return rawOpenNotionalList.map(openNotional => bigNumber2Big(openNotional))
+                return rawOpenNotionalList.map(openNotional => bigNumber2BigAndScaleDown(openNotional))
             },
             rawError =>
                 new ContractReadError<Multicall2>({
@@ -978,7 +997,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const rawList = await this._multicallReader.execute([...getTotalPositionValueCalls])
-                return rawList.map(totalPositionValue => bigNumber2Big(totalPositionValue))
+                return rawList.map(totalPositionValue => bigNumber2BigAndScaleDown(totalPositionValue))
             },
             rawError =>
                 new ContractReadError<Multicall2>({
@@ -1003,7 +1022,7 @@ export class ContractReader {
                 return Object.values(marketMap).reduce<Record<string, Big>>(
                     (acc, next, index) => ({
                         ...acc,
-                        [next.tickerSymbol]: bigNumber2Big(rawPendingFundingPaymentList[index]),
+                        [next.tickerSymbol]: bigNumber2BigAndScaleDown(rawPendingFundingPaymentList[index]),
                     }),
                     {},
                 )
@@ -1048,7 +1067,7 @@ export class ContractReader {
                         const { sqrtPriceX96 } = value
                         return fromSqrtX96(sqrtPriceX96)
                     }
-                    return bigNumber2Big(value)
+                    return bigNumber2BigAndScaleDown(value)
                 })
                 return {
                     markPrice,
@@ -1081,7 +1100,7 @@ export class ContractReader {
                     baseToken: currentMarketBaseAddress,
                     isBaseToQuote: true,
                     isExactInput: true,
-                    amount: big2BigNumber(currentMarketBaseSize),
+                    amount: big2BigNumberAndScaleUp(currentMarketBaseSize),
                     sqrtPriceLimitX96: 0,
                 },
             ],
@@ -1135,20 +1154,21 @@ export class ContractReader {
                 const otherMarketIndexPrices = result[genKeyFromContractAndFuncName(otherMarketIndexPriceCalls[0])]
                 const quoteDebts = result[genKeyFromContractAndFuncName(quoteDebtCalls[0])]
 
-                const _deltaAvailableBase = deltaAvailableBase && bigNumber2Big(deltaAvailableBase)
-                const _deltaAvailableQuote = deltaAvailableQuote && bigNumber2Big(deltaAvailableQuote)
-                const _exchangedPositionNotional = exchangedPositionNotional && bigNumber2Big(exchangedPositionNotional)
-                const _exchangedPositionSize = exchangedPositionSize && bigNumber2Big(exchangedPositionSize)
+                const _deltaAvailableBase = deltaAvailableBase && bigNumber2BigAndScaleDown(deltaAvailableBase)
+                const _deltaAvailableQuote = deltaAvailableQuote && bigNumber2BigAndScaleDown(deltaAvailableQuote)
+                const _exchangedPositionNotional =
+                    exchangedPositionNotional && bigNumber2BigAndScaleDown(exchangedPositionNotional)
+                const _exchangedPositionSize = exchangedPositionSize && bigNumber2BigAndScaleDown(exchangedPositionSize)
                 const swapOutput = _deltaAvailableQuote
 
-                const _owedPNL = bigNumber2Big(owedPNL)
-                const _unrealizedPNL = bigNumber2Big(unrealizedPNL)
-                const _pendingFee = bigNumber2Big(pendingFee)
-                const _otherBaseDebts = otherBaseDebts.map((baseDebt: BigNumber) => bigNumber2Big(baseDebt))
+                const _owedPNL = bigNumber2BigAndScaleDown(owedPNL)
+                const _unrealizedPNL = bigNumber2BigAndScaleDown(unrealizedPNL)
+                const _pendingFee = bigNumber2BigAndScaleDown(pendingFee)
+                const _otherBaseDebts = otherBaseDebts.map((baseDebt: BigNumber) => bigNumber2BigAndScaleDown(baseDebt))
                 const _otherMarketIndexPrices = otherMarketIndexPrices.map((indexPrice: BigNumber) =>
-                    bigNumber2Big(indexPrice),
+                    bigNumber2BigAndScaleDown(indexPrice),
                 )
-                const _quoteDebts = quoteDebts.map((quoteDebt: BigNumber) => bigNumber2Big(quoteDebt))
+                const _quoteDebts = quoteDebts.map((quoteDebt: BigNumber) => bigNumber2BigAndScaleDown(quoteDebt))
                 return {
                     swap: {
                         deltaAvailableBase: _deltaAvailableBase,
@@ -1209,8 +1229,8 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const multicallResult = await this._multicallReader.execute(contractCalls)
-                const freeCollateral = bigNumber2Big(multicallResult[0], COLLATERAL_TOKEN_DECIMAL)
-                const accountValue = bigNumber2Big(multicallResult[1])
+                const freeCollateral = bigNumber2BigAndScaleDown(multicallResult[0], COLLATERAL_TOKEN_DECIMAL)
+                const accountValue = bigNumber2BigAndScaleDown(multicallResult[1])
                 return {
                     freeCollateral,
                     accountValue,
@@ -1230,7 +1250,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const positionValue = await this.contracts.accountBalance.getTotalPositionValue(trader, baseToken)
-                return bigNumber2Big(positionValue)
+                return bigNumber2BigAndScaleDown(positionValue)
             },
             (rawError: any) =>
                 new ContractReadError({
@@ -1246,7 +1266,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const value = await this.contracts.accountBalance.getTotalAbsPositionValue(trader)
-                return bigNumber2Big(value)
+                return bigNumber2BigAndScaleDown(value)
             },
             (rawError: any) =>
                 new ContractReadError({
@@ -1262,7 +1282,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const liquidationPrice = await this.contracts.perpPortal.getLiquidationPrice(trader, baseToken)
-                return bigNumber2Big(liquidationPrice)
+                return bigNumber2BigAndScaleDown(liquidationPrice)
             },
             (rawError: any) =>
                 new ContractReadError({
@@ -1284,7 +1304,7 @@ export class ContractReader {
         return errorGuardAsync(
             async () => {
                 const liquidationPriceList = await this._multicallReader.execute([...contractCalls])
-                return liquidationPriceList.map(liquidationPrice => bigNumber2Big(liquidationPrice))
+                return liquidationPriceList.map(liquidationPrice => bigNumber2BigAndScaleDown(liquidationPrice))
             },
             rawError =>
                 new ContractReadError<Multicall2>({

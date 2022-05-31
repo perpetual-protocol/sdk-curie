@@ -1,7 +1,7 @@
 import Big from "big.js"
 
 import { RATIO_DECIMAL } from "../../constants"
-import { offsetDecimalLeft } from "../../utils"
+import { scaleDownDecimals } from "../../utils"
 import {
     ContractReader,
     MarketExchangeFeeRatios,
@@ -48,9 +48,9 @@ export class ClearingHouseConfig {
             await contractReader.getClearingHouseMetadata()
 
         return new ClearingHouseConfig(
-            offsetDecimalLeft(mmRatio, RATIO_DECIMAL),
-            offsetDecimalLeft(imRatio, RATIO_DECIMAL),
-            offsetDecimalLeft(maxFundingRate, RATIO_DECIMAL),
+            scaleDownDecimals(mmRatio, RATIO_DECIMAL),
+            scaleDownDecimals(imRatio, RATIO_DECIMAL),
+            scaleDownDecimals(maxFundingRate, RATIO_DECIMAL),
             exchangeFeeRatios,
             insuranceFundFeeRatios,
             tickSpacings,
