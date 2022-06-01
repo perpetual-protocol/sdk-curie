@@ -68,30 +68,37 @@ export class LimitOrderBook {
     async cancelLimitOrder(order: ILimitOrder) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "cancelLimitOrder" }))
 
+        const args = [
+            {
+                orderType: order.orderType,
+                // salt: big2BigNumberAndScaleUp(order.salt, 0),
+                salt: Number(order.salt),
+                trader: order.trader,
+                baseToken: order.baseToken,
+                isBaseToQuote: order.isBaseToQuote,
+                isExactInput: order.isExactInput,
+                amount: big2BigNumberAndScaleUp(order.amount, 0).toString(),
+                oppositeAmountBound: big2BigNumberAndScaleUp(order.oppositeAmountBound, 0).toString(),
+                deadline: big2BigNumberAndScaleUp(order.deadline, 0).toString(),
+                sqrtPriceLimitX96: big2BigNumberAndScaleUp(order.sqrtPriceLimitX96, 0).toString(),
+                // NOTE: referralCode must be byte32string which is returned from appsync
+                referralCode: order.referralCode,
+                reduceOnly: order.reduceOnly,
+                roundIdWhenCreated: big2BigNumberAndScaleUp(order.roundIdWhenCreated, 0).toString(),
+                triggerPrice: big2BigNumberAndScaleUp(order.triggerPrice, 0).toString(),
+            },
+        ]
+
+        const hash = await this._perp.contracts.limitOrderBook.getOrderHash(args[0])
+        console.log("debug: ", "sdk getOrderHash", hash)
+        console.log("debug: ", "cancelLimitOrder args", args)
+
         return getTransaction<ContractLimitOrderBook, "cancelLimitOrder">({
             account: this._perp.wallet.account,
             contract: this._perp.contracts.limitOrderBook,
             contractName: ContractName.CLEARINGHOUSE,
             contractFunctionName: "cancelLimitOrder",
-            args: [
-                {
-                    orderType: order.orderType,
-                    salt: big2BigNumberAndScaleUp(order.salt),
-                    trader: order.trader,
-                    baseToken: order.baseToken,
-                    isBaseToQuote: order.isBaseToQuote,
-                    isExactInput: order.isExactInput,
-                    amount: big2BigNumberAndScaleUp(order.amount),
-                    oppositeAmountBound: big2BigNumberAndScaleUp(order.oppositeAmountBound),
-                    deadline: big2BigNumberAndScaleUp(order.deadline, 0),
-                    sqrtPriceLimitX96: big2BigNumberAndScaleUp(order.sqrtPriceLimitX96),
-                    // NOTE: referralCode must be byte32string which is returned from appsync
-                    referralCode: order.referralCode,
-                    reduceOnly: order.reduceOnly,
-                    roundIdWhenCreated: big2BigNumberAndScaleUp(order.roundIdWhenCreated),
-                    triggerPrice: big2BigNumberAndScaleUp(order.triggerPrice),
-                },
-            ],
+            args: [args[0]],
         })
     }
 }
