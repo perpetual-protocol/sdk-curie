@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0-dev1.2](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.1...v1.7.0-dev1.2) (2022-06-01)
+
+
+### Bug Fixes
+
+* cancel limit order issue ([959ee7e](https://github.com/perpetual-protocol/sdk-curie/commit/959ee7e73b79bddb52cca3021571bc0a648aba71))
+* precision issue when cancel order ([4483213](https://github.com/perpetual-protocol/sdk-curie/commit/4483213ced575e845860ed2a4a4f213b126305ca))
+
 ## [1.7.0-dev1.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1...v1.7.0-dev1.1) (2022-05-31)
 
 ## [1.6.0-dev1.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1-canary.0...v1.6.0-dev1.0) (2022-05-31)
