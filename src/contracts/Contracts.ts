@@ -33,7 +33,6 @@ import { Collateral, Metadata } from "../metadata"
 import { Contract, constants } from "ethers"
 
 import { Provider } from "@ethersproject/providers"
-import { Signer } from "@ethersproject/abstract-signer"
 
 export enum ContractName {
     VAULT = "Vault",
@@ -61,7 +60,6 @@ interface ContractsConfig {
 }
 
 export class Contracts {
-    hasSigner = false
     vault: Vault
     clearingHouse: ClearingHouse
     orderBook: OrderBook
@@ -117,19 +115,6 @@ export class Contracts {
         this.multicall2 = Multicall2__factory.connect(Multicall2.address, provider)
         this.perpPortal = PerpPortal__factory.connect(PerpPortal.address, provider)
         this._provider = provider
-    }
-
-    connect(signer: Signer) {
-        this.hasSigner = true
-        this.vault = this.vault.connect(signer)
-        this.clearingHouse = this.clearingHouse.connect(signer)
-        this.settlementToken = this.settlementToken.connect(signer)
-        this.collateralTokenMap.forEach((value, key) => {
-            this.collateralTokenMap.set(key, {
-                ...value,
-                contract: value.contract.connect(signer),
-            })
-        })
     }
 
     createIERC20Token(tokenAddress: string) {

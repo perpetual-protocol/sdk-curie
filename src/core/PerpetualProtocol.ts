@@ -159,7 +159,6 @@ class PerpetualProtocol {
         }
 
         const account = await signer.getAddress()
-        this.contracts.connect(signer)
         if (signer.provider) {
             // NOTE: This casting is necessary due that
             // `signer.provider` is `Provider` type, which is `BaseProvider`'s parent class
