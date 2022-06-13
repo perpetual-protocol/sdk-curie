@@ -5,18 +5,16 @@ import { FailedPreconditionError, InitSDKError, UnsupportedChainError } from "..
 
 import { ContractReader } from "./contractReader"
 import { Contracts } from "../contracts"
-import { JsonRpcSigner } from "@ethersproject/providers"
 import { Liquidities } from "./liquidity"
 import { Markets } from "./market"
 import { Metadata } from "../metadata"
 import { Positions } from "./position"
-import { Signer } from "@ethersproject/abstract-signer"
+import { Signer, providers } from "ethers"
 import { Vault } from "./vault"
 import { Wallet } from "./wallet"
 import { DelegateApproval, DelegateApprovalConfigs } from "./clearingHouse/DelegateApproval"
 import { invariant } from "../utils"
 import { LimitOrderBook } from "./limitOrder"
-import { LimitOrderBook__factory } from "../contracts/type"
 
 interface ModuleConfigs {
     vault?: ModuleConfig
@@ -180,7 +178,7 @@ class PerpetualProtocol {
             // NOTE: This casting is necessary due that
             // `signer.provider` is `Provider` type, which is `BaseProvider`'s parent class
             // but we wanna handle JsonRpcProvider specifically
-            this.provider.addUserProvider((signer as JsonRpcSigner).provider)
+            this.provider.addUserProvider((signer as providers.JsonRpcSigner).provider)
         }
 
         this._wallet = new Wallet(this, account)

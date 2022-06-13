@@ -1,5 +1,5 @@
 import { AccountBalance, ClearingHouse, Exchange, OrderBook, Quoter, Vault } from "../contracts/type"
-import { Contract, Contract as EthersContract } from "@ethersproject/contracts"
+import { Contract as EthersContract } from "ethers"
 
 /* CONTRACT */
 export interface ContractNativeError extends Error {
@@ -218,13 +218,14 @@ export class ContractReadError<ContractType extends EthersContract> extends SDKB
     readonly context: string
     constructor(data: ContractReadErrorParams<keyof ContractType>) {
         super(data)
+        const { contractName, contractFunctionName, contractErrorCode, args, context } = data
         this.name = ErrorName.CONTRACT_READ_ERROR
-        this.message = `Read ${data.contractName} contract error, invoke ${data.contractFunctionName} function failed.`
-        this.contractName = data.contractName
-        this.contractFunctionName = data.contractFunctionName
-        this.contractErrorCode = data.contractErrorCode
-        this.arguments = JSON.stringify(data.args)
-        this.context = JSON.stringify(data.context)
+        this.message = `Read ${contractName} contract error, invoke ${String(contractFunctionName)} function failed.`
+        this.contractName = contractName
+        this.contractFunctionName = contractFunctionName
+        this.contractErrorCode = contractErrorCode
+        this.arguments = JSON.stringify(args)
+        this.context = JSON.stringify(context)
     }
 }
 
@@ -285,7 +286,7 @@ export class ContractWriteError<ContractType extends EthersContract> extends SDK
             data
         this.name = ErrorName.CONTRACT_WRITE_ERROR
         this.message =
-            `Write ${contractName} contract error, invoke ${contractFunctionName} function failed.` +
+            `Write ${contractName} contract error, invoke ${String(contractFunctionName)} function failed.` +
             (contractErrorCode ? ` (Error Code: ${contractErrorCode})` : "")
         this.contractName = contractName
         this.contractFunctionName = contractFunctionName
@@ -431,11 +432,11 @@ export function isRpcNativeGasTooLowError(error: Error): error is RpcNativeError
 
 // NOTE: RPC
 interface RpcErrorParams extends SDKBaseErrorParams {
-    contractFunctionName: keyof Contract
+    contractFunctionName: keyof EthersContract
 }
 
 export class RpcIntrinsicGasTooLowError extends SDKBaseError {
-    readonly contractFunctionName: keyof Contract
+    readonly contractFunctionName: keyof EthersContract
     constructor(data: RpcErrorParams) {
         super(data)
         this.name = ErrorName.RPC_GAS_TOO_LOW_ERROR
@@ -444,7 +445,7 @@ export class RpcIntrinsicGasTooLowError extends SDKBaseError {
     }
 }
 export class RpcRejectedError extends SDKBaseError {
-    readonly contractFunctionName: keyof Contract
+    readonly contractFunctionName: keyof EthersContract
     constructor(data: RpcErrorParams) {
         super(data)
         this.name = ErrorName.RPC_REJECTED_ERROR

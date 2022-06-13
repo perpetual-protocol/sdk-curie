@@ -3,7 +3,7 @@ import { ERC20_DECIMAL_DIGITS, Q96 } from "../constants"
 import Big from "big.js"
 import { BigNumber } from "ethers"
 
-function bigNumber2Big(value: BigNumber): Big {
+export function bigNumber2Big(value: BigNumber): Big {
     return new Big(value.toString())
 }
 
