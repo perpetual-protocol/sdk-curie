@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0-dev1.3](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.2...v1.7.0-dev1.3) (2022-06-14)
+
+
+### Features
+
+* **limit order:** fetch Chainlink roundId ([8104697](https://github.com/perpetual-protocol/sdk-curie/commit/810469778dc859b73332e1e86cd9848137cadb28))
+
+
+### Code Refactoring
+
+* clean up ethers imports ([32e09a2](https://github.com/perpetual-protocol/sdk-curie/commit/32e09a2d04a0d69e183caabd1cd28ef887d7a635))
+
+
+### Docs
+
+* **readme:** update setup & development guide ([3935d4d](https://github.com/perpetual-protocol/sdk-curie/commit/3935d4d77aa9cf8a9a35ba52d4575f94b4fce795))
+
 ## [1.7.0-dev1.2](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.1...v1.7.0-dev1.2) (2022-06-01)
 
 
