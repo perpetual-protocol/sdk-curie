@@ -32,6 +32,7 @@ async function main() {
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/core/artifacts/oracle-contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/periphery/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json`,
+        `${__dirname}/../node_modules/@chainlink/contracts/abi/v0.7/**/+([a-zA-Z0-9_]).json`,
     ])
 
     const result = await runTypeChain({

@@ -1,12 +1,12 @@
-import { BigNumber, utils, constants } from "ethers"
 import Big from "big.js"
-import { big2BigNumberAndScaleUp, invariant, poll } from "../../utils"
-import { LimitOrderBook as ContractLimitOrderBook } from "../../contracts/type"
+import { BigNumber } from "ethers"
+import { BIG_ZERO } from "../../constants"
 import { ContractName } from "../../contracts"
-import type { PerpetualProtocol } from "../PerpetualProtocol"
+import { LimitOrderBook as ContractLimitOrderBook } from "../../contracts/type"
 import { UnauthorizedError } from "../../errors"
 import { getTransaction } from "../../transactionSender"
-import { BIG_ZERO } from "../../constants"
+import { big2BigNumberAndScaleUp, invariant } from "../../utils"
+import type { PerpetualProtocol } from "../PerpetualProtocol"
 
 export interface ILimitOrder {
     orderType: number
@@ -27,43 +27,6 @@ export interface ILimitOrder {
 
 export class LimitOrderBook {
     constructor(protected readonly _perp: PerpetualProtocol) {}
-
-    async fillLimitOrder(
-        order: ILimitOrder,
-        signature: string,
-        roundIdWhenTriggered: BigNumber,
-        // NOTE: slippage might be useful in the future. we don't use this parameter so far
-        slippage: Big = BIG_ZERO,
-    ) {
-        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "fillLimitOrder" }))
-
-        return getTransaction<ContractLimitOrderBook, "fillLimitOrder">({
-            account: this._perp.wallet.account,
-            contract: this._perp.contracts.limitOrderBook,
-            contractName: ContractName.CLEARINGHOUSE,
-            contractFunctionName: "fillLimitOrder",
-            args: [
-                {
-                    orderType: order.orderType,
-                    salt: big2BigNumberAndScaleUp(order.salt),
-                    trader: order.trader,
-                    baseToken: order.baseToken,
-                    isBaseToQuote: order.isBaseToQuote,
-                    isExactInput: order.isExactInput,
-                    amount: big2BigNumberAndScaleUp(order.amount),
-                    oppositeAmountBound: big2BigNumberAndScaleUp(order.oppositeAmountBound),
-                    deadline: big2BigNumberAndScaleUp(order.deadline),
-                    sqrtPriceLimitX96: big2BigNumberAndScaleUp(order.sqrtPriceLimitX96),
-                    referralCode: order.referralCode,
-                    reduceOnly: order.reduceOnly,
-                    roundIdWhenCreated: big2BigNumberAndScaleUp(order.roundIdWhenCreated),
-                    triggerPrice: big2BigNumberAndScaleUp(order.triggerPrice),
-                },
-                signature,
-                roundIdWhenTriggered,
-            ],
-        })
-    }
 
     async cancelLimitOrder(order: ILimitOrder) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "cancelLimitOrder" }))
@@ -93,5 +56,18 @@ export class LimitOrderBook {
                 },
             ],
         })
+    }
+
+    async getPriceFeedLatestRound({ tickerSymbol }: { tickerSymbol: string }): Promise<string | undefined> {
+        const market = this._perp.markets.getMarket({ tickerSymbol })
+        try {
+            // NOTE: Expected to throw error when is not using ChainLink as priceFeed since there's no `getPriceFeedAggregator` in other price feed.
+            // NOTE: On-demand check if price feed supports this for now, better to batch check all markets during sdk init.
+            const { contract: aggregatorContract } = await market.getPriceFeedAggregator()
+            const { roundId } = await aggregatorContract.latestRoundData()
+            return roundId.toString()
+        } catch (error) {
+            return undefined
+        }
     }
 }
