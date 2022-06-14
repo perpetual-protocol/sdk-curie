@@ -7,15 +7,68 @@ A Javascript SDK for Perpetual Protocol Curie.
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-# Development
+# Usage
 
-## Setup
+## Install
 
 Install dependencies:
 
 ```bash
 yarn add @perp/sdk-curie
 ```
+
+See `./test/` for common use cases.
+
+# Development
+
+## Environment Variables
+
+```javascript
+enum TRACK {
+  dev1 = "dev1"
+  dev2 = "dev2"
+  canary = "canary"
+  rc = "rc"
+  production = "production"
+}
+
+METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN
+METADATA_URL_CORE_OVERRIDE_OPTIMISM
+METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN
+METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM
+```
+
+## Setup before development
+
+```bash
+yarn
+yarn generate-type:[TRACK]
+```
+
+## Testing in other projects
+
+In this repo, run:
+
+```bash
+yarn link
+yarn start:[TRACK]
+```
+
+### To supply custom envs, run:
+
+```bash
+METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN="your_url" \
+METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN="your_url" \
+yarn start:[TRACK]
+```
+
+In the repo that you want to test with, run:
+
+```bash
+yarn link @perp/sdk-curie
+```
+
+##
 
 ## Commit
 
@@ -29,117 +82,4 @@ yarn commit
 
 ```
  yarn test
-```
-
-# Usage
-
-## Create a PerpetualProtocol instance
-
--   Now we only support **optimism**
-
-```
-
-const perp = new PerpetualProtocol({
-  chainId: 10,
-  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}] })
-await perp.init()
-
-```
-
-## Open a position
-
--   Remember to provide your signer when connecting.
-
-For example:
-
-Open a `Long` position using `quoteToken`. <br>
-baseToken: ETH <br>
-quoteToken: USD
-
-```
-const perp = new PerpetualProtocol({
-  chainId: 10,
-  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}] })
-await perp.init()
-await perp.connect({ signer })
-
-```
-
-```
-const tickerSymbol =  "ETHUSD"
-const slippage = new Big(0.02) // remember to transformed to Big type
-const amountInput = new Big(100) // remember to transformed to Big type
-const side = PositionSide.LONG
-const isAmountInputBase = false // we are not using base token to open a long position here.
-
-const newPositionDraft = perp.clearingHouse.createPositionDraft({
-              tickerSymbol,
-              side,
-              amountInput,
-              isAmountInputBase,
-          })
-perp.clearingHouse.openPosition(positionDraft, slippage)
-```
-
-## Close a position
-
-```
-const tickerSymbol = "ETHUSD"
-const position = await perp.positions.getTakerPositionByTickerSymbol(tickerSymbol)
-perp.clearingHouse.closePosition(position, slippage)
-```
-
-## Add liquidity
-
--   Remember to provide your signer when connecting.
-
-For example:<br />
-Use `quoteToken` to add liquidity. <br />
-baseToken: ETH <br />
-quoteToken: USD
-
-```
-const perpParam = {
-  chainId: 10,
-  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
-}
-const perp = new PerpetualProtocol(perpParam)
-await perp.init()
-await perp.connect({ signer })
-```
-
-```
-const tickerSymbol = "ETHUSD"
-const market = perp.markets.getMarket({ tickerSymbol })
-const lowerTick = perp.market.getPriceToTick(lowerTickPrice)
-const upperTick = perp.market.getPriceToTick(upperTickPrice)
-
-const slippage = new Big(0.02) // remember to transformed to Big type
-
-const rawBaseAmount = undefined
-const rawQuoteAmount = new Big(100) // remember to transformed to Big type
-
-const liquidityDraft = perp.clearingHouse.createLiquidityDraft({
-    tickerSymbol,
-    rawBaseAmount,
-    rawQuoteAmount,
-    upperTick,
-    lowerTick,
-})
-
-perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
-```
-
-## Remove liquidity
-
--   `ratio` means how much ratio you would like to remove. 1 means 100%
--   Use `filterFn` to filter out liquidity you would like to remove.
-
-```
-
-const ratio = new Big(1) // remember to transformed to Big type
-const slippage = new Big(0.02) // remember to transformed to Big type
-const liquidity = perp.liquidities.getTotalLiquidities().filter(filterFn)
-perp.clearingHouse.removeLiquidity(liquidity, ratio, slippage)
-
 ```
