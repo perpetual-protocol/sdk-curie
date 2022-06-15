@@ -27,8 +27,8 @@ yarn commit
 
 ## Test
 
-```
- yarn test
+```bash
+yarn test
 ```
 
 # Usage
@@ -37,13 +37,12 @@ yarn commit
 
 -   Now we only support **optimism**
 
-```
-
+```ts
 const perp = new PerpetualProtocol({
-  chainId: 10,
-  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}] })
+    chainId: 10,
+    providerConfigs: [{ rpcUrl: "https://mainnet.optimism.io" }],
+})
 await perp.init()
-
 ```
 
 ## Open a position
@@ -56,34 +55,34 @@ Open a `Long` position using `quoteToken`. <br>
 baseToken: ETH <br>
 quoteToken: USD
 
-```
+```ts
 const perp = new PerpetualProtocol({
-  chainId: 10,
-  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}] })
+    chainId: 10,
+    providerConfigs: [{ rpcUrl: "https://mainnet.optimism.io" }],
+})
 await perp.init()
 await perp.connect({ signer })
-
 ```
 
-```
-const tickerSymbol =  "ETHUSD"
-const slippage = new Big(0.02) // remember to transformed to Big type
-const amountInput = new Big(100) // remember to transformed to Big type
+```ts
+const tickerSymbol = "ETHUSD"
+const slippage = new Big(0.02) // remember to transform to Big type
+const amountInput = new Big(100) // remember to transform to Big type
 const side = PositionSide.LONG
 const isAmountInputBase = false // we are not using base token to open a long position here.
 
 const newPositionDraft = perp.clearingHouse.createPositionDraft({
-              tickerSymbol,
-              side,
-              amountInput,
-              isAmountInputBase,
-          })
+    tickerSymbol,
+    side,
+    amountInput,
+    isAmountInputBase,
+})
 perp.clearingHouse.openPosition(positionDraft, slippage)
 ```
 
 ## Close a position
 
-```
+```ts
 const tickerSymbol = "ETHUSD"
 const position = await perp.positions.getTakerPositionByTickerSymbol(tickerSymbol)
 perp.clearingHouse.closePosition(position, slippage)
@@ -98,17 +97,17 @@ Use `quoteToken` to add liquidity. <br />
 baseToken: ETH <br />
 quoteToken: USD
 
-```
+```ts
 const perpParam = {
-  chainId: 10,
-  providerConfigs: [ { rpcUrl: "https://mainnet.optimism.io"}]
+    chainId: 10,
+    providerConfigs: [{ rpcUrl: "https://mainnet.optimism.io" }],
 }
 const perp = new PerpetualProtocol(perpParam)
 await perp.init()
 await perp.connect({ signer })
 ```
 
-```
+```ts
 const tickerSymbol = "ETHUSD"
 const market = perp.markets.getMarket({ tickerSymbol })
 const lowerTick = perp.market.getPriceToTick(lowerTickPrice)
@@ -135,11 +134,9 @@ perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
 -   `ratio` means how much ratio you would like to remove. 1 means 100%
 -   Use `filterFn` to filter out liquidity you would like to remove.
 
-```
-
+```ts
 const ratio = new Big(1) // remember to transformed to Big type
 const slippage = new Big(0.02) // remember to transformed to Big type
 const liquidity = perp.liquidities.getTotalLiquidities().filter(filterFn)
 perp.clearingHouse.removeLiquidity(liquidity, ratio, slippage)
-
 ```
