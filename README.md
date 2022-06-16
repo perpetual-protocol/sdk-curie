@@ -113,10 +113,10 @@ const market = perp.markets.getMarket({ tickerSymbol })
 const lowerTick = perp.market.getPriceToTick(lowerTickPrice)
 const upperTick = perp.market.getPriceToTick(upperTickPrice)
 
-const slippage = new Big(0.02) // remember to transformed to Big type
+const slippage = new Big(0.02) // remember to transform to Big type
 
 const rawBaseAmount = undefined
-const rawQuoteAmount = new Big(100) // remember to transformed to Big type
+const rawQuoteAmount = new Big(100) // remember to transform to Big type
 
 const liquidityDraft = perp.clearingHouse.createLiquidityDraft({
     tickerSymbol,
@@ -135,8 +135,8 @@ perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
 -   Use `filterFn` to filter out liquidity you would like to remove.
 
 ```ts
-const ratio = new Big(1) // remember to transformed to Big type
-const slippage = new Big(0.02) // remember to transformed to Big type
+const ratio = new Big(1) // remember to transform to Big type
+const slippage = new Big(0.02) // remember to transform to Big type
 const liquidity = perp.liquidities.getTotalLiquidities().filter(filterFn)
 perp.clearingHouse.removeLiquidity(liquidity, ratio, slippage)
 ```
