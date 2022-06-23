@@ -56,7 +56,7 @@
     "dependencies": {
         "@babel/preset-modules": "0.1.5",
         "@chainlink/contracts": "0.4.1",
-        "@perp/curie-deployments": "2022.6.14-1655183035393",
+        "@perp/curie-deployments": "2022.6.22-1655886695140",
         "@uniswap/v3-core": "1.0.0",
         "big.js": "6.1.1",
         "cross-fetch": "3.1.5",
