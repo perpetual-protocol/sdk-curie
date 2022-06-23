@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0-dev1.4](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.3...v1.7.0-dev1.4) (2022-06-23)
+
+
+### Build System
+
+* **dependency:** fix yarn lock ([2ddf6c3](https://github.com/perpetual-protocol/sdk-curie/commit/2ddf6c32f854da658e0af1087156f2c6cc55f632))
+* **package.json:** upgrade @perp/curie-deployments ([e49960c](https://github.com/perpetual-protocol/sdk-curie/commit/e49960c1d46825be994cd15d0cfcccfcab9f2e6f))
+
 ## [1.7.0-dev1.3](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.2...v1.7.0-dev1.3) (2022-06-14)
 
 
