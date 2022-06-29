@@ -18,6 +18,7 @@ import {
     isRpcNativeGasTooLowError,
     isRpcNativeUserDeniedError,
     MarketNumberExceedsError,
+    OverMaximumPriceSpreadError,
 } from "../errors"
 import { ClearingHouse, Exchange, OrderBook } from "../contracts/type"
 
@@ -99,6 +100,10 @@ export function getTransactionErrorFactory({
         }
         case ContractErrorCode.MARKET_NUMBER_EXCEEDS: {
             ErrorClass = MarketNumberExceedsError
+            break
+        }
+        case ContractErrorCode.OVER_MAXIMUM_PRICE_SPREAD: {
+            ErrorClass = OverMaximumPriceSpreadError
             break
         }
         default: {
