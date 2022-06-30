@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1...v1.7.0-canary.0) (2022-06-30)
+
+
+### Features
+
+* **error:** add OVER_MAXIMUM_PRICE_SPREAD_ERROR ([f4a11ea](https://github.com/perpetual-protocol/sdk-curie/commit/f4a11ea03462cc8855e3096dcb588f80a99aed65))
+
 ### [1.6.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1-canary.0...v1.6.1) (2022-05-31)
 
 ### [1.6.1-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.0-canary.1...v1.6.1-canary.0) (2022-05-30)
