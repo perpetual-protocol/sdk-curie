@@ -2,6 +2,110 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0...v1.8.0-canary.0) (2022-07-04)
+
+
+### Build System
+
+* **dependency:** upgrade @perp/curie-deployments ([522e8a6](https://github.com/perpetual-protocol/sdk-curie/commit/522e8a6a3d7cdd639fb2f1d99dd2dfe595b0f3b3))
+* **generate-type:** workaround FactorySidechains compile error ([53ff793](https://github.com/perpetual-protocol/sdk-curie/commit/53ff79330ff7b3707a45eafe76eb26f406f94284))
+
+
+### Others
+
+* merge main ([3f3b6fa](https://github.com/perpetual-protocol/sdk-curie/commit/3f3b6fa8f13a33533eb527ad04759f68bc9ad3f3))
+* **package.json:** rebase version ([7e640ae](https://github.com/perpetual-protocol/sdk-curie/commit/7e640aeda8ec7d2ae78caebe9ea3d075fc7d0cd6))
+
+## [1.7.0-dev1.4](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.3...v1.7.0-dev1.4) (2022-06-23)
+
+
+### Build System
+
+* **dependency:** fix yarn lock ([2ddf6c3](https://github.com/perpetual-protocol/sdk-curie/commit/2ddf6c32f854da658e0af1087156f2c6cc55f632))
+* **package.json:** upgrade @perp/curie-deployments ([e49960c](https://github.com/perpetual-protocol/sdk-curie/commit/e49960c1d46825be994cd15d0cfcccfcab9f2e6f))
+
+
+### Others
+
+* **release:** 1.7.0-dev1.4 ([6e80c69](https://github.com/perpetual-protocol/sdk-curie/commit/6e80c69c6ed64a583fa0e5d9369d3a8aace2f065))
+
+## [1.7.0-dev1.3](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.2...v1.7.0-dev1.3) (2022-06-14)
+
+
+### Features
+
+* **limit order:** fetch Chainlink roundId ([8104697](https://github.com/perpetual-protocol/sdk-curie/commit/810469778dc859b73332e1e86cd9848137cadb28))
+
+
+### Code Refactoring
+
+* clean up ethers imports ([32e09a2](https://github.com/perpetual-protocol/sdk-curie/commit/32e09a2d04a0d69e183caabd1cd28ef887d7a635))
+
+
+### Docs
+
+* **readme:** update setup & development guide ([3935d4d](https://github.com/perpetual-protocol/sdk-curie/commit/3935d4d77aa9cf8a9a35ba52d4575f94b4fce795))
+
+
+### Others
+
+* **release:** 1.7.0-dev1.3 ([c35f1a2](https://github.com/perpetual-protocol/sdk-curie/commit/c35f1a233390d3287236ed3cb34ab2860bd96fee))
+
+## [1.7.0-dev1.2](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.1...v1.7.0-dev1.2) (2022-06-01)
+
+
+### Bug Fixes
+
+* cancel limit order issue ([959ee7e](https://github.com/perpetual-protocol/sdk-curie/commit/959ee7e73b79bddb52cca3021571bc0a648aba71))
+* precision issue when cancel order ([4483213](https://github.com/perpetual-protocol/sdk-curie/commit/4483213ced575e845860ed2a4a4f213b126305ca))
+
+
+### Others
+
+* **release:** 1.7.0-dev1.2 ([dc78ca6](https://github.com/perpetual-protocol/sdk-curie/commit/dc78ca60b628a0da53431e23f640ab6d265abb4b))
+
+## [1.7.0-dev1.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1...v1.7.0-dev1.1) (2022-05-31)
+
+
+### Others
+
+* **release:** 1.7.0-dev1.1 ([61075dc](https://github.com/perpetual-protocol/sdk-curie/commit/61075dc027db665da0b3b35ba616997d994a0689))
+
+## [1.6.0-dev1.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1-canary.0...v1.6.0-dev1.0) (2022-05-31)
+
+
+### Features
+
+* add DelegateApproval contract ([069a088](https://github.com/perpetual-protocol/sdk-curie/commit/069a088ceb965a0c55c9d6ee076bdbf88deeebf9))
+* add fillLimitOrder() ([84a492e](https://github.com/perpetual-protocol/sdk-curie/commit/84a492e448929f48052b60ec479e759560b79110))
+* add limit order into perp/sdk ([4bb1ae0](https://github.com/perpetual-protocol/sdk-curie/commit/4bb1ae0eda292a52098516f5e6b3d1382ecbf68b))
+* add LimitOrderBook contract ([3391b5f](https://github.com/perpetual-protocol/sdk-curie/commit/3391b5fa4fb44bbba1e7cfcb1c1368803eb3be65))
+* finish DelegateApproval (WIP) ([8621399](https://github.com/perpetual-protocol/sdk-curie/commit/86213999525ba053d38ef0c39f3128cf261fc541))
+
+
+### Bug Fixes
+
+* breaking change for formatters ([21a9c5b](https://github.com/perpetual-protocol/sdk-curie/commit/21a9c5b58d4da2796f3e9e030387c76f704cdaa8))
+* signer issue ([5c3a3eb](https://github.com/perpetual-protocol/sdk-curie/commit/5c3a3eb0550d9ff6ff7152dfc629c4e48b60ce61))
+
+
+### Code Refactoring
+
+* make delegate public ([b0ad5c3](https://github.com/perpetual-protocol/sdk-curie/commit/b0ad5c39e5d5e35a772f9b1e454c0514405ea247))
+
+
+### CI
+
+* update workflow with environment variables ([3242dfc](https://github.com/perpetual-protocol/sdk-curie/commit/3242dfc70d387db36d4d7990a1d00170f0f25faa))
+
+
+### Others
+
+* add .env ([8f941a2](https://github.com/perpetual-protocol/sdk-curie/commit/8f941a20821854a628d4b64591ade339cad56d2a))
+* **release:** 1.6.0-dev1.0 ([00fe498](https://github.com/perpetual-protocol/sdk-curie/commit/00fe498060ae44ab33dff71faf8afbae67682402))
+* update npm script ([3cb2e69](https://github.com/perpetual-protocol/sdk-curie/commit/3cb2e69e189581d0d0028a57ca738edcca80c196))
+* update prebuild script for ci testing job ([453520b](https://github.com/perpetual-protocol/sdk-curie/commit/453520b496e3383b4187254d8de1d25424cd3ceb))
+
 ## [1.7.0-dev1.4](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-dev1.3...v1.7.0-dev1.4) (2022-06-23)
 
 ### Build System
