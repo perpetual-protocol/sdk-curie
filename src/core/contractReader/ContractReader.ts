@@ -1,7 +1,9 @@
 import {
     BaseToken,
+    ChainlinkPriceFeed,
     ClearingHouse,
     CollateralManager,
+    DelegateApproval,
     IERC20Metadata,
     Multicall2,
     OrderBook,
@@ -360,6 +362,41 @@ export class ContractReader {
                     contractName: ContractName.SETTLEMENT_TOKEN,
                     contractFunctionName: "balanceOf",
                     args: { account },
+                    rawError,
+                }),
+        )
+    }
+
+    async getPriceFeedAggregator(baseTokenAddress: string) {
+        return errorGuardAsync(
+            async () => {
+                const contractBaseToken = this.contracts.baseToken.attach(baseTokenAddress)
+                const priceFeedAddress = await contractBaseToken.getPriceFeed()
+                const contractPriceFeed = this.contracts.baseTokenPriceFeed.attach(priceFeedAddress)
+                return errorGuardAsync(
+                    async () => {
+                        // NOTE: contractPriceFeed is created with ChainLink factory but in runtime "getAggregator" will not exist when it's not Chainlink.
+                        const aggregatorAddress = await contractPriceFeed.getAggregator()
+                        const contractAggregator = this.contracts.baseTokenPriceFeedAggregator.attach(aggregatorAddress)
+                        return {
+                            address: aggregatorAddress,
+                            contract: contractAggregator,
+                        }
+                    },
+                    rawError =>
+                        new ContractReadError<ChainlinkPriceFeed>({
+                            contractName: ContractName.CHAINLINK_PRICE_FEED,
+                            contractFunctionName: "getAggregator",
+                            context: { baseTokenAddress },
+                            rawError,
+                        }),
+                )
+            },
+            rawError =>
+                new ContractReadError<BaseToken>({
+                    contractName: ContractName.BASE_TOKEN,
+                    contractFunctionName: "getPriceFeed",
+                    context: { baseTokenAddress },
                     rawError,
                 }),
         )
@@ -1318,6 +1355,34 @@ export class ContractReader {
                     contractName: ContractName.MULTICALL2,
                     contractFunctionName: "tryAggregate",
                     args: contractCallsParserForErrorHandling(contractCalls),
+                    rawError,
+                }),
+        )
+    }
+
+    async getClearingHouseOpenPositionAction() {
+        return errorGuardAsync(
+            async () => {
+                return this.contracts.delegateApproval.getClearingHouseOpenPositionAction()
+            },
+            rawError =>
+                new ContractReadError<DelegateApproval>({
+                    contractName: ContractName.DelegateApproval,
+                    contractFunctionName: "getClearingHouseOpenPositionAction",
+                    rawError,
+                }),
+        )
+    }
+
+    async canOpenPositionFor(trader: string, delegate: string) {
+        return errorGuardAsync(
+            async () => {
+                return this.contracts.delegateApproval.canOpenPositionFor(trader, delegate)
+            },
+            rawError =>
+                new ContractReadError<DelegateApproval>({
+                    contractName: ContractName.DelegateApproval,
+                    contractFunctionName: "canOpenPositionFor",
                     rawError,
                 }),
         )

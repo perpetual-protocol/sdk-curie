@@ -1,5 +1,4 @@
-import { ContractTransaction, Contract as EthersContract } from "@ethersproject/contracts"
-import { BigNumber } from "ethers"
+import { ContractTransaction, Contract as EthersContract, BigNumber } from "ethers"
 
 import { ContractName } from "../contracts"
 import { ArgumentError } from "../errors"

@@ -28,12 +28,17 @@ import {
     UniswapV3Pool__factory,
     Vault,
     Vault__factory,
+    ChainlinkPriceFeed,
+    LimitOrderBook__factory,
+    LimitOrderBook,
+    DelegateApproval,
+    DelegateApproval__factory,
+    ChainlinkPriceFeed__factory,
+    AggregatorV3Interface,
+    AggregatorV3Interface__factory,
 } from "./type"
 import { Collateral, Metadata } from "../metadata"
-import { Contract, constants } from "ethers"
-
-import { Provider } from "@ethersproject/providers"
-import { Signer } from "@ethersproject/abstract-signer"
+import { Signer, Contract, constants, providers } from "ethers"
 
 export enum ContractName {
     VAULT = "Vault",
@@ -44,6 +49,7 @@ export enum ContractName {
     SETTLEMENT_TOKEN = "SettlementToken",
     COLLATERAL_TOKENS = "CollateralTokens",
     BASE_TOKEN = "BaseToken",
+    CHAINLINK_PRICE_FEED = "ChainlinkPriceFeed",
     POOL = "Pool",
     QUOTER = "Quoter",
     EXCHANGE = "Exchange",
@@ -53,10 +59,12 @@ export enum ContractName {
     PerpPortal = "PerpPortal",
     Token0 = "Token0", // baseToken in uniswap
     Token1 = "Token1", // quoteToken in uniswap
+    LimitOrderBook = "LimitOrderBook",
+    DelegateApproval = "DelegateApproval",
 }
 
 interface ContractsConfig {
-    provider: Provider
+    provider: providers.Provider
     metadata: Metadata
 }
 
@@ -69,6 +77,8 @@ export class Contracts {
     settlementToken: IERC20Metadata
     collateralTokenMap: Map<string, { contract: IERC20Metadata; priceFeedContract: Contract }> = new Map()
     baseToken: BaseToken
+    baseTokenPriceFeed: ChainlinkPriceFeed
+    baseTokenPriceFeedAggregator: AggregatorV3Interface
     pool: UniswapV3Pool
     quoter: Quoter
     exchange: Exchange
@@ -77,7 +87,10 @@ export class Contracts {
     accountBalance: AccountBalance
     multicall2: Multicall2
     perpPortal: PerpPortal
-    private readonly _provider: Provider
+    limitOrderBook: LimitOrderBook
+    delegateApproval: DelegateApproval
+
+    private readonly _provider: providers.Provider
 
     constructor({ metadata, provider }: ContractsConfig) {
         const {
@@ -92,6 +105,8 @@ export class Contracts {
             Multicall2,
             PerpPortal,
             CollateralManager,
+            LimitOrderBook,
+            DelegateApproval,
         } = metadata.contracts
 
         const { USDC: settlementTokenAddress } = metadata.externalContracts
@@ -105,10 +120,17 @@ export class Contracts {
         this.clearingHouse = ClearingHouse__factory.connect(ClearingHouse.address, provider)
         this.clearingHouseConfig = ClearingHouseConfig__factory.connect(ClearingHouseConfig.address, provider)
         this.orderBook = OrderBook__factory.connect(OrderBook.address, provider)
-        // TODO(mc): use CollateralManager.address
         this.collateralManager = CollateralManager__factory.connect(CollateralManager.address, provider)
         this.settlementToken = IERC20Metadata__factory.connect(settlementTokenAddress, provider)
         this.baseToken = BaseToken__factory.connect(constants.AddressZero, provider)
+
+        /* NOTE:
+         * Using ChainlinkPriceFeed__factory to assume all PriceFeed supports 'getAggregator'
+         * but in reality other PriceFeed may still be used.
+         **/
+        this.baseTokenPriceFeed = ChainlinkPriceFeed__factory.connect(constants.AddressZero, provider)
+        this.baseTokenPriceFeedAggregator = AggregatorV3Interface__factory.connect(constants.AddressZero, provider)
+
         this.pool = UniswapV3Pool__factory.connect(constants.AddressZero, provider)
         this.quoter = Quoter__factory.connect(Quoter.address, provider)
         this.exchange = Exchange__factory.connect(Exchange.address, provider)
@@ -116,6 +138,8 @@ export class Contracts {
         this.accountBalance = AccountBalance__factory.connect(AccountBalance.address, provider)
         this.multicall2 = Multicall2__factory.connect(Multicall2.address, provider)
         this.perpPortal = PerpPortal__factory.connect(PerpPortal.address, provider)
+        this.limitOrderBook = LimitOrderBook__factory.connect(LimitOrderBook.address, provider)
+        this.delegateApproval = DelegateApproval__factory.connect(DelegateApproval.address, provider)
         this._provider = provider
     }
 
@@ -130,13 +154,15 @@ export class Contracts {
                 contract: value.contract.connect(signer),
             })
         })
+        this.delegateApproval = this.delegateApproval.connect(signer)
+        this.limitOrderBook = this.limitOrderBook.connect(signer)
     }
 
     createIERC20Token(tokenAddress: string) {
         return IERC20Metadata__factory.connect(tokenAddress, this._provider)
     }
 
-    private _setCollateralTokenMap(tokenInfos: Collateral[], provider: Provider) {
+    private _setCollateralTokenMap(tokenInfos: Collateral[], provider: providers.Provider) {
         tokenInfos.forEach(tokenInfo =>
             this.collateralTokenMap.set(tokenInfo.address, {
                 contract: IERC20Metadata__factory.connect(tokenInfo.address, provider),

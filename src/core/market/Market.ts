@@ -73,6 +73,10 @@ class Market extends Channel<MarketEventName> {
         return tickToPrice(tick)
     }
 
+    getPriceFeedAggregator() {
+        return this._contractReader.getPriceFeedAggregator(this.baseAddress)
+    }
+
     protected _getEventSourceMap() {
         const fetchAndEmitUpdated = this._createFetchUpdateData()
         const updateDataEventSource = new ChannelEventSource<MarketEventName>({

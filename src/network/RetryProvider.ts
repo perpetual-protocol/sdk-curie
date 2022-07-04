@@ -1,7 +1,6 @@
 import { ArgumentError, RpcMaxRetryError, RpcTimeoutError } from "../errors"
-import { BaseProvider, JsonRpcProvider } from "@ethersproject/providers"
+import { providers, errors } from "ethers"
 
-import { ErrorCode as EthersErrorCode } from "@ethersproject/logger"
 import { invariant } from "../utils"
 
 const DEFAULT_RETRY_LOOP_LIMIT = 1 // time for looping all providers
@@ -14,16 +13,16 @@ export interface ChainStatus {
 }
 
 interface ProviderConnection {
-    provider: JsonRpcProvider
+    provider: providers.JsonRpcProvider
     nextRetryTimestamp: number // NOTE: 0 means it's alive.
 }
 
-export class RetryProvider extends BaseProvider {
+export class RetryProvider extends providers.BaseProvider {
     readonly retryLoopLimit: number
     private readonly _providerConnectionList: ProviderConnection[] // NOTE: prioritized, 1st is the most primary one.
     private _userProviderConnection?: ProviderConnection // NOTE: could be metamask, wallet connect
 
-    constructor(providers: JsonRpcProvider[], retryLoopLimit = DEFAULT_RETRY_LOOP_LIMIT) {
+    constructor(providers: providers.JsonRpcProvider[], retryLoopLimit = DEFAULT_RETRY_LOOP_LIMIT) {
         invariant(
             providers.length >= 1,
             () =>
@@ -49,7 +48,7 @@ export class RetryProvider extends BaseProvider {
             : this._providerConnectionList
     }
 
-    public addUserProvider(provider: JsonRpcProvider) {
+    public addUserProvider(provider: providers.JsonRpcProvider) {
         this._userProviderConnection = RetryProvider.getInitialProviderConnection(provider)
     }
 
@@ -164,7 +163,7 @@ export class RetryProvider extends BaseProvider {
         })
     }
 
-    private async _iterateProviders(func: (provider: JsonRpcProvider) => Promise<any>) {
+    private async _iterateProviders(func: (provider: providers.JsonRpcProvider) => Promise<any>) {
         const serverErrors = []
         let attempts = 0
         // eslint-disable-next-line no-constant-condition
@@ -181,8 +180,8 @@ export class RetryProvider extends BaseProvider {
                 return result
             } catch (error: any) {
                 if (
-                    error.code === EthersErrorCode.SERVER_ERROR ||
-                    error.code === EthersErrorCode.TIMEOUT ||
+                    error.code === errors.SERVER_ERROR ||
+                    error.code === errors.TIMEOUT ||
                     error instanceof RpcTimeoutError
                 ) {
                     // NOTE: Suppress server error or timeout error to retry with next provider.
@@ -196,7 +195,7 @@ export class RetryProvider extends BaseProvider {
         }
     }
 
-    static getInitialProviderConnection(provider: JsonRpcProvider): ProviderConnection {
+    static getInitialProviderConnection(provider: providers.JsonRpcProvider): ProviderConnection {
         return { provider, nextRetryTimestamp: 0 }
     }
 }
