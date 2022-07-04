@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-canary.2...v1.7.0) (2022-07-04)
+
+## [1.7.0-canary.2](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-canary.1...v1.7.0-canary.2) (2022-07-04)
+
+
+### Bug Fixes
+
+* typo ([fb06ef0](https://github.com/perpetual-protocol/sdk-curie/commit/fb06ef0ef39fe017ba0d3b3c2da9a9f56e9810d1))
+* typo and markdown format ([db47cfb](https://github.com/perpetual-protocol/sdk-curie/commit/db47cfb278ea33d43855f1e011f8db88028a6ac9))
+
+## [1.7.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-canary.0...v1.7.0-canary.1) (2022-07-04)
+
+
+### Features
+
+* **errror:** add NOT_ENOUGH_MINIMUM_REQUIRED_MARGIN_ERROR ([d32361a](https://github.com/perpetual-protocol/sdk-curie/commit/d32361a33d19a029e7ab9080bb9b65529b4a2ee7))
+
+## [1.7.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1...v1.7.0-canary.0) (2022-06-30)
+
+
+### Features
+
+* **error:** add OVER_MAXIMUM_PRICE_SPREAD_ERROR ([f4a11ea](https://github.com/perpetual-protocol/sdk-curie/commit/f4a11ea03462cc8855e3096dcb588f80a99aed65))
+
 ### [1.6.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1-canary.0...v1.6.1) (2022-05-31)
 
 ### [1.6.1-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.0-canary.1...v1.6.1-canary.0) (2022-05-30)
