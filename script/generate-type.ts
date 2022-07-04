@@ -1,4 +1,5 @@
 import "dotenv-flow/config"
+import fs from "fs"
 
 import { glob, runTypeChain } from "typechain"
 
@@ -35,13 +36,32 @@ async function main() {
         `${__dirname}/../node_modules/@chainlink/contracts/abi/v0.7/**/+([a-zA-Z0-9_]).json`,
     ])
 
+    const outDir = "src/contracts/type"
+
     const result = await runTypeChain({
         cwd,
         filesToProcess: allFiles,
         allFiles,
-        outDir: "src/contracts/type/",
+        outDir,
         target: "ethers-v5",
     })
+
+    // NOTE: workaround for `FactorySidechains` compile error. Ref: https://github.com/perpetual-protocol/perp-curie-limit-order/pull/68/files
+    const targetNoCheckFiles = [
+        `${cwd}/${outDir}/factories/FactorySidechains__factory.ts`,
+        `${cwd}/${outDir}/factories/Plain4Basic__factory.ts`,
+        `${cwd}/${outDir}/factories/StableSwap__factory.ts`,
+    ]
+
+    for (let i = 0; i < targetNoCheckFiles.length; i++) {
+        try {
+            const filepath = targetNoCheckFiles[i]
+            const data = fs.readFileSync(filepath)
+            fs.writeFileSync(filepath, "// @ts-nocheck\n\n" + data)
+        } catch (e) {
+            console.warn((e as any).toString())
+        }
+    }
 }
 
 main().catch(console.error)
