@@ -32,6 +32,7 @@ export enum ContractErrorCode {
     NON_EXISTENT_OPEN_ORDER = "OB_NEO",
     MARKET_NUMBER_EXCEEDS = "AB_MNE",
     OVER_MAXIMUM_PRICE_SPREAD = "CH_OMPS",
+    NOT_ENOUGH_MINIMUM_REQUIRED_MARGIN = "CH_NEMRM",
 
     /* UNISWAP ERROR */
     LIQUIDITY_MATH_ERROR_LS = "LS", // https://github.com/Uniswap/v3-core/blob/f03155670ec1667406b83a539e23dcccf32a03bc/contracts/libraries/LiquidityMath.sol#L12
@@ -73,6 +74,7 @@ export enum ErrorName {
     NON_EXISTENT_OPEN_ORDER_ERROR = "non_existent_open_order_error",
     MARKET_NUMBER_EXCEEDS_ERROR = "market_number_exceeds_error",
     OVER_MAXIMUM_PRICE_SPREAD_ERROR = "over_maximum_price_spread_error",
+    NOT_ENOUGH_MINIMUM_REQUIRED_MARGIN_ERROR = "not_enough_minimum_required_margin_error",
 
     /* UNISWAP Error*/
     UNISWAP_ERROR = "uniswap_error",
@@ -378,6 +380,13 @@ export class OverMaximumPriceSpreadError extends ContractWriteError<ClearingHous
     constructor(data: ContractWriteErrorParams<keyof ClearingHouse>) {
         super({ ...data })
         this.name = ErrorName.OVER_MAXIMUM_PRICE_SPREAD_ERROR
+    }
+}
+
+export class NotEnoughMinimumRequiredMarginError extends ContractWriteError<ClearingHouse> {
+    constructor(data: ContractWriteErrorParams<keyof ClearingHouse>) {
+        super({ ...data })
+        this.name = ErrorName.NOT_ENOUGH_MINIMUM_REQUIRED_MARGIN_ERROR
     }
 }
 
