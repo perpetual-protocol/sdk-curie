@@ -19,6 +19,7 @@ import {
     isRpcNativeUserDeniedError,
     MarketNumberExceedsError,
     OverMaximumPriceSpreadError,
+    NotEnoughMinimumRequiredMarginError,
 } from "../errors"
 import { ClearingHouse, Exchange, OrderBook } from "../contracts/type"
 
@@ -104,6 +105,10 @@ export function getTransactionErrorFactory({
         }
         case ContractErrorCode.OVER_MAXIMUM_PRICE_SPREAD: {
             ErrorClass = OverMaximumPriceSpreadError
+            break
+        }
+        case ContractErrorCode.NOT_ENOUGH_MINIMUM_REQUIRED_MARGIN: {
+            ErrorClass = NotEnoughMinimumRequiredMarginError
             break
         }
         default: {
