@@ -9,8 +9,3 @@ coverage
 # generated
 src/contracts/type/
 dist
-
-# dotenv
-.env.local
-.env.production.local
-.env.test.local
