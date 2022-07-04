@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.7.0-canary.0...v1.7.0-canary.1) (2022-07-04)
+
+
+### Features
+
+* **errror:** add NOT_ENOUGH_MINIMUM_REQUIRED_MARGIN_ERROR ([d32361a](https://github.com/perpetual-protocol/sdk-curie/commit/d32361a33d19a029e7ab9080bb9b65529b4a2ee7))
+
 ## [1.7.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.6.1...v1.7.0-canary.0) (2022-06-30)
 
 
