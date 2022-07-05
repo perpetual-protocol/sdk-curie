@@ -1,4 +1,4 @@
-import { StaticJsonRpcProvider, WebSocketProvider } from "@ethersproject/providers"
+import { providers } from "ethers"
 
 import { RetryProvider } from "./RetryProvider"
 
@@ -8,7 +8,7 @@ function isWebsocket(url: string) {
 }
 
 export function getProvider({ rpcUrl }: { rpcUrl: string }) {
-    const Provider = isWebsocket(rpcUrl) ? WebSocketProvider : StaticJsonRpcProvider
+    const Provider = isWebsocket(rpcUrl) ? providers.WebSocketProvider : providers.StaticJsonRpcProvider
     return new Provider(rpcUrl)
 }
 

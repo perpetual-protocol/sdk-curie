@@ -5,15 +5,16 @@ import { FailedPreconditionError, InitSDKError, UnsupportedChainError } from "..
 
 import { ContractReader } from "./contractReader"
 import { Contracts } from "../contracts"
-import { JsonRpcSigner } from "@ethersproject/providers"
 import { Liquidities } from "./liquidity"
 import { Markets } from "./market"
 import { Metadata } from "../metadata"
 import { Positions } from "./position"
-import { Signer } from "@ethersproject/abstract-signer"
+import { Signer, providers } from "ethers"
 import { Vault } from "./vault"
 import { Wallet } from "./wallet"
+import { DelegateApproval, DelegateApprovalConfigs } from "./clearingHouse/DelegateApproval"
 import { invariant } from "../utils"
+import { LimitOrderBook } from "./limitOrder"
 
 interface ModuleConfigs {
     vault?: ModuleConfig
@@ -22,6 +23,7 @@ interface ModuleConfigs {
     market?: ModuleConfig
     orders?: ModuleConfig
     positions?: ModuleConfig
+    delegateApproval?: DelegateApprovalConfigs
 }
 
 interface PerpetualProtocolConfig {
@@ -40,6 +42,8 @@ export interface PerpetualProtocolConnected extends PerpetualProtocolInitialized
     positions: Positions
     liquidities: Liquidities
     vault: Vault
+    delegateApproval: DelegateApproval
+    limitOrderBook: LimitOrderBook
 }
 
 /**
@@ -64,6 +68,8 @@ class PerpetualProtocol {
     private _clearingHouse?: ClearingHouse
     private _positions?: Positions
     private _liquidities?: Liquidities
+    private _delegateApproval?: DelegateApproval
+    private _limitOrderBook?: LimitOrderBook
 
     get metadata() {
         return this._metadata as Metadata
@@ -123,6 +129,14 @@ class PerpetualProtocol {
         return this._channelRegistry
     }
 
+    get delegateApproval() {
+        return this._delegateApproval
+    }
+
+    get limitOrderBook() {
+        return this._limitOrderBook
+    }
+
     constructor({ chainId, providerConfigs, moduleConfigs }: PerpetualProtocolConfig) {
         // NOTE: throw error if the user try to use an unsupported chainId to init the sdk
         if (!isSupportedChainId(chainId)) {
@@ -164,13 +178,15 @@ class PerpetualProtocol {
             // NOTE: This casting is necessary due that
             // `signer.provider` is `Provider` type, which is `BaseProvider`'s parent class
             // but we wanna handle JsonRpcProvider specifically
-            this.provider.addUserProvider((signer as JsonRpcSigner).provider)
+            this.provider.addUserProvider((signer as providers.JsonRpcSigner).provider)
         }
 
         this._wallet = new Wallet(this, account)
         this._vault = new Vault(this, account)
 
         if (this.hasConnected()) {
+            this._delegateApproval = new DelegateApproval(this, this.moduleConfigs?.delegateApproval)
+            this._limitOrderBook = new LimitOrderBook(this)
             this._positions = new Positions(this)
             this._liquidities = new Liquidities(this)
         }

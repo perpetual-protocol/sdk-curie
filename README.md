@@ -7,15 +7,69 @@ A Javascript SDK for Perpetual Protocol Curie.
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-# Development
+# Usage
 
-## Setup
+## Install
 
 Install dependencies:
 
 ```bash
 yarn add @perp/sdk-curie
 ```
+
+See `./test/` for common use cases.
+
+# Development
+
+## Environment Variables
+
+```javascript
+TRACK
+METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN
+METADATA_URL_CORE_OVERRIDE_OPTIMISM
+METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN
+METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM
+
+enum TRACK {
+  dev1 = "dev1"
+  dev2 = "dev2"
+  canary = "canary"
+  rc = "rc"
+  production = "production"
+}
+```
+
+## Setup before development
+
+```bash
+yarn
+yarn generate-type:[TRACK]
+```
+
+## Testing in other projects
+
+In this repo, run:
+
+```bash
+yarn link
+yarn start:[TRACK]
+```
+
+### To supply custom envs, run:
+
+```bash
+METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN="your_url" \
+METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN="your_url" \
+yarn start:[TRACK]
+```
+
+In the repo that you want to test with, run:
+
+```bash
+yarn link @perp/sdk-curie
+```
+
+##
 
 ## Commit
 
