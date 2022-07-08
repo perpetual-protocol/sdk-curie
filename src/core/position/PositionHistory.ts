@@ -14,6 +14,7 @@ interface IPositionHistory {
     timestamp: number
     tradingFee: Big
     isClosed?: boolean // NOTE: is a closed position created by quitting a shutdown market.
+    fromFunctionSignature?: string
 }
 
 export class PositionHistory implements IPositionHistory {
@@ -29,6 +30,7 @@ export class PositionHistory implements IPositionHistory {
     readonly timestamp: number
     readonly tradingFee: Big
     readonly isClosed: boolean = false
+    readonly fromFunctionSignature?: string
 
     constructor({
         txId,
@@ -43,6 +45,7 @@ export class PositionHistory implements IPositionHistory {
         tradingFee,
         timestamp,
         isClosed,
+        fromFunctionSignature,
     }: IPositionHistory) {
         this.txId = txId
         this.tickerSymbol = tickerSymbol
@@ -56,5 +59,6 @@ export class PositionHistory implements IPositionHistory {
         this.timestamp = timestamp
         this.tradingFee = tradingFee
         this.isClosed = !!isClosed
+        this.fromFunctionSignature = fromFunctionSignature
     }
 }
