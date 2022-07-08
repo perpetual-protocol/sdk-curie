@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.8.0-canary.2...v1.9.0-canary.0) (2022-07-08)
+
+
+### Features
+
+* added fromFunctionSignature to positionHistory ([002ce36](https://github.com/perpetual-protocol/sdk-curie/commit/002ce368d88a37b7b3949471f6c82f0d860ff884))
+
+
+### Build System
+
+* **package.json:** rebase version ([6a29cb2](https://github.com/perpetual-protocol/sdk-curie/commit/6a29cb28707c894b425bb749f369ad5fb59d3743))
+
 ## [1.8.0-canary.2](https://github.com/perpetual-protocol/sdk-curie/compare/v1.8.0-canary.1...v1.8.0-canary.2) (2022-07-05)
 
 
