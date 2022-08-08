@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.1-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0...v1.9.1-canary.0) (2022-08-08)
+
+
+### Build System
+
+* **rollup:** clean up dependencies & add rollup plugins ([b6bf046](https://github.com/perpetual-protocol/sdk-curie/commit/b6bf046aa868811f92a6e0c414309cad80fd834c))
+
 ## [1.9.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0-canary.0...v1.9.0) (2022-07-08)
 
 ## [1.9.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.8.0-canary.2...v1.9.0-canary.0) (2022-07-08)
