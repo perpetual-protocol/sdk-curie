@@ -54,17 +54,16 @@
         "sdk"
     ],
     "dependencies": {
-        "@babel/preset-modules": "0.1.5",
         "@chainlink/contracts": "0.4.1",
         "@perp/curie-deployments": "2022.7.5-1657005481127",
         "@uniswap/v3-core": "1.0.0",
         "big.js": "6.1.1",
         "cross-fetch": "3.1.5",
-        "dotenv-flow": "3.2.0",
         "ethers": "5.4.2"
     },
     "devDependencies": {
         "@babel/preset-env": "7.16.0",
+        "@babel/preset-modules": "0.1.5",
         "@commitlint/cli": "17.0.0",
         "@commitlint/config-conventional": "17.0.0",
         "@commitlint/cz-commitlint": "17.0.0",
@@ -88,9 +87,11 @@
         "lint-staged": "11.1.2",
         "mkdirp": "1.0.4",
         "rimraf": "3.0.2",
-        "rollup": "2.56.3",
+        "rollup": "2.77.2",
         "rollup-plugin-sourcemaps": "0.6.3",
-        "rollup-plugin-typescript2": "0.30.0",
+        "rollup-plugin-terser": "7.0.2",
+        "rollup-plugin-typescript2": "0.32.1",
+        "rollup-plugin-visualizer": "5.7.1",
         "standard-version": "9.5.0",
         "ts-jest": "27.0.5",
         "ts-lib": "0.0.5",

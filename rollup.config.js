@@ -1,18 +1,17 @@
-import "dotenv-flow/config"
 import commonjs from "@rollup/plugin-commonjs"
 import json from "@rollup/plugin-json"
 import { nodeResolve } from "@rollup/plugin-node-resolve"
 import pkg from "./package.json"
-import sourceMaps from "rollup-plugin-sourcemaps"
+import sourcemaps from "rollup-plugin-sourcemaps"
 import typescript from "rollup-plugin-typescript2"
 import replace from "@rollup/plugin-replace"
-
-const libraryName = "index"
+import { visualizer } from "rollup-plugin-visualizer"
+import { terser } from "rollup-plugin-terser"
 
 export default {
-    input: `src/${libraryName}.ts`,
+    input: "src/index.ts",
     output: [
-        { file: pkg.main, name: libraryName, format: "cjs", sourcemap: true },
+        { file: pkg.main, format: "cjs", sourcemap: true },
         { file: pkg.module, format: "es", sourcemap: true },
     ],
     // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
@@ -29,6 +28,7 @@ export default {
     },
     plugins: [
         replace({
+            preventAssignment: true,
             values: {
                 "process.env.TRACK": JSON.stringify(process.env.TRACK),
                 "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN": JSON.stringify(
@@ -45,27 +45,14 @@ export default {
                 ),
             },
         }),
-        // Allow json resolution
         json(),
-        // Compile TypeScript files
         typescript(),
-        // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
         commonjs(),
-        // babel({ babelHelpers: 'bundled' }),
-        // babel(),
-        // Allow node_modules resolution, so you can use 'external' to control
-        // which external modules to include in the bundle
-        // https://github.com/rollup/rollup-plugin-node-resolve#usage
-        // resolve({
-        //   customResolveOptions: {
-        //     moduleDirectory: 'src'
-        //   },
-        // }),
         nodeResolve({
             mainFields: ["module", "browser", "main"],
         }),
-
-        // Resolve source maps to the original source
-        sourceMaps(),
+        sourcemaps(),
+        terser(),
+        visualizer(),
     ],
 }
