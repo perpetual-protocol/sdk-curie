@@ -48,7 +48,7 @@ export default {
         commonjs(), // NOTE: Convert CommonJS modules to ES6 before processing.
         json(),
         typescript(),
-        terser(),
+        // terser(),
         // esbuild({
         //     minify: true,
         // }),
