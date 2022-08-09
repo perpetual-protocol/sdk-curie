@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.2-canary.3](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0...v1.9.2-canary.3) (2022-08-09)
+
+
+### Others
+
+* update version in package.json ([bd9926c](https://github.com/perpetual-protocol/sdk-curie/commit/bd9926cd9a6ee77434a0b5563c2857d7f06fd18a))
+
+
+### Build System
+
+* bump version ([273cb9f](https://github.com/perpetual-protocol/sdk-curie/commit/273cb9fb355a417866582cc1041bb766f0a9a050))
+* **canary:** bump version ([e90fde0](https://github.com/perpetual-protocol/sdk-curie/commit/e90fde0bd60059e56e94b66368d2bef5401dcd4e))
+* **rollup:** clean up dependencies & add rollup plugins ([b6bf046](https://github.com/perpetual-protocol/sdk-curie/commit/b6bf046aa868811f92a6e0c414309cad80fd834c))
+* **rollup:** experiment rollup config ([#83](https://github.com/perpetual-protocol/sdk-curie/issues/83)) ([44a2792](https://github.com/perpetual-protocol/sdk-curie/commit/44a27927b4bf57e7f67f0a6a508120d3a35d0e17))
+* update dist folder structure ([3f515db](https://github.com/perpetual-protocol/sdk-curie/commit/3f515db723a6fc3d1a9d60aa6db53c859701abfa))
+* update rollup config ([42c5f2e](https://github.com/perpetual-protocol/sdk-curie/commit/42c5f2ee89ecfc270a6aad726cb0f21c49d56b7b))
+
 ## [1.9.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0-canary.0...v1.9.0) (2022-07-08)
 
 ## [1.9.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.8.0-canary.2...v1.9.0-canary.0) (2022-07-08)
