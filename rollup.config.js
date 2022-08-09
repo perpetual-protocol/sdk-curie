@@ -17,12 +17,18 @@ const regexesOfPackages = externalPackages.map(packageName => new RegExp(`^${pac
 export default {
     input: "src/index.ts",
     output: [
-        { file: pkg.main, format: "cjs", sourcemap: true },
+        {
+            format: "cjs",
+            sourcemap: true,
+            dir: "dist/lib",
+            preserveModules: true,
+            preserveModulesRoot: "src",
+        },
         {
             // file: pkg.module,
             format: "es",
             sourcemap: true,
-            dir: "dist/lib",
+            dir: "dist/es",
             preserveModules: true,
             preserveModulesRoot: "src",
         },

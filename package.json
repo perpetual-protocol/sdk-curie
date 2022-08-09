@@ -1,11 +1,11 @@
 {
     "name": "@perp/sdk-curie",
-    "version": "1.9.2-canary.4",
+    "version": "1.9.2-canary.5",
     "license": "BSD-3-Clause",
-    "main": "dist/lib/sdk-curie.cjs.js",
-    "module": "dist/lib/index.js",
+    "main": "dist/lib/index.js",
+    "module": "dist/es/index.js",
     "browser": "dist/sdk-curie.umd.js",
-    "types": "dist/lib/index.d.ts",
+    "types": "dist/es/index.d.ts",
     "sideEffects": false,
     "files": [
         "dist"
