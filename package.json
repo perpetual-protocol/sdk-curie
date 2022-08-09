@@ -1,6 +1,6 @@
 {
     "name": "@perp/sdk-curie",
-    "version": "1.9.2-canary.0",
+    "version": "1.9.2-canary.1",
     "license": "BSD-3-Clause",
     "main": "dist/lib/sdk-curie.cjs.js",
     "module": "dist/lib/index.js",
