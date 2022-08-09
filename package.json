@@ -2,9 +2,11 @@
     "name": "@perp/sdk-curie",
     "version": "1.9.0",
     "license": "BSD-3-Clause",
-    "main": "dist/index.js",
+    "main": "dist/sdk-curie.js",
     "module": "dist/sdk-curie.esm.js",
-    "typings": "dist/src/index.d.ts",
+    "browser": "dist/sdk-curie.umd.js",
+    "types": "dist/src/index.d.ts",
+    "sideEffects": false,
     "files": [
         "dist"
     ],
@@ -62,8 +64,6 @@
         "ethers": "5.4.2"
     },
     "devDependencies": {
-        "@babel/preset-env": "7.16.0",
-        "@babel/preset-modules": "0.1.5",
         "@commitlint/cli": "17.0.0",
         "@commitlint/config-conventional": "17.0.0",
         "@commitlint/cz-commitlint": "17.0.0",
@@ -79,6 +79,7 @@
         "commitizen": "4.2.4",
         "copyfiles": "2.4.1",
         "cross-env": "7.0.3",
+        "esbuild": "^0.14.53",
         "eslint": "8.9.0",
         "eslint-config-prettier": "8.5.0",
         "eslint-plugin-prettier": "4.0.0",
@@ -88,7 +89,7 @@
         "mkdirp": "1.0.4",
         "rimraf": "3.0.2",
         "rollup": "2.77.2",
-        "rollup-plugin-sourcemaps": "0.6.3",
+        "rollup-plugin-esbuild": "^4.9.1",
         "rollup-plugin-terser": "7.0.2",
         "rollup-plugin-typescript2": "0.32.1",
         "rollup-plugin-visualizer": "5.7.1",

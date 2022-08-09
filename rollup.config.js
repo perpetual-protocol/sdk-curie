@@ -1,11 +1,11 @@
 import commonjs from "@rollup/plugin-commonjs"
 import json from "@rollup/plugin-json"
-import { nodeResolve } from "@rollup/plugin-node-resolve"
+import resolve from "@rollup/plugin-node-resolve"
 import pkg from "./package.json"
-import sourcemaps from "rollup-plugin-sourcemaps"
-import typescript from "rollup-plugin-typescript2"
 import replace from "@rollup/plugin-replace"
 import { visualizer } from "rollup-plugin-visualizer"
+import esbuild from "rollup-plugin-esbuild"
+import typescript from "rollup-plugin-typescript2"
 import { terser } from "rollup-plugin-terser"
 
 export default {
@@ -14,13 +14,12 @@ export default {
         { file: pkg.main, format: "cjs", sourcemap: true },
         { file: pkg.module, format: "es", sourcemap: true },
     ],
-    // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
-    external: ["cross-fetch", "cross-fetch/polyfill", "axios"],
+    external: ["cross-fetch", "cross-fetch/polyfill"],
     watch: {
         include: "src/**",
     },
-    // https://stackoverflow.com/questions/43556940/rollup-js-and-this-keyword-is-equivalent-to-undefined
     onwarn(warning) {
+        // https://stackoverflow.com/questions/43556940/rollup-js-and-this-keyword-is-equivalent-to-undefined
         if (warning.code === "THIS_IS_UNDEFINED") {
             return
         }
@@ -45,14 +44,14 @@ export default {
                 ),
             },
         }),
+        resolve(), // NOTE: Find external modules.
+        commonjs(), // NOTE: Convert CommonJS modules to ES6 before processing.
         json(),
         typescript(),
-        commonjs(),
-        nodeResolve({
-            mainFields: ["module", "browser", "main"],
-        }),
-        sourcemaps(),
-        terser(),
+        // terser(),
+        // esbuild({
+        //     minify: true,
+        // }),
         visualizer(),
     ],
 }
