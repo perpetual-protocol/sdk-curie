@@ -41,6 +41,7 @@ jobs:
               run: |
                   git config --global user.email "dev@perp.fi"
                   git config --global user.name "Perpetual Protocol"
+                  git remote set-url origin "https://${{ secrets.PERP_DEV_PAT_TOKEN}}@github.com/perpetual-protocol/sdk-curie.git"
 
             # update package.json version, add CHANGELOG & commit changes
             - name: Bump version
@@ -67,7 +68,7 @@ jobs:
             - name: Git push version change
               run: |
                 git remote -v
-                git push --follow-tags
+                git push origin --follow-tags
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package

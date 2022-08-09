@@ -1,6 +1,6 @@
 {
     "name": "@perp/sdk-curie",
-    "version": "1.9.2-canary.2",
+    "version": "1.9.2-canary.3",
     "license": "BSD-3-Clause",
     "main": "dist/lib/sdk-curie.cjs.js",
     "module": "dist/lib/index.js",
@@ -56,14 +56,19 @@
         "sdk"
     ],
     "dependencies": {
-        "@chainlink/contracts": "0.4.1",
         "@perp/curie-deployments": "2022.7.5-1657005481127",
+        "cross-fetch": "3.1.5"
+    },
+    "peerDependencies": {
+        "big.js": "6.1.1",
+        "ethers": "5.5.0"
+    },
+    "devDependencies": {
+        "@chainlink/contracts": "0.4.1",
         "@uniswap/v3-core": "1.0.0",
         "big.js": "6.1.1",
         "cross-fetch": "3.1.5",
-        "ethers": "5.4.2"
-    },
-    "devDependencies": {
+        "ethers": "5.5.0",
         "@commitlint/cli": "17.0.0",
         "@commitlint/config-conventional": "17.0.0",
         "@commitlint/cz-commitlint": "17.0.0",
