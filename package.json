@@ -1,6 +1,6 @@
 {
     "name": "@perp/sdk-curie",
-    "version": "1.9.1",
+    "version": "1.9.2-canary.0",
     "license": "BSD-3-Clause",
     "main": "dist/sdk-curie.js",
     "module": "dist/sdk-curie.esm.js",
