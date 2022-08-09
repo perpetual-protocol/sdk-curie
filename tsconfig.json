@@ -16,7 +16,7 @@
         "resolveJsonModule": true,
         "esModuleInterop": true
     },
-    "include": ["src", "test"],
+    "include": ["src"],
     "ts-node": {
         "compilerOptions": {
             "module": "commonjs"
