@@ -1,12 +1,12 @@
 import commonjs from "@rollup/plugin-commonjs"
 import json from "@rollup/plugin-json"
-// import resolve from "@rollup/plugin-node-resolve"
+import resolve from "@rollup/plugin-node-resolve"
 import pkg from "./package.json"
 import replace from "@rollup/plugin-replace"
 import { visualizer } from "rollup-plugin-visualizer"
 // import esbuild from "rollup-plugin-esbuild"
 import typescript from "rollup-plugin-typescript2"
-// import { terser } from "rollup-plugin-terser"
+import { terser } from "rollup-plugin-terser"
 
 const externalPackages = [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})]
 
@@ -28,15 +28,6 @@ export default {
         },
     ],
     external: regexesOfPackages,
-    // external: [
-    //     "cross-fetch",
-    //     "node-fetch",
-    //     "ethers",
-    //     "big.js",
-    //     "@uniswap/v3-core",
-    //     "@perp/curie-deployments",
-    //     "@chainlink/contracts",
-    // ],
     watch: {
         include: "src/**",
     },
@@ -66,11 +57,11 @@ export default {
                 ),
             },
         }),
-        // resolve(), // NOTE: Find external modules.
+        resolve(), // NOTE: Find external modules.
         commonjs(), // NOTE: Convert CommonJS modules to ES6 before processing.
         json(),
         typescript(),
-        // terser(),
+        terser(),
         // esbuild({
         //     minify: true,
         // }),
