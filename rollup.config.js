@@ -8,11 +8,11 @@ import { visualizer } from "rollup-plugin-visualizer"
 import typescript from "rollup-plugin-typescript2"
 import { terser } from "rollup-plugin-terser"
 
-const externalPackages = [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})]
-
 // Creating regexes of the packages to make sure subpaths of the
 // packages are also treated as external
-const regexesOfPackages = externalPackages.map(packageName => new RegExp(`^${packageName}(\/.*)?`))
+const regexesOfPackages = [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})].map(
+    packageName => new RegExp(`^${packageName}(\/.*)?`),
+)
 
 export default {
     input: "src/index.ts",
