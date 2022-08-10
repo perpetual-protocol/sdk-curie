@@ -72,11 +72,9 @@ jobs:
             - name: Git push version change
               run: |
                 PKG_VERSION=v$(npm pkg get version | sed 's/"//g')
-                git remote -v
-                git config --list
                 echo $PKG_VERSION
                 git tag $PKG_VERSION
-                git push origin --follow-tags
+                git push origin $PKG_VERSION
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package
