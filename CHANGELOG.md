@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.9.2-canary.11](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.2-canary.9...v1.9.2-canary.11) (2022-08-10)
+
+
+### Others
+
+* **release:** 1.9.2-canary.10 ([a971d35](https://github.com/perpetual-protocol/sdk-curie/commit/a971d35f8b9a8ef64a8249d788d240634cfbd59e))
+
+
+### CI
+
+* refactor workflow and add npm script for bump canary ([0ca853b](https://github.com/perpetual-protocol/sdk-curie/commit/0ca853b02c657a2ccd52ed5c6d20502a1114d254))
+
 ### [1.9.2-canary.10](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.2-canary.9...v1.9.2-canary.10) (2022-08-10)
 
 ### [1.9.2-canary.9](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.2-canary.8...v1.9.2-canary.9) (2022-08-10)
