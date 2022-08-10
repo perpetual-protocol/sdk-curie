@@ -42,6 +42,7 @@
         "prebuild": "yarn generate-type",
         "build": "yarn clean && rollup -c rollup.config.js",
         "bump-version": "standard-version --no-verify",
+        "bump-version:canary": "yarn bump-version --prerelease canary --skip.tag",
         "release": "yarn publish --access public --non-interactive --no-commit-hooks"
     },
     "lint-staged": {
