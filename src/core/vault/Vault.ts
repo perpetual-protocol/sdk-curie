@@ -7,19 +7,19 @@ import { UnauthorizedError } from "../../errors"
 import {
     Channel,
     ChannelEventSource,
-    DEFAULT_PERIOD,
-    MemoizedFetcher,
     createMemoizedFetcher,
+    DEFAULT_PERIOD,
     hasNumberArrChange,
     hasNumberChange,
+    MemoizedFetcher,
 } from "../../internal"
 import { getTransaction } from "../../transactionSender"
 import { big2BigNumberAndScaleUp, invariant, poll } from "../../utils"
 import { ContractReader } from "../contractReader"
-import type { PerpetualProtocol } from "../PerpetualProtocol"
 import { NonSettlementCollateralToken } from "../wallet/NonSettlementCollateralToken"
 import { SettlementToken } from "../wallet/SettlementToken"
 
+import type { PerpetualProtocol } from "../PerpetualProtocol"
 export type VaultEventName =
     | "updated"
     | "accountValueUpdated"
@@ -103,6 +103,27 @@ class Vault extends Channel<VaultEventName> {
             contractName: ContractName.VAULT,
             contractFunctionName: "withdrawEther",
             args: [big2BigNumberAndScaleUp(amount, ETH_DECIMAL_DIGITS)],
+        })
+    }
+
+    async withdrawAll(token: NonSettlementCollateralToken | SettlementToken) {
+        const address = token.address
+        return getTransaction<ContractVault, "withdrawAll">({
+            account: this.account,
+            contract: this._contract,
+            contractName: ContractName.VAULT,
+            contractFunctionName: "withdrawAll",
+            args: [address],
+        })
+    }
+
+    async withdrawAllEther() {
+        return getTransaction<ContractVault, "withdrawAllEther">({
+            account: this.account,
+            contract: this._contract,
+            contractName: ContractName.VAULT,
+            contractFunctionName: "withdrawAllEther",
+            args: [],
         })
     }
 
