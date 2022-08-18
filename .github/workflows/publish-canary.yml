@@ -7,8 +7,8 @@ jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
         outputs:
-            release_track: ${{ steps.bump-version.outputs.release_track }}
-            pkg_version: ${{ steps.bump-version.outputs.pkg_version }}
+            release_track: ${{ steps.set-variables.outputs.release_track }}
+            pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
         steps:
             - uses: actions/checkout@v3
               with:
@@ -37,35 +37,40 @@ jobs:
             - name: Install dependencies
               run: yarn install --prefer-offline --frozen-lockfile
 
-            - name: Config Git
-              run: |
-                  git config --global user.email "dev@perp.fi"
-                  git config --global user.name "Perpetual Protocol"
+#            - name: Config Git
+#              run: |
+#                  git config --global user.email "dev@perp.fi"
+#                  git config --global user.name "Perpetual Protocol"
+#                  git remote set-url origin "https://${{ secrets.PERP_DEV_PAT_TOKEN }}@github.com/perpetual-protocol/sdk-curie.git"
 
-            # update package.json version, add CHANGELOG & commit changes
-            - name: Bump version
-              id: bump-version
+
+            - name: set variables
+              id: set-variables
               run: |
                   RELEASE_TRACK=canary
-                  yarn bump-version --prerelease ${RELEASE_TRACK}
-                  PKG_VERSION=$(node -p "require('./package.json').version")
+                  PKG_VERSION=$(npm pkg get version | sed 's/"//g')
                   echo "::set-output name=release_track::$RELEASE_TRACK"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
 
             - name: Build package
-              run: TRACK=${{ steps.bump-version.outputs.release_track }} yarn build
+              run: |
+                  TRACK=${{ steps.set-variables.outputs.release_track }} yarn build
 
+            # update package.json version, add CHANGELOG & commit changes
             - name: Publish package
               id: publish-package
               run: |
-                  echo tag: ${{ steps.bump-version.outputs.release_track }}
-                  echo version: ${{ steps.bump-version.outputs.pkg_version }}
-                  yarn release --tag ${{ steps.bump-version.outputs.release_track }}
+                  echo track: ${{ steps.set-variables.outputs.release_track }}
+                  echo version: ${{ steps.set-variables.outputs.pkg_version }}
+                  yarn release --tag ${{ steps.set-variables.outputs.release_track }}
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Git push version change
-              run: git push --follow-tags
+              run: |
+                PKG_VERSION=${{ steps.set-variables.outputs.pkg_version }}
+                git tag $PKG_VERSION
+                git push origin $PKG_VERSION
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package
