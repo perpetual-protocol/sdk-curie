@@ -48,7 +48,7 @@ jobs:
               id: set-variables
               run: |
                   RELEASE_TRACK=canary
-                  PKG_VERSION=v$(npm pkg get version | sed 's/"//g')
+                  PKG_VERSION=$(npm pkg get version | sed 's/"//g')
                   echo "::set-output name=release_track::$RELEASE_TRACK"
                   echo "::set-output name=pkg_version::$PKG_VERSION"
 
