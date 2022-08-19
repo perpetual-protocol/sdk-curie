@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.12.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0...v1.12.0) (2022-08-19)
+
+
+### Features
+
+* **Vault:** support withdraw all feature ([061ca0d](https://github.com/perpetual-protocol/sdk-curie/commit/061ca0d24a27a4372d3720bc6a64ae07f9dd7225))
+
+
+### Others
+
+* **release:** 1.10.0 ([5226185](https://github.com/perpetual-protocol/sdk-curie/commit/5226185db31f95078493b1dac031def4e605ceb0))
+* **release:** 1.11.0 ([86749c0](https://github.com/perpetual-protocol/sdk-curie/commit/86749c050daf48984f45b82cbc17e81f39de67c0))
+
+
+### CI
+
+* update workflow for canary ([7a128e8](https://github.com/perpetual-protocol/sdk-curie/commit/7a128e8296940edb907507b26cff4ead6aec895e))
+* **workflow:** make version bump manually ([7f9cb4f](https://github.com/perpetual-protocol/sdk-curie/commit/7f9cb4f1846da657d9b7e26062b36c4f0a29d206))
+
+## [1.11.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0...v1.11.0) (2022-08-17)
+
+
+### Features
+
+* **Vault:** support withdraw all feature ([061ca0d](https://github.com/perpetual-protocol/sdk-curie/commit/061ca0d24a27a4372d3720bc6a64ae07f9dd7225))
+
+
+### Others
+
+* **release:** 1.10.0 ([5226185](https://github.com/perpetual-protocol/sdk-curie/commit/5226185db31f95078493b1dac031def4e605ceb0))
+
+## [1.10.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0...v1.10.0) (2022-08-17)
+
+
+### Features
+
+* **Vault:** support withdraw all feature ([061ca0d](https://github.com/perpetual-protocol/sdk-curie/commit/061ca0d24a27a4372d3720bc6a64ae07f9dd7225))
+
 ## [1.9.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0-canary.0...v1.9.0) (2022-07-08)
 
 ## [1.9.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.8.0-canary.2...v1.9.0-canary.0) (2022-07-08)
