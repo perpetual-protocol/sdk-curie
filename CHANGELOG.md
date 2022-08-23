@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.12.1-dev1.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.11.0...v1.12.1-dev1.0) (2022-08-23)
+
+
+### CI
+
+* update workflow for canary ([7a128e8](https://github.com/perpetual-protocol/sdk-curie/commit/7a128e8296940edb907507b26cff4ead6aec895e))
+* **workflow:** make version bump manually ([7f9cb4f](https://github.com/perpetual-protocol/sdk-curie/commit/7f9cb4f1846da657d9b7e26062b36c4f0a29d206))
+
+
+### Others
+
+* **release:** 1.12.0 ([a63f7da](https://github.com/perpetual-protocol/sdk-curie/commit/a63f7daa0d2b4096f2f2629c8814056a52904b66))
+
 ## [1.12.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0...v1.12.0) (2022-08-19)
 
 
