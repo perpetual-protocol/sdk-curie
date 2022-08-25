@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.12.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.12.0...v1.12.1) (2022-08-25)
+
+
+### Others
+
+* **release:** 1.12.1-canary.0 ([bd47a25](https://github.com/perpetual-protocol/sdk-curie/commit/bd47a256009c9bb9bc8dbbd77f7152e2525f5ea3))
+
+
+### Build System
+
+* fix yarn lock ([b6153c1](https://github.com/perpetual-protocol/sdk-curie/commit/b6153c1164086e04c70a0b55495b1a281b888880))
+
 ### [1.12.1-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.12.0...v1.12.1-canary.0) (2022-08-25)
 
 ## [1.12.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0...v1.12.0) (2022-08-19)
