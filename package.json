@@ -1,6 +1,6 @@
 {
     "name": "@perp/sdk-curie",
-    "version": "1.9.2-canary.13",
+    "version": "1.12.1",
     "license": "BSD-3-Clause",
     "main": "dist/lib/index.js",
     "module": "dist/es/index.js",
@@ -41,6 +41,8 @@
         "prebuild": "yarn generate-type",
         "build": "yarn clean && rollup -c rollup.config.js",
         "bump-version": "standard-version --no-verify",
+        "bump-version:dev1": "yarn bump-version --prerelease dev1 --skip.tag",
+        "bump-version:dev2": "yarn bump-version --prerelease dev2 --skip.tag",
         "bump-version:canary": "yarn bump-version --prerelease canary --skip.tag",
         "release": "yarn publish --access public --non-interactive --no-commit-hooks"
     },

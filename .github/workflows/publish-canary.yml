@@ -11,8 +11,6 @@ jobs:
             pkg_version: ${{ steps.set-variables.outputs.pkg_version }}
         steps:
             - uses: actions/checkout@v3
-              with:
-                  fetch-depth: '0' # For bump-version to have all the commit history
 
             - name: Use Node.js 16.x
               uses: actions/setup-node@v2
@@ -37,14 +35,7 @@ jobs:
             - name: Install dependencies
               run: yarn install --prefer-offline --frozen-lockfile
 
-#            - name: Config Git
-#              run: |
-#                  git config --global user.email "dev@perp.fi"
-#                  git config --global user.name "Perpetual Protocol"
-#                  git remote set-url origin "https://${{ secrets.PERP_DEV_PAT_TOKEN }}@github.com/perpetual-protocol/sdk-curie.git"
-
-
-            - name: set variables
+            - name: Set variables
               id: set-variables
               run: |
                   RELEASE_TRACK=canary
@@ -53,8 +44,9 @@ jobs:
                   echo "::set-output name=pkg_version::$PKG_VERSION"
 
             - name: Build package
-              run: |
-                  TRACK=${{ steps.set-variables.outputs.release_track }} yarn build
+              run: yarn build
+              env:
+                TRACK: ${{ steps.set-variables.outputs.release_track }}
 
             # update package.json version, add CHANGELOG & commit changes
             - name: Publish package
@@ -66,7 +58,7 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-            - name: Git push version change
+            - name: Git push version tag
               run: |
                 PKG_VERSION=${{ steps.set-variables.outputs.pkg_version }}
                 git tag $PKG_VERSION
