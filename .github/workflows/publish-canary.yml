@@ -1,6 +1,6 @@
 name: Publish NPM (Canary)
 on:
-    push:
+    workflow_dispatch:
         branches:
             - 'release/*'
 jobs:
