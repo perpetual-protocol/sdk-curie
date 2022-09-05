@@ -9,3 +9,4 @@ coverage
 # generated
 src/contracts/type/
 dist
+stats.html

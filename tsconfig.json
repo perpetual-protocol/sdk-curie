@@ -1,34 +1,25 @@
 {
-  "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es2019",
-    "module": "esnext",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "strict": true,
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "declaration": true,
-    "declarationDir": "dist/",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-     "jsx": "react-jsx",
-     "resolveJsonModule": true,
-     "esModuleInterop": true
-  },
-  "include": [
-    "src",
-    "test"
-  ],
-  "ts-node": {
     "compilerOptions": {
-      "module": "commonjs"
+        "moduleResolution": "node",
+        "target": "es2019",
+        "module": "esnext",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "strict": true,
+        "sourceMap": true,
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "declaration": true,
+        "declarationDir": "dist/",
+        "typeRoots": ["node_modules/@types"],
+        "jsx": "react-jsx",
+        "resolveJsonModule": true,
+        "esModuleInterop": true
+    },
+    "include": ["src"],
+    "ts-node": {
+        "compilerOptions": {
+            "module": "commonjs"
+        }
     }
-  }
 }

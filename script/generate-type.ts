@@ -1,9 +1,8 @@
-import "dotenv-flow/config"
 import fs from "fs"
 
 import { glob, runTypeChain } from "typechain"
 
-const getABIRefByTrack = (track: string | undefined) => {
+const getABIRefByTrack = (track?: string) => {
     switch (track) {
         case "dev1":
             return "optimism-kovan-dev1"

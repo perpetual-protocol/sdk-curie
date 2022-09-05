@@ -1,6 +1,6 @@
 name: Publish NPM (Canary)
 on:
-    push:
+    workflow_dispatch:
         branches:
             - 'release/*'
 jobs:
@@ -48,6 +48,7 @@ jobs:
               env:
                 TRACK: ${{ steps.set-variables.outputs.release_track }}
 
+            # update package.json version, add CHANGELOG & commit changes
             - name: Publish package
               id: publish-package
               run: |
