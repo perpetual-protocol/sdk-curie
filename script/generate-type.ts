@@ -1,4 +1,5 @@
 import fs from "fs"
+import { basename } from "path"
 
 import { glob, runTypeChain } from "typechain"
 
@@ -27,13 +28,19 @@ async function main() {
 
     const abiRef = getABIRefByTrack(process.env.TRACK)
     // find all files matching the glob
-    const allFiles = glob(cwd, [
+    let allFiles = glob(cwd, [
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/core/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/core/artifacts/oracle-contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/periphery/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json`,
         `${__dirname}/../node_modules/@chainlink/contracts/abi/v0.7/**/+([a-zA-Z0-9_]).json`,
     ])
+
+    allFiles = allFiles.filter(file => {
+        const fileName = basename(file)
+        // eliminate unused artifacts like TestClearingHouse.json ....
+        return !fileName.match(/Test.*\.json/)
+    })
 
     const outDir = "src/contracts/type"
 
