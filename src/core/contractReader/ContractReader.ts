@@ -39,7 +39,6 @@ import { contractCallsParserForErrorHandling, genKeyFromContractAndFuncName } fr
 import Big from "big.js"
 import { MarketMap } from "../market"
 import { Metadata } from "../../metadata"
-import { RetryProvider } from "../../network/RetryProvider"
 import { marketInfo } from "../market/Markets"
 
 function logger(...args: any[]) {
