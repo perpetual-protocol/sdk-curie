@@ -148,6 +148,9 @@ class PerpetualProtocol {
 
         this._channelRegistry = new ChannelRegistry()
         this.provider = getRetryProvider(providerConfigs)
+        // TODO:clean up
+        // console.log("provider", providerConfigs[0].rpcUrl)
+        // this.provider = getProvider({ rpcUrl: providerConfigs[0].rpcUrl })
     }
 
     async init() {
@@ -174,12 +177,13 @@ class PerpetualProtocol {
 
         const account = await signer.getAddress()
         this.contracts.connect(signer)
-        if (signer.provider) {
-            // NOTE: This casting is necessary due that
-            // `signer.provider` is `Provider` type, which is `BaseProvider`'s parent class
-            // but we wanna handle JsonRpcProvider specifically
-            this.provider.addUserProvider((signer as providers.JsonRpcSigner).provider)
-        }
+        // TODO:clean up
+        // if (signer.provider) {
+        //     // NOTE: This casting is necessary due that
+        //     // `signer.provider` is `Provider` type, which is `BaseProvider`'s parent class
+        //     // but we wanna handle JsonRpcProvider specifically
+        //     this.provider.addUserProvider((signer as providers.JsonRpcSigner).provider)
+        // }
 
         this._wallet = new Wallet(this, account)
         this._vault = new Vault(this, account)
