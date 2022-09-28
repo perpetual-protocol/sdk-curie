@@ -11,7 +11,7 @@ import {
     UniswapV3Pool,
     Vault,
 } from "../../contracts/type"
-import { BigNumber, constants, errors } from "ethers"
+import { BigNumber, constants, errors, providers } from "ethers"
 import { COLLATERAL_TOKEN_DECIMAL, RATIO_DECIMAL, SETTLEMENT_TOKEN_DECIMAL } from "../../constants"
 import { ContractCall, MulticallReader } from "./MulticallReader"
 import {
@@ -42,9 +42,16 @@ import { Metadata } from "../../metadata"
 import { RetryProvider } from "../../network/RetryProvider"
 import { marketInfo } from "../market/Markets"
 
+function logger(...args: any[]) {
+    const isOn = false
+    if (isOn) {
+        console.log(...args)
+    }
+}
+
 interface ContractsReaderConfig {
     contracts: Contracts
-    provider: RetryProvider
+    provider: providers.Provider
     metadata: Metadata
 }
 
@@ -155,7 +162,7 @@ interface MulticallMarketDataArgs {
 export class ContractReader {
     readonly contracts: Contracts
 
-    private _provider: RetryProvider
+    private _provider: providers.Provider
     private _metadata: Metadata
     private _multicallReader: MulticallReader
 
@@ -169,6 +176,7 @@ export class ContractReader {
     async getNativeBalance(account: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getNativeBalance")
                 const balance = await this._provider.getBalance(account)
                 return bigNumber2BigAndScaleDown(balance)
             },
@@ -185,6 +193,7 @@ export class ContractReader {
     async getAccountValue(account: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getAccountValue")
                 const accountValue = await this.contracts.vault.getAccountValue(account)
                 return bigNumber2BigAndScaleDown(accountValue, SETTLEMENT_TOKEN_DECIMAL)
             },
@@ -201,6 +210,7 @@ export class ContractReader {
     async getFreeCollateral(account: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getFreeCollateral")
                 const freeCollateral = await this.contracts.vault.getFreeCollateral(account)
                 return bigNumber2BigAndScaleDown(freeCollateral, COLLATERAL_TOKEN_DECIMAL)
             },
@@ -217,6 +227,7 @@ export class ContractReader {
     async getFreeCollateralByToken(account: string, token: NonSettlementCollateralToken | SettlementToken) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getFreeCollateralByToken")
                 const tokenAddress = token.address
                 const tokenDecimals = await token.decimals()
                 const freeCollateral = await this.contracts.vault.getFreeCollateralByToken(account, tokenAddress)
@@ -235,6 +246,7 @@ export class ContractReader {
     async getVaultBalanceOfSettlementToken(account: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getVaultBalanceOfSettlementToken")
                 const freeCollateral = await this.contracts.vault.getSettlementTokenValue(account)
                 return bigNumber2BigAndScaleDown(freeCollateral, SETTLEMENT_TOKEN_DECIMAL)
             },
@@ -251,6 +263,7 @@ export class ContractReader {
     async getVaultBalanceByToken(account: string, token: NonSettlementCollateralToken) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getVaultBalanceByToken")
                 const tokenAddress = token.address
                 const tokenDecimals = await token.decimals()
                 const freeCollateral = await this.contracts.vault.getBalanceByToken(account, tokenAddress)
@@ -269,6 +282,7 @@ export class ContractReader {
     async getCollateralConfig(tokenAddress: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getCollateralConfig")
                 const collateralManager = this.contracts.collateralManager
                 const collateralConfig = await collateralManager.getCollateralConfig(tokenAddress)
                 const priceFeed = collateralConfig.priceFeed
@@ -300,6 +314,7 @@ export class ContractReader {
     async getAllowanceByToken(account: string, spender: string, tokenAddress: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getAllowanceByToken")
                 const token = this.contracts.collateralTokenMap.get(tokenAddress)?.contract
                 if (!token) throw new Error(`Collateral token ${tokenAddress} not found`)
                 const [allowance, decimals] = await Promise.all([token.allowance(account, spender), token.decimals()])
@@ -318,6 +333,7 @@ export class ContractReader {
     async getAllowanceOfSettlementToken(account: string, spender: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getAllowanceOfSettlementToken")
                 const token = this.contracts.settlementToken
                 const allowance = await token.allowance(account, spender)
                 return bigNumber2BigAndScaleDown(allowance, SETTLEMENT_TOKEN_DECIMAL)
@@ -335,6 +351,7 @@ export class ContractReader {
     async getBalanceByToken(account: string, tokenAddress: string, decimals: number) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getBalanceByToken")
                 const token = this.contracts.collateralTokenMap.get(tokenAddress)?.contract
                 if (!token) throw new Error(`Collateral token ${tokenAddress} not found`)
                 const balance = await token.balanceOf(account)
@@ -353,6 +370,7 @@ export class ContractReader {
     async getBalanceOfSettlementToken(account: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getBalanceOfSettlementToken")
                 const token = this.contracts.settlementToken
                 const balance = await token.balanceOf(account)
                 return bigNumber2BigAndScaleDown(balance, SETTLEMENT_TOKEN_DECIMAL)
@@ -370,6 +388,7 @@ export class ContractReader {
     async getPriceFeedAggregator(baseTokenAddress: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getPriceFeedAggregator")
                 const contractBaseToken = this.contracts.baseToken.attach(baseTokenAddress)
                 const priceFeedAddress = await contractBaseToken.getPriceFeed()
                 const contractPriceFeed = this.contracts.baseTokenPriceFeed.attach(priceFeedAddress)
@@ -409,6 +428,7 @@ export class ContractReader {
     async isMarketPaused(baseTokenAddress: string): Promise<boolean> {
         return errorGuardAsync(
             async () => {
+                logger("debug", "isMarketPaused")
                 const contract = this.contracts.baseToken.attach(baseTokenAddress)
                 return await contract.isPaused()
             },
@@ -429,6 +449,7 @@ export class ContractReader {
     async isMarketClosed(baseTokenAddress: string): Promise<boolean> {
         return errorGuardAsync(
             async () => {
+                logger("debug", "isMarketClosed")
                 const contract = this.contracts.baseToken.attach(baseTokenAddress)
                 return await contract.isClosed()
             },
@@ -463,7 +484,8 @@ export class ContractReader {
         ]
         return errorGuardAsync(
             async () => {
-                const [isPaused, isClosed] = await this._multicallReader.execute(contractCalls)
+              logger("debug", "getMarketStatus")
+              const [isPaused, isClosed] = await this._multicallReader.execute(contractCalls)
                 return { isPaused, isClosed }
             },
             rawError =>
@@ -485,6 +507,7 @@ export class ContractReader {
     async getIndexPrice(baseTokenAddress: string, interval = 0) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getIndexPrice")
                 const contract = this.contracts.baseToken.attach(baseTokenAddress)
                 const indexPrice = await contract.getIndexPrice(interval)
                 return bigNumber2BigAndScaleDown(indexPrice)
@@ -502,7 +525,10 @@ export class ContractReader {
 
     async getSlot0(poolAddress: string) {
         return errorGuardAsync(
-            () => this.contracts.pool.attach(poolAddress).slot0(),
+            async () => {
+                logger("debug", "getSlot0")
+                return this.contracts.pool.attach(poolAddress).slot0()
+            }, 
             rawError =>
                 new ContractReadError<UniswapV3Pool>({
                     contractName: ContractName.POOL,
@@ -520,6 +546,7 @@ export class ContractReader {
     }: GetQuoterSwapParams): Promise<GetQuoterSwapReturn> {
         return errorGuardAsync(
             async () => {
+                logger("debug", "QuoterSwapParams")
                 const { deltaAvailableBase, deltaAvailableQuote, exchangedPositionNotional, exchangedPositionSize } =
                     await this.contracts.quoter.callStatic.swap({
                         baseToken: baseTokenAddress,
@@ -577,6 +604,7 @@ export class ContractReader {
     async getLiquidityPendingFee({ trader, baseTokenAddress, lowerTick, upperTick }: GetLiquidityPendingFeeParams) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getLiquidityPendingFee")
                 const fee = await this.contracts.orderBook.getPendingFee(trader, baseTokenAddress, lowerTick, upperTick)
                 return bigNumber2BigAndScaleDown(fee)
             },
@@ -593,6 +621,7 @@ export class ContractReader {
     async getOpenLiquidityIdsByMarket({ trader, baseTokenAddress }: GetOpenLiquiditiesParams) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getOpenLiquidityIdsByMarket")
                 return this.contracts.orderBook.getOpenOrderIds(trader, baseTokenAddress)
             },
             rawError =>
@@ -615,6 +644,7 @@ export class ContractReader {
 
         return errorGuardAsync(
             async () => {
+                logger("debug", "getOpenLiquidityIds")
                 const idsByMarkets = await this._multicallReader.execute([...contractCalls])
                 return idsByMarkets
             },
@@ -645,6 +675,7 @@ export class ContractReader {
 
         return errorGuardAsync(
             async () => {
+                logger("debug", "getOpenLiquidities")
                 const orders = await this._multicallReader.execute([...contractCalls])
                 let pointer = 0
                 return idsByMarkets.map((ids, index) => {
@@ -681,6 +712,7 @@ export class ContractReader {
 
         return errorGuardAsync(
             async () => {
+                logger("debug", "getOpenLiquiditiesByMarket")
                 const liquidities = await this._multicallReader.execute(openLiquidityCalls)
                 return liquidities.map(({ baseDebt, quoteDebt, liquidity, lowerTick, upperTick }) => ({
                     baseDebt: bigNumber2BigAndScaleDown(baseDebt),
@@ -703,6 +735,7 @@ export class ContractReader {
     async getOpenOrder({ trader, baseTokenAddress, lowerTick, upperTick }: GetOpenLiquidityParams) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getOpenOrder")
                 const info = await this.contracts.orderBook.getOpenOrder(trader, baseTokenAddress, lowerTick, upperTick)
                 return {
                     baseDebt: bigNumber2BigAndScaleDown(info.baseDebt),
@@ -732,8 +765,8 @@ export class ContractReader {
 
         return errorGuardAsync(
             async () => {
+                logger("debug", "getTotalTokenAmountInPoolAndPendingFeeOfAllMarkets")
                 const result = await this._multicallReader.execute([...contractCalls])
-
                 return Object.values(marketMap).reduce((acc, market, index) => {
                     const [_totalTokenAmount, _totalPendingFee] = result[index]
                     return {
@@ -775,7 +808,8 @@ export class ContractReader {
 
         return errorGuardAsync(
             async () => {
-                const { base, quote } = await this.contracts.clearingHouse.callStatic.openPosition(args)
+              logger("debug", "simulateOpenPosition")
+              const { base, quote } = await this.contracts.clearingHouse.callStatic.openPosition(args)
                 return { deltaBase: bigNumber2BigAndScaleDown(base), deltaQuote: bigNumber2BigAndScaleDown(quote) }
             },
             (rawError: any) => {
@@ -832,6 +866,7 @@ export class ContractReader {
         const contractCall = [...baseTokens, ...quoteTokens]
         return errorGuardAsync(
             async () => {
+                logger("debug", "getMarketsBaseTokenAndQuoteTokenAmount")
                 const result = await this._multicallReader.execute(contractCall, { returnByContractAndFuncName: true })
                 const quoteAmount = result[genKeyFromContractAndFuncName(quoteTokens[0])]
                 const baseAmount = result[genKeyFromContractAndFuncName(baseTokens[0])]
@@ -904,6 +939,7 @@ export class ContractReader {
 
         return errorGuardAsync(
             async () => {
+              logger("debug", "getClearingHouseMetadata")
                 const result = await this._multicallReader.execute(contractCalls, { returnByContractAndFuncName: true })
                 const [mmRatio] = result[genKeyFromContractAndFuncName(mmRatioMulticallArgs)]
                 const [imRatio] = result[genKeyFromContractAndFuncName(imRatioMulticallArgs)]
@@ -951,7 +987,9 @@ export class ContractReader {
             funcParams: [account, baseAddress],
         }))
         return errorGuardAsync(
-            async () => {
+           
+           async () => {
+            logger("debug", "getTakerPositionSizeList")
                 const rawPositionSizeList = await this._multicallReader.execute([...getAllPositionSizeContractCalls])
                 return rawPositionSizeList.map(size => bigNumber2BigAndScaleDown(size))
             },
@@ -973,7 +1011,9 @@ export class ContractReader {
             funcParams: [account, baseAddress],
         }))
         return errorGuardAsync(
-            async () => {
+           
+           async () => {
+            logger("debug", "getTotalPositionSizeList")
                 const rawPositionSizeList = await this._multicallReader.execute([...getAllPositionSizeContractCalls])
                 return rawPositionSizeList.map(size => bigNumber2BigAndScaleDown(size))
             },
@@ -995,7 +1035,9 @@ export class ContractReader {
             funcParams: [account, baseAddress],
         }))
         return errorGuardAsync(
-            async () => {
+           
+           async () => {
+            logger("debug", "getTakerOpenNotionalList")
                 const rawOpenNotionalList = await this._multicallReader.execute([...getAllOpenNotionalContractCalls])
                 return rawOpenNotionalList.map(openNotional => bigNumber2BigAndScaleDown(openNotional))
             },
@@ -1017,7 +1059,9 @@ export class ContractReader {
             funcParams: [account, baseAddress],
         }))
         return errorGuardAsync(
-            async () => {
+           
+           async () => {
+            logger("debug", "getTotalOpenNotionalList")
                 const rawOpenNotionalList = await this._multicallReader.execute([...getAllOpenNotionalContractCalls])
                 return rawOpenNotionalList.map(openNotional => bigNumber2BigAndScaleDown(openNotional))
             },
@@ -1039,7 +1083,9 @@ export class ContractReader {
             funcParams: [account, baseAddress],
         }))
         return errorGuardAsync(
-            async () => {
+           
+           async () => {
+            logger("debug", "getTotalPositionValueList")
                 const rawList = await this._multicallReader.execute([...getTotalPositionValueCalls])
                 return rawList.map(totalPositionValue => bigNumber2BigAndScaleDown(totalPositionValue))
             },
@@ -1061,7 +1107,9 @@ export class ContractReader {
             funcParams: [account, baseAddress],
         }))
         return errorGuardAsync(
-            async () => {
+           
+           async () => {
+            logger("debug", "getPendingFundingPayments")
                 const rawPendingFundingPaymentList = await this._multicallReader.execute([...contractCallParams])
                 return Object.values(marketMap).reduce<Record<string, Big>>(
                     (acc, next, index) => ({
@@ -1104,7 +1152,8 @@ export class ContractReader {
         ]
         return errorGuardAsync(
             async () => {
-                const multicallResult = await this._multicallReader.execute(contractCalls)
+              logger("debug", "getMarketData")
+              const multicallResult = await this._multicallReader.execute(contractCalls)
                 const [markPrice, indexPrice, indexTwapPrice] = multicallResult.map((value, index) => {
                     if (index === 0) {
                         // NOTE: multicallResult[0] = slot0, and we only need slot0.sqrtPriceX96 to calculate the markPrice
@@ -1183,7 +1232,8 @@ export class ContractReader {
         ]
         return errorGuardAsync(
             async () => {
-                const result = await this._multicallReader.execute(contractCalls, {
+              logger("debug", "getPositionDraftRelatedData")
+              const result = await this._multicallReader.execute(contractCalls, {
                     returnByContractAndFuncName: true,
                     failFirstByClient: false,
                     failFirstByContract: false,
@@ -1272,7 +1322,8 @@ export class ContractReader {
         ]
         return errorGuardAsync(
             async () => {
-                const multicallResult = await this._multicallReader.execute(contractCalls)
+              logger("debug", "getAccountValues")
+              const multicallResult = await this._multicallReader.execute(contractCalls)
                 const freeCollateral = bigNumber2BigAndScaleDown(multicallResult[0], COLLATERAL_TOKEN_DECIMAL)
                 const accountValue = bigNumber2BigAndScaleDown(multicallResult[1])
                 return {
@@ -1293,6 +1344,7 @@ export class ContractReader {
     async getTotalPositionValue(trader: string, baseToken: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getTotalPositionValue")
                 const positionValue = await this.contracts.accountBalance.getTotalPositionValue(trader, baseToken)
                 return bigNumber2BigAndScaleDown(positionValue)
             },
@@ -1309,6 +1361,7 @@ export class ContractReader {
     async getTotalAbsPositionValue(trader: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getTotalAbsPositionValue")
                 const value = await this.contracts.accountBalance.getTotalAbsPositionValue(trader)
                 return bigNumber2BigAndScaleDown(value)
             },
@@ -1325,6 +1378,7 @@ export class ContractReader {
     async getLiquidationPrice(trader: string, baseToken: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getLiquidationPrice")
                 const liquidationPrice = await this.contracts.perpPortal.getLiquidationPrice(trader, baseToken)
                 return bigNumber2BigAndScaleDown(liquidationPrice)
             },
@@ -1346,7 +1400,9 @@ export class ContractReader {
             funcParams: [account, baseAddress],
         }))
         return errorGuardAsync(
-            async () => {
+           
+           async () => {
+            logger("debug", "getLiquidationPriceList")
                 const liquidationPriceList = await this._multicallReader.execute([...contractCalls])
                 return liquidationPriceList.map(liquidationPrice => bigNumber2BigAndScaleDown(liquidationPrice))
             },
@@ -1363,6 +1419,7 @@ export class ContractReader {
     async getClearingHouseOpenPositionAction() {
         return errorGuardAsync(
             async () => {
+                logger("debug", "getClearingHouseOpenPositionAction")
                 return this.contracts.delegateApproval.getClearingHouseOpenPositionAction()
             },
             rawError =>
@@ -1377,6 +1434,7 @@ export class ContractReader {
     async canOpenPositionFor(trader: string, delegate: string) {
         return errorGuardAsync(
             async () => {
+                logger("debug", "canOpenPositionFor")
                 return this.contracts.delegateApproval.canOpenPositionFor(trader, delegate)
             },
             rawError =>
