@@ -9,7 +9,7 @@ import {
 
 import Big from "big.js"
 import { ContractName } from "../../../src/contracts"
-import { constants } from "ethers"
+import { BigNumber, constants } from "ethers"
 
 jest.mock("../../../src/transactionSender", () => {
     return {
@@ -49,7 +49,7 @@ describe("ClearingHouse", () => {
                 isAmountInputBase,
             })
 
-            await perp.clearingHouse?.openPosition(newPositionDraft!, slippage)
+            await perp.clearingHouse?.openPosition(newPositionDraft!, { slippage })
             expect(getTransaction).toBeCalledTimes(1)
             const oppositeAmountBound = await newPositionDraft?.getOppositeAmountBound(slippage)
             const expected = {
@@ -64,7 +64,7 @@ describe("ClearingHouse", () => {
                         isExactInput: true,
                         amount: big2BigNumberAndScaleUp(amountInput),
                         oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound!),
-                        sqrtPriceLimitX96: 0,
+                        sqrtPriceLimitX96: BigNumber.from(0),
                         deadline: constants.MaxUint256,
                         referralCode: "0x0000000000000000000000000000000000000000000000000000000000000000",
                     },

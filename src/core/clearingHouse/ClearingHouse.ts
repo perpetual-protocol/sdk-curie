@@ -7,8 +7,8 @@ import {
     hasNumberChange,
 } from "../../internal"
 import { PositionDraft, PositionDraftConstructorData } from "../position/PositionDraft"
-import { big2BigNumberAndScaleUp, invariant, poll } from "../../utils"
-import { constants, utils } from "ethers"
+import { big2BigNumberAndScaleUp, invariant, poll, toSqrtX96 } from "../../utils"
+import { BigNumber, constants, utils } from "ethers"
 
 import { BIG_ONE } from "../../constants"
 import Big from "big.js"
@@ -75,11 +75,19 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         })
     }
 
-    async openPosition(positionDraft: PositionDraft, slippage: Big, referralCode?: string) {
+    async openPosition(
+        positionDraft: PositionDraft,
+        options: { slippage?: Big; limitPrice?: Big; referralCode?: string },
+    ) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "openPosition" }))
 
-        const oppositeAmountBound = await positionDraft.getOppositeAmountBound(slippage)
-        const referralCodeAsBytes = referralCode ? utils.formatBytes32String(referralCode) : constants.HashZero
+        const oppositeAmountBound = options.slippage
+            ? await positionDraft.getOppositeAmountBound(options.slippage)
+            : new Big(0)
+        const referralCodeAsBytes = options.referralCode
+            ? utils.formatBytes32String(options.referralCode)
+            : constants.HashZero
+        const sqrtPriceLimitX96 = options.limitPrice ? toSqrtX96(options.limitPrice) : new Big(0)
 
         return getTransaction<ContractClearingHouse, "openPosition">({
             account: this._perp.wallet.account,
@@ -93,7 +101,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
                     isExactInput: positionDraft.isExactInput,
                     amount: big2BigNumberAndScaleUp(positionDraft.amountInput),
                     oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound),
-                    sqrtPriceLimitX96: 0, // NOTE: this is for partial filled, disable by giving zero.
+                    sqrtPriceLimitX96: BigNumber.from(sqrtPriceLimitX96.toString()), // NOTE: this is for partial filled, disable by giving zero.
                     deadline: constants.MaxUint256, // NOTE: not important yet
                     referralCode: referralCodeAsBytes,
                 },
@@ -101,11 +109,16 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         })
     }
 
-    async closePosition(position: Position, slippage: Big, referralCode?: string) {
+    async closePosition(position: Position, options: { slippage?: Big; limitPrice?: Big; referralCode?: string }) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "closePosition" }))
 
-        const oppositeAmountBound = await position.getOppositeAmountBound(slippage)
-        const referralCodeAsBytes = referralCode ? utils.formatBytes32String(referralCode) : constants.HashZero
+        const oppositeAmountBound = options.slippage
+            ? await position.getOppositeAmountBound(options.slippage)
+            : new Big(0)
+        const referralCodeAsBytes = options.referralCode
+            ? utils.formatBytes32String(options.referralCode)
+            : constants.HashZero
+        const sqrtPriceLimitX96 = options.limitPrice ? toSqrtX96(options.limitPrice) : new Big(0)
 
         return getTransaction<ContractClearingHouse, "closePosition">({
             account: this._perp.wallet.account,
@@ -116,7 +129,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
                 {
                     baseToken: position.market.baseAddress,
                     oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound),
-                    sqrtPriceLimitX96: 0, // NOTE: this is for partial filled, disable by giving zero.
+                    sqrtPriceLimitX96: BigNumber.from(sqrtPriceLimitX96.toString()), // NOTE: this is for partial filled, disable by giving zero.
                     deadline: constants.MaxUint256, // NOTE: not important yet
                     referralCode: referralCodeAsBytes,
                 },
