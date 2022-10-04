@@ -133,6 +133,7 @@ class Market extends Channel<MarketEventName> {
     }
 
     async getPrices({ cache = true } = {}) {
+        console.log("debug getPrices")
         // TODO: replace with multi-call
         const [markPrice, indexPrice, indexTwapPrice] = await Promise.all([
             this._fetch("markPrice", { cache }),
