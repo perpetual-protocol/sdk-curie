@@ -57,11 +57,13 @@ export class Positions extends Channel<PositionsEventName> {
         const marketMap = this._perp.markets.marketMap
         const takerPositions: Position[] = []
 
+        console.log("debug ++++ getTakerPositions")
         const [takerPositionSizeList, takerOpenNotionalList, liquidationPriceList] = await Promise.all([
             this._fetch("takerPositionSizeList", { cache }),
             this._fetch("takerOpenNotionalList", { cache }),
             this._fetch("liquidationPriceList", { cache }),
         ])
+        console.log("debug ---- getTakerPositions")
         Object.values(marketMap).forEach((market, index) => {
             const takerSizeOriginal = takerPositionSizeList[index]
             const takerOpenNotionalOriginal = takerOpenNotionalList[index]
@@ -93,6 +95,7 @@ export class Positions extends Channel<PositionsEventName> {
             this._fetch("totalPositionSizeList", { cache }),
             this._fetch("totalOpenNotionalList", { cache }),
         ])
+        console.log("debug from: getMakerPositions")
         const takerPositions = await this.getTakerPositions({ cache })
 
         const makerPositions: Position[] = []
@@ -127,6 +130,7 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     async getTakerPositionByTickerSymbol(tickerSymbol: string, { cache = true } = {}) {
+        console.log("debug from: getTakerPositionByTickerSymbol")
         const positions = await this.getTakerPositions({ cache })
         return positions.find(position => position.market.tickerSymbol === tickerSymbol)
     }
@@ -137,6 +141,7 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     async getTakerPosition(baseAddress: string, { cache = true } = {}) {
+        console.log("debug from: getTakerPosition")
         const positions = await this.getTakerPositions({ cache })
         return positions.find(position => position.market.baseAddress === baseAddress)
     }
@@ -165,6 +170,7 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     async getTotalTakerPositionValueFromAllMarkets({ cache = true } = {}) {
+        console.log("debug from: getTotalTakerPositionValueFromAllMarkets")
         const takerPositions = await this.getTakerPositions({ cache })
         let total = BIG_ZERO
         for (const position of takerPositions) {
@@ -195,6 +201,7 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     async getTotalTakerUnrealizedPnlFromAllMarkets({ cache = true } = {}) {
+        console.log("debug from: getTotalTakerUnrealizedPnlFromAllMarkets")
         const takerPositions = await this.getTakerPositions({ cache })
         let totalUnrealizedPnl = BIG_ZERO
         for (const position of takerPositions) {
@@ -258,6 +265,7 @@ export class Positions extends Channel<PositionsEventName> {
     private _createFetchUpdateData(): MemoizedFetcher {
         const getTakerMakerPositions = async () => {
             const cacheStrategy = { cache: false }
+            console.log("debug _createFetchUpdateData")
 
             // Note: There are some dependencies between functions, we could differentiate
             // the relationship of which one is called fist then which one could just use {cache: true}
@@ -277,16 +285,40 @@ export class Positions extends Channel<PositionsEventName> {
                     totalTakerUnrealizedPnl,
                     totalMakerUnrealizedPnl,
                 ] = await Promise.all([
+                    // FIXME: getTakerPositions will be invoked multiple times for each polling, due to nested dependency + cache: false
                     this.getTakerPositions(cacheStrategy),
-                    this.getMakerPositions(cacheStrategy),
+                    this.getMakerPositions(cacheStrategy), // getTakerPositions
                     this.getAccountMarginRatio(cacheStrategy),
                     this.getAccountLeverage(cacheStrategy),
-                    this.getTotalTakerPositionValueFromAllMarkets(cacheStrategy),
+                    this.getTotalTakerPositionValueFromAllMarkets(cacheStrategy), // getTakerPositions
                     this.getTotalMakerPositionValueFromAllMarkets(cacheStrategy),
                     this.getTotalUnrealizedPnlFromAllMarkets(cacheStrategy),
-                    this.getTotalTakerUnrealizedPnlFromAllMarkets(cacheStrategy),
+                    this.getTotalTakerUnrealizedPnlFromAllMarkets(cacheStrategy), // getTakerPositions
                     this.getTotalMakerUnrealizedPnlFromAllMarkets(cacheStrategy),
                 ])
+
+                // const promises = marketList.map(async(poolAddress) => {
+                //     const [a, b, c] = Promise.all([
+                //         getTakerPositionSizeList(poolAddress),
+                //         getTakerOpenNotionalList(poolAddress),
+                //         getLiquidationPriceList(poolAddress),
+                //     ])
+
+                //     const x,y,z // derive from a,b,c
+                //     return { a,b,c,x,y,z}
+                //     })
+
+                // Call {
+                //     key: String
+                //     args: []
+                // }
+
+                // const data = {
+                //    marketA: {
+                //         ...data
+                //    },
+                // }
+                // emit('update', data)
 
                 return {
                     takerPositions,
@@ -363,6 +395,7 @@ export class Positions extends Channel<PositionsEventName> {
                 break
             }
         }
+
         this._cache.set(key, result)
 
         return result

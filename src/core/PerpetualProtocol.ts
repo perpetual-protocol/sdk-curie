@@ -1,4 +1,4 @@
-import { ChainId, ProviderConfig, RetryProvider, getRetryProvider, isSupportedChainId } from "../network"
+import { ChainId, ProviderConfig, RetryProvider, getRetryProvider, isSupportedChainId, getProvider } from "../network"
 import { ChannelRegistry, ModuleConfig } from "../internal"
 import { ClearingHouse, ClearingHouseConfig } from "./clearingHouse"
 import { FailedPreconditionError, InitSDKError, UnsupportedChainError } from "../errors"
@@ -54,7 +54,8 @@ export interface PerpetualProtocolConnected extends PerpetualProtocolInitialized
 class PerpetualProtocol {
     readonly providerConfigs: ProviderConfig[]
     readonly moduleConfigs?: ModuleConfigs
-    readonly provider: RetryProvider
+    // readonly provider: RetryProvider
+    readonly provider: providers.Provider
     private _metadata?: Metadata
     private _contracts?: Contracts
     private _contractReader?: ContractReader
@@ -147,10 +148,10 @@ class PerpetualProtocol {
         this.moduleConfigs = moduleConfigs
 
         this._channelRegistry = new ChannelRegistry()
-        this.provider = getRetryProvider(providerConfigs)
+        // this.provider = getRetryProvider(providerConfigs)
         // TODO:clean up
-        // console.log("provider", providerConfigs[0].rpcUrl)
-        // this.provider = getProvider({ rpcUrl: providerConfigs[0].rpcUrl })
+        console.log("provider", providerConfigs[0].rpcUrl)
+        this.provider = getProvider({ rpcUrl: providerConfigs[0].rpcUrl })
     }
 
     async init() {
