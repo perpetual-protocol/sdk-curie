@@ -1387,10 +1387,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@perp/curie-deployments@2022.10.4-1664877139477":
-  version "2022.10.4-1664877139477"
-  resolved "https://registry.yarnpkg.com/@perp/curie-deployments/-/curie-deployments-2022.10.4-1664877139477.tgz#a3be63dd2b26bc0b021640e1d2996e5b1a7b12a4"
-  integrity sha512-aIdC59HIficAo3h05Ubvpv9f3S9qLN7VUCZV8nsdoBKLxtbZIzOve68cNGmtSvqmSC8Opka9nLrkCkdp/OuK6Q==
+"@perp/curie-deployments@2022.10.5-1664940982527":
+  version "2022.10.5-1664940982527"
+  resolved "https://registry.yarnpkg.com/@perp/curie-deployments/-/curie-deployments-2022.10.5-1664940982527.tgz#ce191ad969b9e88a939fcae8409968d41665b0c2"
+  integrity sha512-07fv7vu8okF/9GevvOKoeUhOJqQNPAvOSdLj1DBffPtuq/dnUfP5Ck/CJopIm+FjRJVer8VX3Nx7IdQEo/nhBw==
 
 "@rollup/plugin-commonjs@21.0.1":
   version "21.0.1"
