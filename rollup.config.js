@@ -4,7 +4,6 @@ import resolve from "@rollup/plugin-node-resolve"
 import pkg from "./package.json"
 import replace from "@rollup/plugin-replace"
 import { visualizer } from "rollup-plugin-visualizer"
-// import esbuild from "rollup-plugin-esbuild"
 import typescript from "rollup-plugin-typescript2"
 import { terser } from "rollup-plugin-terser"
 
@@ -68,9 +67,6 @@ export default {
         json(),
         typescript(),
         terser(),
-        // esbuild({
-        //     minify: true,
-        // }),
         visualizer(),
     ],
 }
