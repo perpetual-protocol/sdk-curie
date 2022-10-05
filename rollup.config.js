@@ -48,14 +48,14 @@ export default {
             preventAssignment: true,
             values: {
                 "process.env.TRACK": JSON.stringify(process.env.TRACK),
-                "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN": JSON.stringify(
-                    process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN,
+                "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_GOERLI": JSON.stringify(
+                    process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_GOERLI,
                 ),
                 "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM": JSON.stringify(
                     process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM,
                 ),
-                "process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN": JSON.stringify(
-                    process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN,
+                "process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_GOERLI": JSON.stringify(
+                    process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_GOERLI,
                 ),
                 "process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM": JSON.stringify(
                     process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM,

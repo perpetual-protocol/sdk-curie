@@ -7,10 +7,10 @@ describe("PositionDraft", () => {
 
     beforeAll(async () => {
         perp = new PerpetualProtocol({
-            chainId: SupportedChainIds.OPTIMISM_KOVAN,
+            chainId: SupportedChainIds.OPTIMISM_GOERLI,
             providerConfigs: [
                 {
-                    rpcUrl: "https://kovan.optimism.io",
+                    rpcUrl: "https://goerli.optimism.io/",
                 },
             ],
         })
