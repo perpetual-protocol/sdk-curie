@@ -2,7 +2,7 @@ name: Publish NPM (Dev1)
 on:
     workflow_dispatch:
         branches:
-            - '*'
+            - "*"
 jobs:
     publish-npm-package:
         runs-on: ubuntu-latest
@@ -46,9 +46,9 @@ jobs:
             - name: Build package
               run: yarn build
               env:
-                TRACK: ${{ steps.set-variables.outputs.release_track }}
-                METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN: ${{ secrets.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN_DEV1 }}
-                METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN: ${{ secrets.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN_DEV1 }}
+                  TRACK: ${{ steps.set-variables.outputs.release_track }}
+                  METADATA_URL_CORE_OVERRIDE_OPTIMISM_GOERLI: ${{ secrets.METADATA_URL_CORE_OVERRIDE_OPTIMISM_GOERLI_DEV1 }}
+                  METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_GOERLI: ${{ secrets.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_GOERLI_DEV1 }}
 
             - name: Publish package
               id: publish-package
@@ -61,9 +61,9 @@ jobs:
 
             - name: Git push version tag
               run: |
-                PKG_VERSION=${{ steps.set-variables.outputs.pkg_version }}
-                git tag $PKG_VERSION
-                git push origin $PKG_VERSION
+                  PKG_VERSION=${{ steps.set-variables.outputs.pkg_version }}
+                  git tag $PKG_VERSION
+                  git push origin $PKG_VERSION
 
     discord-notification-npm-package:
         name: Discord Notification for publishing npm package
