@@ -37,7 +37,7 @@ export interface ChainMetadata {
         USDC: string
         UniswapV3Factory: string
     }
-    network: string
+    network: "optimism" | "optimism-goerli"
     pools: Pool[]
     collaterals: Collateral[]
 }
