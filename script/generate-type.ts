@@ -6,16 +6,16 @@ import { glob, runTypeChain } from "typechain"
 const getABIRefByTrack = (track?: string) => {
     switch (track) {
         case "dev1":
-            return "optimism-kovan-dev1"
+            return "optimism-goerli-dev1"
         case "dev2":
-            return "optimism-kovan-dev2"
+            return "optimism-goerli-dev2"
         case "canary":
-            // Canary supports both Kovan and Mainnet but we gen-type with Kovan's ABI.
-            // When the Kovan ABI contains new features that has not yet been deployed to Mainnet,
+            // Canary supports both Goerli and Mainnet but we gen-type with Goerli's ABI.
+            // When the Goerli ABI contains new features that has not yet been deployed to Mainnet,
             // it is expected to fail when using Mainnet.
-            return "optimism-kovan"
+            return "optimism-goerli"
         case "rc": // release candidate
-            return "optimism-kovan"
+            return "optimism-goerli"
         case "production":
             return "optimism"
         default:

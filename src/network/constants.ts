@@ -1,20 +1,18 @@
+import MainMetadataOptimismGoerli from "@perp/curie-deployments/optimism-goerli/core/metadata.json"
+import MainMetadataOptimism from "@perp/curie-deployments/optimism/core/metadata.json"
+
 import {
     METADATA_URL_CORE_OVERRIDE_OPTIMISM,
-    METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN,
+    METADATA_URL_CORE_OVERRIDE_OPTIMISM_GOERLI,
     METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM,
-    METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN,
+    METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_GOERLI,
     TRACK,
     Track,
 } from "../constants"
 
-import MainMetadataOptimism from "@perp/curie-deployments/optimism/core/metadata.json"
-import MainMetadataOptimismKovan from "@perp/curie-deployments/optimism-kovan/core/metadata.json"
-import MainMetadataOptimismKovanDev1 from "@perp/curie-deployments/optimism-kovan-dev1/core/metadata.json"
-import MainMetadataOptimismKovanDev2 from "@perp/curie-deployments/optimism-kovan-dev2/core/metadata.json"
-
 /* ========== CHAIN ========== */
 export enum ChainId {
-    OPTIMISM_KOVAN = MainMetadataOptimismKovan.chainId,
+    OPTIMISM_GOERLI = MainMetadataOptimismGoerli.chainId,
     OPTIMISM = MainMetadataOptimism.chainId,
 }
 
@@ -25,32 +23,34 @@ const SupportedChainIdByTrack: {
         OPTIMISM: MainMetadataOptimism.chainId,
     },
     [Track.RC]: {
-        OPTIMISM_KOVAN: MainMetadataOptimismKovan.chainId,
+        OPTIMISM_GOERLI: MainMetadataOptimismGoerli.chainId,
     },
     [Track.CANARY]: {
-        OPTIMISM_KOVAN: MainMetadataOptimismKovan.chainId,
+        OPTIMISM_GOERLI: MainMetadataOptimismGoerli.chainId,
         OPTIMISM: MainMetadataOptimism.chainId,
     },
     [Track.DEV1]: {
-        OPTIMISM_KOVAN: MainMetadataOptimismKovanDev1.chainId,
+        // TODO: import from MainMetadataOptimismGoerliDev1 when @perp/curie-deployments support it
+        OPTIMISM_GOERLI: MainMetadataOptimismGoerli.chainId,
     },
     [Track.DEV2]: {
-        OPTIMISM_KOVAN: MainMetadataOptimismKovanDev2.chainId,
+        // TODO: import from MainMetadataOptimismGoerliDev2 when @perp/curie-deployments support it
+        OPTIMISM_GOERLI: MainMetadataOptimismGoerli.chainId,
     },
 }
 export const SupportedChainIds = SupportedChainIdByTrack[TRACK]
 
 /* ========== METADATA ========== */
 export const MetadataUrlCoreByChainId = {
-    [ChainId.OPTIMISM_KOVAN]:
-        METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN || "https://metadata.perp.exchange/v2/optimism-kovan.json",
+    [ChainId.OPTIMISM_GOERLI]:
+        METADATA_URL_CORE_OVERRIDE_OPTIMISM_GOERLI || "https://metadata.perp.exchange/v2/optimism-goerli.json",
     [ChainId.OPTIMISM]: METADATA_URL_CORE_OVERRIDE_OPTIMISM || "https://metadata.perp.exchange/v2/optimism.json",
 }
 
 export const MetadataUrlPeripheryByChainId = {
-    [ChainId.OPTIMISM_KOVAN]:
-        METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN ||
-        "https://metadata.perp.exchange/v2/periphery/optimism-kovan.json",
+    [ChainId.OPTIMISM_GOERLI]:
+        METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_GOERLI ||
+        "https://metadata.perp.exchange/v2/periphery/optimism-goerli.json",
     [ChainId.OPTIMISM]:
         METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM || "https://metadata.perp.exchange/v2/periphery/optimism.json",
 }
