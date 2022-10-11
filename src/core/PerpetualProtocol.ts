@@ -151,7 +151,10 @@ class PerpetualProtocol {
         // this.provider = getRetryProvider(providerConfigs)
         // TODO:clean up
         console.log("provider", providerConfigs[0].rpcUrl)
-        this.provider = getProvider({ rpcUrl: providerConfigs[0].rpcUrl })
+        // this.provider = getProvider({ rpcUrl: providerConfigs[0].rpcUrl })
+        this.provider = getProvider({
+            rpcUrl: "https://twilight-small-butterfly.optimism.quiknode.pro/9054785eeae7ef809e1215354d835a0de381ccd4",
+        })
     }
 
     async init() {
