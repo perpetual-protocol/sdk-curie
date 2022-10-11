@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.14.0-canary.1](https://github.com/perpetual-protocol/sdk-curie/compare/v1.13.0...v1.14.0-canary.1) (2022-10-11)
+
+
+### Features
+
+* support goerli chain ([4d24195](https://github.com/perpetual-protocol/sdk-curie/commit/4d2419537aff76c78f7146f668d62e9fd57853ef))
+
+
+### Bug Fixes
+
+* failed test cases ([15ce7ce](https://github.com/perpetual-protocol/sdk-curie/commit/15ce7ce8f2d2058e1ef3e6c4f3ab250e25ddecaf))
+
+
+### Others
+
+* **release:** 1.14.0-canary.0 ([51a5973](https://github.com/perpetual-protocol/sdk-curie/commit/51a59737f449a1e88ace39ddbff8b4a13610f09d))
+* remove esbuild and rollup-plugin-esbuild ([f3babc1](https://github.com/perpetual-protocol/sdk-curie/commit/f3babc18ce9df6e0e64b99f23b387d3c0ed5172c))
+* ugprade @perp/curie-deployments to 2022.10.5-1664940982527 ([ce4f637](https://github.com/perpetual-protocol/sdk-curie/commit/ce4f63714ea3ceb2cc640534703bf4da3833e7a9))
+* update typing ([6916c4c](https://github.com/perpetual-protocol/sdk-curie/commit/6916c4c97509fe25b213b043f0077ee3f61699e3))
+* upgrade @perp/curie-deployments to 2022.10.4-1664877139477 ([c837d19](https://github.com/perpetual-protocol/sdk-curie/commit/c837d19d8baaaa83212b9c5a46bd982ed21f29d9))
+
 ## [1.14.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.11.0...v1.14.0-canary.0) (2022-10-05)
 
 
