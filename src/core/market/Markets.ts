@@ -11,6 +11,7 @@ import {
     getTickerSymbol,
     invariant,
     isEmptyObject,
+    logger,
     poll,
 } from "../../utils"
 import { ContractCall, MulticallReader } from "../contractReader/MulticallReader"
@@ -138,12 +139,7 @@ class Markets extends Channel<MarketsEventName> {
     }
 
     protected async getMarketDataAll() {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const countMap = window.countMap
-        countMap["getMarketDataAll"] ? (countMap["getMarketDataAll"] += 1) : (countMap["getMarketDataAll"] = 1)
-        countMap.sum += 1
-
+        logger("getMarketDataAll")
         const contracts = this._perp.contracts
         const multicallReader = new MulticallReader({ contract: this._perp.contracts.multicall2 })
         // NOTE: We cover those functions of the contract reader (getIndexPrice, getIndexTwapPrice, getMarketPrice, isMarketClosed, isMarketPaused, getMarketStatus, getMarketData)

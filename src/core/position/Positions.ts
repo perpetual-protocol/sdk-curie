@@ -1,7 +1,7 @@
 import { BIG_ONE, BIG_ZERO, SETTLEMENT_TOKEN_DECIMAL } from "../../constants"
 import { Channel, ChannelEventSource, DEFAULT_PERIOD, MemoizedFetcher, createMemoizedFetcher } from "../../internal"
 import { Position, PositionType } from "./Position"
-import { big2BigNumberAndScaleUp, bigNumber2BigAndScaleDown, fromSqrtX96, invariant, poll } from "../../utils"
+import { big2BigNumberAndScaleUp, bigNumber2BigAndScaleDown, fromSqrtX96, invariant, logger, poll } from "../../utils"
 
 import Big from "big.js"
 import { MarketMap } from "../market"
@@ -306,11 +306,7 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     protected async getPositionDataAll() {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const countMap = window.countMap
-        countMap["getPositionDataAll"] ? (countMap["getPositionDataAll"] += 1) : (countMap["getPositionDataAll"] = 1)
-        countMap.sum += 1
+        logger("getPositionDataAll")
 
         // NOTE: for positions container >>
         // getTakerPositions, getMakerPositions, getTotalTakerPositionValueFromAllMarkets,
