@@ -25,10 +25,10 @@ describe("ClearingHouse", () => {
 
     beforeAll(async () => {
         perp = new PerpetualProtocol({
-            chainId: SupportedChainIds.OPTIMISM_KOVAN,
+            chainId: SupportedChainIds.OPTIMISM_GOERLI,
             providerConfigs: [
                 {
-                    rpcUrl: "https://kovan.optimism.io",
+                    rpcUrl: "https://goerli.optimism.io/",
                 },
             ],
         })
@@ -59,7 +59,7 @@ describe("ClearingHouse", () => {
                 contractFunctionName: "openPosition",
                 args: [
                     {
-                        baseToken: "0x5802918dc503c465f969da0847b71e3fbe9b141c",
+                        baseToken: "0x60a233b9b94c67e94e0a269429fb40004d4ba494",
                         isBaseToQuote: false,
                         isExactInput: true,
                         amount: big2BigNumberAndScaleUp(amountInput),
