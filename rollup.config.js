@@ -48,6 +48,7 @@ export default {
         replace({
             preventAssignment: true,
             values: {
+                "process.env.LOGGER_ON": JSON.stringify(process.env.LOGGER_ON),
                 "process.env.TRACK": JSON.stringify(process.env.TRACK),
                 "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN": JSON.stringify(
                     process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN,
