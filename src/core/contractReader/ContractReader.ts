@@ -41,10 +41,11 @@ import { MarketMap } from "../market"
 import { Metadata } from "../../metadata"
 import { marketInfo } from "../market/Markets"
 import { logger } from "../../utils"
+import { RetryProvider } from "../../network"
 
 interface ContractsReaderConfig {
     contracts: Contracts
-    provider: providers.Provider
+    provider: RetryProvider
     metadata: Metadata
 }
 
@@ -155,7 +156,7 @@ interface MulticallMarketDataArgs {
 export class ContractReader {
     readonly contracts: Contracts
 
-    private _provider: providers.Provider
+    private _provider: RetryProvider
     private _metadata: Metadata
     private _multicallReader: MulticallReader
 
