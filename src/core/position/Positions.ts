@@ -59,14 +59,11 @@ export class Positions extends Channel<PositionsEventName> {
     async getTakerPositions({ cache = true } = {}) {
         const marketMap = this._perp.markets.marketMap
         const takerPositions: Position[] = []
-
-        console.log("debug ++++ getTakerPositions")
         const [takerPositionSizeList, takerOpenNotionalList, liquidationPriceList] = await Promise.all([
             this._fetch("takerPositionSizeList", { cache }),
             this._fetch("takerOpenNotionalList", { cache }),
             this._fetch("liquidationPriceList", { cache }),
         ])
-        console.log("debug ---- getTakerPositions")
         Object.values(marketMap).forEach((market, index) => {
             const takerSizeOriginal = takerPositionSizeList[index]
             const takerOpenNotionalOriginal = takerOpenNotionalList[index]
@@ -93,14 +90,11 @@ export class Positions extends Channel<PositionsEventName> {
 
     async getMakerPositions({ cache = true } = {}) {
         const marketMap = this._perp.markets.marketMap
-
         const [totalPositionSizeList, totalOpenNotionalList] = await Promise.all([
             this._fetch("totalPositionSizeList", { cache }),
             this._fetch("totalOpenNotionalList", { cache }),
         ])
-        console.log("debug from: getMakerPositions")
         const takerPositions = await this.getTakerPositions({ cache })
-
         const makerPositions: Position[] = []
         Object.values(marketMap).forEach((market, index) => {
             const takerPosition = takerPositions.find(
@@ -133,7 +127,6 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     async getTakerPositionByTickerSymbol(tickerSymbol: string, { cache = true } = {}) {
-        console.log("debug from: getTakerPositionByTickerSymbol")
         const positions = await this.getTakerPositions({ cache })
         return positions.find(position => position.market.tickerSymbol === tickerSymbol)
     }
@@ -144,7 +137,6 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     async getTakerPosition(baseAddress: string, { cache = true } = {}) {
-        console.log("debug from: getTakerPosition")
         const positions = await this.getTakerPositions({ cache })
         return positions.find(position => position.market.baseAddress === baseAddress)
     }
@@ -156,7 +148,6 @@ export class Positions extends Channel<PositionsEventName> {
 
     async getTotalPositionValue(baseAddress: string, { cache = true } = {}) {
         const totalPositionValueList = await this._fetch("totalPositionValueList", { cache })
-
         const index = Object.values(this._perp.markets.marketMap).findIndex(
             market => market.baseAddress === baseAddress,
         )
@@ -173,7 +164,6 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     async getTotalTakerPositionValueFromAllMarkets({ cache = true } = {}) {
-        console.log("debug from: getTotalTakerPositionValueFromAllMarkets")
         const takerPositions = await this.getTakerPositions({ cache })
         let total = BIG_ZERO
         for (const position of takerPositions) {
@@ -204,7 +194,6 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     async getTotalTakerUnrealizedPnlFromAllMarkets({ cache = true } = {}) {
-        console.log("debug from: getTotalTakerUnrealizedPnlFromAllMarkets")
         const takerPositions = await this.getTakerPositions({ cache })
         let totalUnrealizedPnl = BIG_ZERO
         for (const position of takerPositions) {
@@ -307,32 +296,6 @@ export class Positions extends Channel<PositionsEventName> {
 
     protected async getPositionDataAll() {
         logger("getPositionDataAll")
-
-        // NOTE: for positions container >>
-        // getTakerPositions, getMakerPositions, getTotalTakerPositionValueFromAllMarkets,
-        // getTotalMakerPositionValueFromAllMarkets, getTotalUnrealizedPnlFromAllMarkets,
-        // getTotalTakerUnrealizedPnlFromAllMarkets, getTotalMakerUnrealizedPnlFromAllMarkets,
-        // getTotalPendingFundingPayments, getAccountMarginRatio, getAccountLeverage
-        // ## getTakerPositions = takerPositionSizeList::getTakerPositionSizeList + takerOpenNotionalList::getTakerOpenNotional, liquidationPriceList::getLiquidationPrice,
-        // ## getMakerPositions = totalPositionSizeList::getTotalPositionSizeList + totalOpenNotionalList::getTotalOpenNotionalList
-        // #### getTotalTakerPositionValueFromAllMarkets = SUM(getTakerPositions -> position.market.getPrices().indexPrice)
-        // #### getTotalMakerPositionValueFromAllMarkets = SUM(getMakerPositions -> position.market.getPrices().indexPrice)
-        // #### getTotalTakerUnrealizedPnlFromAllMarkets = SUM(getTakerPositions -> position.getUnrealizedPnl())
-        // #### getTotalMakerUnrealizedPnlFromAllMarkets = SUM(getMakerPositions -> position.getUnrealizedPnl())
-        // #### getTotalUnrealizedPnlFromAllMarkets = SUM(getTotalTakerUnrealizedPnlFromAllMarkets & getTotalMakerUnrealizedPnlFromAllMarkets)
-        // ## getTotalPendingFundingPayments = getPendingFundingPayments (this is not "total", it's a map)
-        // #### getAccountMarginRatio = vault.getAccountValue / totalAbsPositionValue
-        // #### getAccountLeverage = 1 / getAccountMarginRatio
-        // NOTE: for usePositionTaker >>
-        // getTakerPositionByTickerSymbol
-        // NOTE: for usePositionMaker >>
-        // getMakerPositionByTickerSymbol
-
-        // NOTE: TODO: for usePositionDetail >>
-        // getPriceImpact, getTransactionFee
-        // ## getPriceImpact = markPrice + swap(exchangedPositionSize, exchangedPositionNotional)
-        // ## getTransactionFee = swap(deltaAvailableQuote, exchangedPositionNotional) + feeRatio
-
         const marketMap = this._perp.markets.marketMap
         const contracts = this._perp.contracts
         const account = this._perp.wallet.account
@@ -482,7 +445,6 @@ export class Positions extends Channel<PositionsEventName> {
             const call = {
                 contract: contracts.quoter,
                 contractName: ContractName.QUOTER,
-                // funcName: "callStatic.swap",
                 funcName: "swap",
                 funcParams: [
                     {
@@ -501,7 +463,6 @@ export class Positions extends Channel<PositionsEventName> {
             const call = {
                 contract: contracts.quoter,
                 contractName: ContractName.QUOTER,
-                // funcName: "callStatic.swap",
                 funcName: "swap",
                 funcParams: [
                     {

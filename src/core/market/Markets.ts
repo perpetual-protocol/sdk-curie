@@ -142,8 +142,6 @@ class Markets extends Channel<MarketsEventName> {
         logger("getMarketDataAll")
         const contracts = this._perp.contracts
         const multicallReader = new MulticallReader({ contract: this._perp.contracts.multicall2 })
-        // NOTE: We cover those functions of the contract reader (getIndexPrice, getIndexTwapPrice, getMarketPrice, isMarketClosed, isMarketPaused, getMarketStatus, getMarketData)
-        // NOTE: The function getPriceFeedAggregator is called by LimitOrderBook, we can add it later if it is necessary.
         const callsMap: { [key: string]: ContractCall[] } = {}
         Object.entries(this._marketMap).forEach(([tickerSymbol, market]) => {
             const contractBaseToken = contracts.baseToken.attach(market.baseAddress)
@@ -187,7 +185,8 @@ class Markets extends Channel<MarketsEventName> {
             ]
             callsMap[`${tickerSymbol}`] = calls
         })
-        // NOTE: grad data
+
+        // NOTE: get data
         const data = await multicallReader.execute(Object.values(callsMap).flat(), {
             failFirstByContract: false,
             failFirstByClient: false,
