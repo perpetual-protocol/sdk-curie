@@ -22,6 +22,10 @@ export class SettlementToken extends Channel<CollateralEventName> {
         this._contractReader = _perp.contractReader
     }
 
+    get contract() {
+        return this._contract
+    }
+
     get address() {
         return this._contract.address
     }

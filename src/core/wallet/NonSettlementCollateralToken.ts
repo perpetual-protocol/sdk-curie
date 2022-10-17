@@ -30,6 +30,10 @@ export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
         this._metadataInfo = _perp.metadata.findCollateralByAddress(contract.address)
     }
 
+    get contract() {
+        return this._contract
+    }
+
     get address() {
         return this._contract.address
     }
