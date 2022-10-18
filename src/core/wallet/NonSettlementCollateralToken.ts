@@ -34,6 +34,10 @@ export class NonSettlementCollateralToken extends Channel<CollateralEventName> {
         return this._contract
     }
 
+    get priceFeedContract() {
+        return this._priceFeedContract
+    }
+
     get address() {
         return this._contract.address
     }
