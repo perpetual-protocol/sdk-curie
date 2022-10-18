@@ -164,10 +164,8 @@ class Vault extends Channel<VaultEventName> {
         const fetchAndEmitUpdatedVaultDataAll = this.getVaultDataAll.bind(this)
         const updateDataEventSourceVaultDataAll = new ChannelEventSource({
             eventSourceStarter: () => {
-                return poll(
-                    fetchAndEmitUpdatedVaultDataAll,
-                    this._perp.moduleConfigs?.positions?.period || DEFAULT_PERIOD,
-                ).cancel
+                return poll(fetchAndEmitUpdatedVaultDataAll, this._perp.moduleConfigs?.vault?.period || DEFAULT_PERIOD)
+                    .cancel
             },
             initEventEmitter: () => fetchAndEmitUpdatedVaultDataAll(),
         })
