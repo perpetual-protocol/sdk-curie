@@ -314,6 +314,7 @@ class Wallet extends Channel<WalletEventName> {
         this.emit("updatedWalletDataAll", walletDataAll)
     }
 
+    // TODO: too many ternary operator, can try to extract settlement token from collateral token list
     async getWalletDataAllCollateralInfo() {
         logger("getWalletDataAllCollateralInfo")
 
