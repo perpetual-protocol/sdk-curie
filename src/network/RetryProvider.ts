@@ -17,6 +17,17 @@ interface ProviderConnection {
     nextRetryTimestamp: number // NOTE: 0 means it's alive.
 }
 
+function isRetryableError(error: any) {
+    return (
+        error.code === errors.SERVER_ERROR ||
+        error.code === errors.TIMEOUT ||
+        error.message?.includes("header not found") ||
+        error.message?.includes("429") ||
+        error.data?.message?.includes("your node is running with state pruning") ||
+        error instanceof RpcTimeoutError
+    )
+}
+
 export class RetryProvider extends providers.BaseProvider {
     readonly retryLoopLimit: number
     private readonly _providerConnectionList: ProviderConnection[] // NOTE: prioritized, 1st is the most primary one.
@@ -169,6 +180,7 @@ export class RetryProvider extends providers.BaseProvider {
         // eslint-disable-next-line no-constant-condition
         while (true) {
             if (attempts >= this.retryLoopLimit * this.providerConnectionList.length) {
+                // TODO: do the back off query with the top priority provider
                 throw new RpcMaxRetryError({ rawErrors: serverErrors })
             }
             attempts++
@@ -179,11 +191,7 @@ export class RetryProvider extends providers.BaseProvider {
                 this._updateProviderStatus(providerConnection, true)
                 return result
             } catch (error: any) {
-                if (
-                    error.code === errors.SERVER_ERROR ||
-                    error.code === errors.TIMEOUT ||
-                    error instanceof RpcTimeoutError
-                ) {
+                if (isRetryableError(error)) {
                     // NOTE: Suppress server error or timeout error to retry with next provider.
                     this._updateProviderStatus(providerConnection, false)
                     serverErrors.push(error)
