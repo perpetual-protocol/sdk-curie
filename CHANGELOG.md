@@ -2,6 +2,141 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.15.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.11.0...v1.15.0) (2022-10-26)
+
+
+### Features
+
+* add logger util ([b75439a](https://github.com/perpetual-protocol/sdk-curie/commit/b75439ab59fdac8811eb9a1bdfc58e0cb6c12bd0))
+* **Markets:** markets module supports get all market data by getMarketDataAll function ([9793502](https://github.com/perpetual-protocol/sdk-curie/commit/9793502dab197e55274b584e768a56bf7f5eea0f))
+* **Positions:** positions module supports get all position data by getPositionDataAll function ([7e93253](https://github.com/perpetual-protocol/sdk-curie/commit/7e9325322b69e9687fd153b0f64a96f70a9cdd0b))
+* suspend adding user rpc into the rotate list ([b236234](https://github.com/perpetual-protocol/sdk-curie/commit/b236234c9d93b3140cc18ef1adab9f0a42455190))
+* **Vault:** support get vault data all feature ([b2f6a6b](https://github.com/perpetual-protocol/sdk-curie/commit/b2f6a6b08485271a502e6e326b960ebd3dff38e9))
+* **Wallet:** support get wallet data all and get collateral info all ([da9a8a8](https://github.com/perpetual-protocol/sdk-curie/commit/da9a8a81415fcccadc7b6953d37445f21a36318f))
+
+
+### Bug Fixes
+
+* avoid using provider from signer ([9a051c1](https://github.com/perpetual-protocol/sdk-curie/commit/9a051c1a09117fedf4237734276a2a2cc4f92485))
+
+
+### Performance Improvements
+
+* **ChannelEventSource:** add isFirstRequired checker ([8c969fa](https://github.com/perpetual-protocol/sdk-curie/commit/8c969fa1cb704582ec374886a218f5c1d3fe6877))
+* remove unused artifacts when generate-type ([#90](https://github.com/perpetual-protocol/sdk-curie/issues/90)) ([a3d364e](https://github.com/perpetual-protocol/sdk-curie/commit/a3d364e0773fa2c9e059f7d3ba3ca642a465b51f))
+
+
+### Build System
+
+* fix @perp/curie-deployments version ([68f9bef](https://github.com/perpetual-protocol/sdk-curie/commit/68f9beff85b0c7cf508d53c5a37c6d5731b039b1))
+* fix yarn lock ([b6153c1](https://github.com/perpetual-protocol/sdk-curie/commit/b6153c1164086e04c70a0b55495b1a281b888880))
+* **yarn.lock:** fix dependency lock ([6d8e249](https://github.com/perpetual-protocol/sdk-curie/commit/6d8e249b449f76190945a031cea884dc3dd511d0))
+
+
+### CI
+
+* **publish canary:** make canary publish manually ([5955649](https://github.com/perpetual-protocol/sdk-curie/commit/5955649fbda1dc237d0888156d86e260749b7617))
+* update workflow for canary ([7a128e8](https://github.com/perpetual-protocol/sdk-curie/commit/7a128e8296940edb907507b26cff4ead6aec895e))
+* **workflow:** make version bump manually ([7f9cb4f](https://github.com/perpetual-protocol/sdk-curie/commit/7f9cb4f1846da657d9b7e26062b36c4f0a29d206))
+
+
+### Code Refactoring
+
+* (WIP) debugging rpc ([13f9a86](https://github.com/perpetual-protocol/sdk-curie/commit/13f9a8611b9b4bd6fcad242994321b91017f342d))
+
+
+### Others
+
+* add debugging msg ([5307804](https://github.com/perpetual-protocol/sdk-curie/commit/53078048823dca9e8a59203947313893f450e22a))
+* clean up ([d13ccc4](https://github.com/perpetual-protocol/sdk-curie/commit/d13ccc46eb7f2124728765e97a8ad8013889b1f1))
+* **release:** 1.12.0 ([a63f7da](https://github.com/perpetual-protocol/sdk-curie/commit/a63f7daa0d2b4096f2f2629c8814056a52904b66))
+* **release:** 1.12.1 ([7573827](https://github.com/perpetual-protocol/sdk-curie/commit/7573827e188fa430a132d6c806dd92fa61dfc776))
+* **release:** 1.12.1-canary.0 ([bd47a25](https://github.com/perpetual-protocol/sdk-curie/commit/bd47a256009c9bb9bc8dbbd77f7152e2525f5ea3))
+* **release:** 1.12.2 ([9a21ac2](https://github.com/perpetual-protocol/sdk-curie/commit/9a21ac2af0538ff067bdf0dc8c183176bae39b41))
+* **release:** 1.12.2-canary.0 ([817b9e8](https://github.com/perpetual-protocol/sdk-curie/commit/817b9e8554b248510712089f3a30bfc2c79a708d))
+* **release:** 1.12.3 ([9d0aa0e](https://github.com/perpetual-protocol/sdk-curie/commit/9d0aa0e5e667cf89e343eb75b4c9f682d16f11c6))
+* **release:** 1.12.3-canary.0 ([97b6609](https://github.com/perpetual-protocol/sdk-curie/commit/97b66096013a945270133336a4a736d8b00cfb0a))
+* **release:** 1.13.0 ([c73a038](https://github.com/perpetual-protocol/sdk-curie/commit/c73a0385da21e4fefc4d10b1306406e87c585bd0))
+* **release:** 1.13.0-canary.0 ([afaa6be](https://github.com/perpetual-protocol/sdk-curie/commit/afaa6be0cabbd032f569f3e17320683940435333))
+* **release:** 1.13.0-canary.0 ([e5a8968](https://github.com/perpetual-protocol/sdk-curie/commit/e5a8968ffe19e476438db9514258052b48d7f202))
+* **release:** 1.13.0-canary.1 ([7098eaa](https://github.com/perpetual-protocol/sdk-curie/commit/7098eaa78b441203107837a6aca59a17db30100e))
+* **release:** 1.14.0 ([f6f9cd3](https://github.com/perpetual-protocol/sdk-curie/commit/f6f9cd31d3828eec58f6da22e41b24b7d60b224a))
+* **release:** 1.15.0-canary.0 ([30d3da7](https://github.com/perpetual-protocol/sdk-curie/commit/30d3da7e907a46b1645ef655ece1f2bb219552f5))
+* remove debug log ([e43139f](https://github.com/perpetual-protocol/sdk-curie/commit/e43139f0581e20681c7c42aea1bb521c80cf892a))
+* **Wallet:** add todo note for getWalletDataAllCollateralInfo function ([f96a1e1](https://github.com/perpetual-protocol/sdk-curie/commit/f96a1e14ae9d48ef4e99867b867b548819601877))
+
+### [1.9.2-canary.13](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.2-canary.12...v1.9.2-canary.13) (2022-08-10)
+
+
+### Others
+
+* **release:** 1.9.2-canary.13 ([2db8bc4](https://github.com/perpetual-protocol/sdk-curie/commit/2db8bc4647f8709da9942597191e902a3a82b948))
+* update code and remove unused code ([d1de8a7](https://github.com/perpetual-protocol/sdk-curie/commit/d1de8a7c8c0237abe081afdea2b1e3239a3dec88))
+
+### [1.9.2-canary.12](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.2-canary.11...v1.9.2-canary.12) (2022-08-10)
+
+
+### CI
+
+* clean up workflow ([7f162e7](https://github.com/perpetual-protocol/sdk-curie/commit/7f162e75860de4bc4c5f154f31756c7133b8b5f9))
+
+
+### Others
+
+* **release:** 1.9.2-canary.12 ([702d169](https://github.com/perpetual-protocol/sdk-curie/commit/702d16993cc97eb058db2335bcc947b3f22fa79b))
+
+### [1.9.2-canary.11](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.2-canary.9...v1.9.2-canary.11) (2022-08-10)
+
+
+### CI
+
+* refactor workflow and add npm script for bump canary ([0ca853b](https://github.com/perpetual-protocol/sdk-curie/commit/0ca853b02c657a2ccd52ed5c6d20502a1114d254))
+
+
+### Others
+
+* **release:** 1.9.2-canary.10 ([a971d35](https://github.com/perpetual-protocol/sdk-curie/commit/a971d35f8b9a8ef64a8249d788d240634cfbd59e))
+* **release:** 1.9.2-canary.11 ([45152b9](https://github.com/perpetual-protocol/sdk-curie/commit/45152b9308b45c5043ee7d25e5f5f0ed4f8c37a5))
+
+### [1.9.2-canary.9](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.2-canary.7...v1.9.2-canary.9) (2022-08-10)
+
+
+### Build System
+
+* **canary:** bump version and test workflow ([612ba71](https://github.com/perpetual-protocol/sdk-curie/commit/612ba71ea7d8e49f7549687b548b2baf2356a059))
+
+
+### CI
+
+* update workflow ([89a1bac](https://github.com/perpetual-protocol/sdk-curie/commit/89a1bacd1b38ab10320727ac031ad8569138f36f))
+
+
+### Others
+
+* **release:** 1.9.2-canary.8 ([63aacfe](https://github.com/perpetual-protocol/sdk-curie/commit/63aacfeed8d18f060ab39beed2160cacc8262bf3))
+* **release:** 1.9.2-canary.9 ([95cc43d](https://github.com/perpetual-protocol/sdk-curie/commit/95cc43d9bd54b2a80c62752a7669b3610cdef140))
+
+### [1.9.2-canary.7](https://github.com/perpetual-protocol/sdk-curie/compare/v1.9.0...v1.9.2-canary.7) (2022-08-10)
+
+
+### Build System
+
+* bump version ([273cb9f](https://github.com/perpetual-protocol/sdk-curie/commit/273cb9fb355a417866582cc1041bb766f0a9a050))
+* **canary:** bump version ([e90fde0](https://github.com/perpetual-protocol/sdk-curie/commit/e90fde0bd60059e56e94b66368d2bef5401dcd4e))
+* **canary:** bump version and add terser ([7c172a5](https://github.com/perpetual-protocol/sdk-curie/commit/7c172a560563e13d6ba2bd9f60d0d8baeedd061c))
+* **canary:** bump version and update deps ([681937d](https://github.com/perpetual-protocol/sdk-curie/commit/681937d281d18a429c26e36ca6d39b61460e3b5c))
+* **canary:** update dist folder structure ([a6c3117](https://github.com/perpetual-protocol/sdk-curie/commit/a6c31172ce86dc00a61b4198f4bbef3bc66bb906))
+* **rollup:** clean up dependencies & add rollup plugins ([b6bf046](https://github.com/perpetual-protocol/sdk-curie/commit/b6bf046aa868811f92a6e0c414309cad80fd834c))
+* **rollup:** experiment rollup config ([#83](https://github.com/perpetual-protocol/sdk-curie/issues/83)) ([44a2792](https://github.com/perpetual-protocol/sdk-curie/commit/44a27927b4bf57e7f67f0a6a508120d3a35d0e17))
+* update dist folder structure ([3f515db](https://github.com/perpetual-protocol/sdk-curie/commit/3f515db723a6fc3d1a9d60aa6db53c859701abfa))
+* update rollup config ([42c5f2e](https://github.com/perpetual-protocol/sdk-curie/commit/42c5f2ee89ecfc270a6aad726cb0f21c49d56b7b))
+
+
+### Others
+
+* **release:** 1.9.2-canary.7 ([a9b5e13](https://github.com/perpetual-protocol/sdk-curie/commit/a9b5e13c8c3d96f0af91d953fddab27eb5a79710))
+* update version in package.json ([bd9926c](https://github.com/perpetual-protocol/sdk-curie/commit/bd9926cd9a6ee77434a0b5563c2857d7f06fd18a))
+
 ## [1.15.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.11.0...v1.15.0-canary.0) (2022-10-14)
 
 
