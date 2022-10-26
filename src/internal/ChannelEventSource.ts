@@ -26,7 +26,7 @@ export class ChannelEventSource<EventName extends string = string> {
     }
 
     callInitEventEmitter(eventName: EventName) {
-        if (this._initEventEmitter) {
+        if (this._initEventEmitter && this.isFirstRequired) {
             this._initEventEmitter(eventName)
         }
     }

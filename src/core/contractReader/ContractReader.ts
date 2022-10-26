@@ -262,8 +262,8 @@ export class ContractReader {
                 logger("getVaultBalanceByToken::vault::GetBalanceByToken")
                 const tokenAddress = token.address
                 const tokenDecimals = await token.decimals()
-                const freeCollateral = await this.contracts.vault.getBalanceByToken(account, tokenAddress)
-                return bigNumber2BigAndScaleDown(freeCollateral, tokenDecimals)
+                const balance = await this.contracts.vault.getBalanceByToken(account, tokenAddress)
+                return bigNumber2BigAndScaleDown(balance, tokenDecimals)
             },
             rawError =>
                 new ContractReadError<Vault>({
