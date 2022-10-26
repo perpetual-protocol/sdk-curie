@@ -1,4 +1,4 @@
-import { ChainId, ProviderConfig, RetryProvider, getRetryProvider, isSupportedChainId } from "../network"
+import { ChainId, ProviderConfig, RetryProvider, getRetryProvider, isSupportedChainId, getProvider } from "../network"
 import { ChannelRegistry, ModuleConfig } from "../internal"
 import { ClearingHouse, ClearingHouseConfig } from "./clearingHouse"
 import { FailedPreconditionError, InitSDKError, UnsupportedChainError } from "../errors"
@@ -174,12 +174,14 @@ class PerpetualProtocol {
 
         const account = await signer.getAddress()
         this.contracts.connect(signer)
-        if (signer.provider) {
-            // NOTE: This casting is necessary due that
-            // `signer.provider` is `Provider` type, which is `BaseProvider`'s parent class
-            // but we wanna handle JsonRpcProvider specifically
-            this.provider.addUserProvider((signer as providers.JsonRpcSigner).provider)
-        }
+
+        // TODO: analyze the RPC call amount
+        // if (signer.provider) {
+        //     // NOTE: This casting is necessary due that
+        //     // `signer.provider` is `Provider` type, which is `BaseProvider`'s parent class
+        //     // but we wanna handle JsonRpcProvider specifically
+        //     this.provider.addUserProvider((signer as providers.JsonRpcSigner).provider)
+        // }
 
         this._wallet = new Wallet(this, account)
         this._vault = new Vault(this, account)
