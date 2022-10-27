@@ -1,3 +1,4 @@
+import { backOff } from "exponential-backoff"
 import { ArgumentError, RpcMaxRetryError, RpcTimeoutError } from "../errors"
 import { providers, errors } from "ethers"
 
@@ -55,7 +56,7 @@ export class RetryProvider extends providers.BaseProvider {
 
     get providerConnectionList(): ProviderConnection[] {
         return this._userProviderConnection
-            ? [this._userProviderConnection, ...this._providerConnectionList]
+            ? [...this._providerConnectionList, this._userProviderConnection]
             : this._providerConnectionList
     }
 
@@ -180,11 +181,9 @@ export class RetryProvider extends providers.BaseProvider {
         // eslint-disable-next-line no-constant-condition
         while (true) {
             if (attempts >= this.retryLoopLimit * this.providerConnectionList.length) {
-                // TODO: do the back off query with the top priority provider
-                throw new RpcMaxRetryError({ rawErrors: serverErrors })
+                return this._retryWithBackoff(func, serverErrors)
             }
             attempts++
-
             const providerConnection = this._getCandidateProviderConnection(this.providerConnectionList)
             try {
                 const result = await Promise.race([func(providerConnection.provider), this._providerTimeoutBenchmark()])
@@ -200,6 +199,23 @@ export class RetryProvider extends providers.BaseProvider {
                     throw error
                 }
             }
+        }
+    }
+
+    private async _retryWithBackoff(func: (provider: providers.JsonRpcProvider) => Promise<any>, errors: any) {
+        const providerConnection = this._getCandidateProviderConnection(this.providerConnectionList)
+        try {
+            return backOff(() => func(providerConnection.provider), {
+                numOfAttempts: 6, // retry 5 times
+                startingDelay: 1000, // 1 sec.
+                timeMultiple: 2,
+                retry: (error: any, attemptNumber: number) => {
+                    console.log("debug: ", "retry attempt", attemptNumber)
+                    return isRetryableError(error)
+                },
+            })
+        } catch (e: any) {
+            throw new RpcMaxRetryError({ rawErrors: [...errors, e] })
         }
     }
 
