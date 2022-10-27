@@ -60,7 +60,7 @@
     "dependencies": {
         "@perp/curie-deployments": "2022.10.5-1664940982527",
         "cross-fetch": "3.1.5",
-        "exponential-backoff": "^3.1.0"
+        "exponential-backoff": "3.1.0"
     },
     "peerDependencies": {
         "big.js": "6.1.1",

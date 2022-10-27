@@ -205,7 +205,7 @@ export class RetryProvider extends providers.BaseProvider {
     private async _retryWithBackoff(func: (provider: providers.JsonRpcProvider) => Promise<any>, errors: any) {
         const providerConnection = this._getCandidateProviderConnection(this.providerConnectionList)
         try {
-            return backOff(() => func(providerConnection.provider), {
+            return await backOff(() => func(providerConnection.provider), {
                 numOfAttempts: 6, // retry 5 times
                 startingDelay: 1000, // 1 sec.
                 timeMultiple: 2,
