@@ -210,7 +210,6 @@ export class RetryProvider extends providers.BaseProvider {
                 startingDelay: 1000, // 1 sec.
                 timeMultiple: 2,
                 retry: (error: any, attemptNumber: number) => {
-                    console.log("debug: ", "retry attempt", attemptNumber)
                     return isRetryableError(error)
                 },
             })
