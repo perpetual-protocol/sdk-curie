@@ -214,104 +214,107 @@ class Wallet extends Channel<WalletEventName> {
     }
 
     protected async getWalletDataAll() {
-        logger("getWalletDataAll")
+        try {
+            logger("getWalletDataAll")
+            const account = this.account
+            const contracts = this._perp.contracts
+            const multicall2 = new MulticallReader({ contract: contracts.multicall2 })
 
-        const account = this.account
-        const contracts = this._perp.contracts
-        const multicall2 = new MulticallReader({ contract: contracts.multicall2 })
+            const callsMap: Record<string, ContractCall[]> = {}
+            this._collateralTokenList.forEach(collateralToken => {
+                const isSettlementToken = collateralToken instanceof SettlementToken
+                const collateralTokenAddress = collateralToken.address
+                const collateralTokenContract = collateralToken.contract
+                const decimalsCall = isSettlementToken
+                    ? {
+                          contract: collateralTokenContract,
+                          contractName: ContractName.SETTLEMENT_TOKEN,
+                          funcName: "decimals",
+                          funcParams: [],
+                      }
+                    : {
+                          contract: collateralTokenContract,
+                          contractName: ContractName.COLLATERAL_TOKENS,
+                          funcName: "decimals",
+                          funcParams: [],
+                      }
+                const allowanceCall = isSettlementToken
+                    ? {
+                          contract: collateralToken.contract,
+                          contractName: ContractName.SETTLEMENT_TOKEN,
+                          funcName: "allowance",
+                          funcParams: [account, this._contractVault.address],
+                      }
+                    : {
+                          contract: collateralToken.contract,
+                          contractName: ContractName.COLLATERAL_TOKENS,
+                          funcName: "allowance",
+                          funcParams: [account, this._contractVault.address],
+                      }
+                const balanceCall = isSettlementToken
+                    ? {
+                          contract: collateralTokenContract,
+                          contractName: ContractName.SETTLEMENT_TOKEN,
+                          funcName: "balanceOf",
+                          funcParams: [account],
+                      }
+                    : {
+                          contract: collateralTokenContract,
+                          contractName: ContractName.COLLATERAL_TOKENS,
+                          funcName: "balanceOf",
+                          funcParams: [account],
+                      }
+                const calls: ContractCall[] = [
+                    // NOTE: get decimals
+                    decimalsCall,
+                    // NOTE: get allowance
+                    allowanceCall,
+                    // NOTE: get balance
+                    balanceCall,
+                ]
+                const priceDecimalsCall = isSettlementToken
+                    ? undefined
+                    : {
+                          contract: collateralToken.priceFeedContract,
+                          contractName: ContractName.CHAINLINK_PRICE_FEED,
+                          funcName: "decimals",
+                          funcParams: [],
+                      }
+                const priceCall = isSettlementToken
+                    ? undefined
+                    : {
+                          contract: collateralToken.priceFeedContract,
+                          contractName: ContractName.CHAINLINK_PRICE_FEED,
+                          funcName: "getPrice",
+                          funcParams: [0],
+                      }
+                priceDecimalsCall && calls.push(priceDecimalsCall)
+                priceCall && calls.push(priceCall)
+                callsMap[`${collateralTokenAddress}`] = calls
+            })
 
-        const callsMap: Record<string, ContractCall[]> = {}
-        this._collateralTokenList.forEach(collateralToken => {
-            const isSettlementToken = collateralToken instanceof SettlementToken
-            const collateralTokenAddress = collateralToken.address
-            const collateralTokenContract = collateralToken.contract
-            const decimalsCall = isSettlementToken
-                ? {
-                      contract: collateralTokenContract,
-                      contractName: ContractName.SETTLEMENT_TOKEN,
-                      funcName: "decimals",
-                      funcParams: [],
-                  }
-                : {
-                      contract: collateralTokenContract,
-                      contractName: ContractName.COLLATERAL_TOKENS,
-                      funcName: "decimals",
-                      funcParams: [],
-                  }
-            const allowanceCall = isSettlementToken
-                ? {
-                      contract: collateralToken.contract,
-                      contractName: ContractName.SETTLEMENT_TOKEN,
-                      funcName: "allowance",
-                      funcParams: [account, this._contractVault.address],
-                  }
-                : {
-                      contract: collateralToken.contract,
-                      contractName: ContractName.COLLATERAL_TOKENS,
-                      funcName: "allowance",
-                      funcParams: [account, this._contractVault.address],
-                  }
-            const balanceCall = isSettlementToken
-                ? {
-                      contract: collateralTokenContract,
-                      contractName: ContractName.SETTLEMENT_TOKEN,
-                      funcName: "balanceOf",
-                      funcParams: [account],
-                  }
-                : {
-                      contract: collateralTokenContract,
-                      contractName: ContractName.COLLATERAL_TOKENS,
-                      funcName: "balanceOf",
-                      funcParams: [account],
-                  }
-            const calls: ContractCall[] = [
-                // NOTE: get decimals
-                decimalsCall,
-                // NOTE: get allowance
-                allowanceCall,
-                // NOTE: get balance
-                balanceCall,
-            ]
-            const priceDecimalsCall = isSettlementToken
-                ? undefined
-                : {
-                      contract: collateralToken.priceFeedContract,
-                      contractName: ContractName.CHAINLINK_PRICE_FEED,
-                      funcName: "decimals",
-                      funcParams: [],
-                  }
-            const priceCall = isSettlementToken
-                ? undefined
-                : {
-                      contract: collateralToken.priceFeedContract,
-                      contractName: ContractName.CHAINLINK_PRICE_FEED,
-                      funcName: "getPrice",
-                      funcParams: [0],
-                  }
-            priceDecimalsCall && calls.push(priceDecimalsCall)
-            priceCall && calls.push(priceCall)
-            callsMap[`${collateralTokenAddress}`] = calls
-        })
+            const data = await multicall2.execute(Object.values(callsMap).flat())
 
-        const data = await multicall2.execute(Object.values(callsMap).flat())
+            const walletDataAll: WalletDataAll = {}
+            Object.entries(callsMap).forEach(([collateralAddress, calls]) => {
+                const dataChunk = data.splice(0, calls.length)
+                const decimals = dataChunk[0]
+                const allowance = bigNumber2BigAndScaleDown(dataChunk[1], decimals)
+                const balance = bigNumber2BigAndScaleDown(dataChunk[2], decimals)
+                const priceDecimals = dataChunk[3]
+                const price = dataChunk[4]
+                walletDataAll[`${collateralAddress}`] = {
+                    allowance,
+                    balance,
+                    // NOTE: SettlementToken price = 1
+                    price: priceDecimals && price ? bigNumber2BigAndScaleDown(price, priceDecimals).toNumber() : 1,
+                }
+            })
 
-        const walletDataAll: WalletDataAll = {}
-        Object.entries(callsMap).forEach(([collateralAddress, calls]) => {
-            const dataChunk = data.splice(0, calls.length)
-            const decimals = dataChunk[0]
-            const allowance = bigNumber2BigAndScaleDown(dataChunk[1], decimals)
-            const balance = bigNumber2BigAndScaleDown(dataChunk[2], decimals)
-            const priceDecimals = dataChunk[3]
-            const price = dataChunk[4]
-            walletDataAll[`${collateralAddress}`] = {
-                allowance,
-                balance,
-                // NOTE: SettlementToken price = 1
-                price: priceDecimals && price ? bigNumber2BigAndScaleDown(price, priceDecimals).toNumber() : 1,
-            }
-        })
-
-        this.emit("updatedWalletDataAll", walletDataAll)
+            this.emit("updatedWalletDataAll", walletDataAll)
+        } catch (error) {
+            this.emit("updateError", { error })
+        }
     }
 
     // TODO: too many ternary operator, can try to extract settlement token from collateral token list
