@@ -1,9 +1,16 @@
 import Big from "big.js"
+import { Result } from "ethers/lib/utils"
 
 import { BIG_ZERO } from "../../constants"
+import { ContractName } from "../../contracts"
 import { Channel, ChannelEventSource, DEFAULT_PERIOD, MemoizedFetcher, createMemoizedFetcher } from "../../internal"
-import { poll } from "../../utils"
-import { GetOpenLiquidityReturn, GetTotalTokenAmountInPoolAndPendingFeeOfAllMarketsReturn } from "../contractReader"
+import { bigNumber2BigAndScaleDown, fromSqrtX96, logger, poll } from "../../utils"
+import {
+    ContractCall,
+    GetOpenLiquidityReturn,
+    GetTotalTokenAmountInPoolAndPendingFeeOfAllMarketsReturn,
+    MulticallReader,
+} from "../contractReader"
 import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { Liquidity } from "./Liquidity"
 
@@ -12,7 +19,7 @@ export interface UpdatedDataReturn {
     totalPendingFees: { [marketBaseAddress: string]: Big }
 }
 
-type LiquiditiesEventName = "updateError" | "updated"
+type LiquiditiesEventName = "updateError" | "updated" | "updatedLiquidityDataAll"
 
 type CacheKey = "openLiquidities" | "totalTokenAmountInPoolAndPendingFeeOfAllMarkets"
 type CacheValue = GetOpenLiquidityReturn | GetTotalTokenAmountInPoolAndPendingFeeOfAllMarketsReturn
@@ -61,8 +68,23 @@ class Liquidities extends Channel<LiquiditiesEventName> {
                 poll(this._fetchAndEmitUpdated, this._perp.moduleConfigs?.orders?.period || DEFAULT_PERIOD).cancel,
             initEventEmitter: () => this._fetchAndEmitUpdated(false, true),
         })
+
+        // NOTE: getLiquidityDataAll
+        const fetchAndEmitUpdatedLiquidityDataAll = this.getLiquidityDataAll.bind(this)
+        const updateDataEventSourceLiquidityDataAll = new ChannelEventSource({
+            eventSourceStarter: () => {
+                return poll(
+                    fetchAndEmitUpdatedLiquidityDataAll,
+                    this._perp.moduleConfigs?.orders?.period || DEFAULT_PERIOD,
+                ).cancel
+            },
+            initEventEmitter: () => fetchAndEmitUpdatedLiquidityDataAll(),
+        })
+
         return {
             updated: updateDataEventSource,
+            // NOTE: getLiquidityDataAll
+            updatedLiquidityDataAll: updateDataEventSourceLiquidityDataAll,
         }
     }
 
@@ -202,6 +224,140 @@ class Liquidities extends Channel<LiquiditiesEventName> {
 
         return result
     }
+
+    protected async getLiquidityDataAll() {
+        logger("getLiquidityDataAll")
+
+        const account = this._perp.wallet.account
+        const marketMap = this._perp.markets.marketMap
+        const contracts = this._perp.contracts
+        const multicallReader = new MulticallReader({ contract: this._perp.contracts.multicall2 })
+
+        // NOTE: first calls batch
+        const callsMap: { [key: string]: ContractCall[] } = {}
+        Object.entries(marketMap).forEach(([tickerSymbol, market]) => {
+            const baseAddress = market.baseAddress
+            const calls = [
+                // NOTE: getTotalTokenAmountInPoolAndPendingFee
+                {
+                    contract: contracts.orderBook,
+                    contractName: ContractName.ORDERBOOK,
+                    funcName: "getTotalTokenAmountInPoolAndPendingFee",
+                    funcParams: [account, baseAddress, false],
+                },
+                // NOTE: getOpenOrderIds
+                {
+                    contract: contracts.orderBook,
+                    contractName: ContractName.ORDERBOOK,
+                    funcName: "getOpenOrderIds",
+                    funcParams: [account, baseAddress],
+                },
+                // NOTE: get market price
+                {
+                    contract: contracts.pool.attach(market.poolAddress),
+                    contractName: ContractName.POOL,
+                    funcName: "slot0",
+                    funcParams: [],
+                },
+            ]
+            callsMap[tickerSymbol] = calls
+        })
+
+        // NOTE: get data
+        const data = await multicallReader.execute(Object.values(callsMap).flat(), {
+            failFirstByContract: false,
+            failFirstByClient: false,
+        })
+
+        // NOTE: data analysis
+        const parsedData: Record<string, Omit<LiquidityData, "openLiquidities" | "totalLiquidityValue">> = {}
+        Object.entries(callsMap).forEach(([key, value]) => {
+            const dataChunk = data.splice(0, value.length)
+            const [totalTokenAmount, totalPendingFee] = dataChunk[0]
+            const openOrderIds = dataChunk[1]
+            const markPrice = fromSqrtX96(dataChunk[2].sqrtPriceX96)
+            parsedData[key] = {
+                totalPendingFee: bigNumber2BigAndScaleDown(totalPendingFee),
+                openOrderIds,
+                markPrice,
+            }
+        })
+
+        // NOTE: get order by id
+        const callsBatch2: ContractCall[] = []
+        Object.values(parsedData).forEach(liquidityData => {
+            const openOrderIds = liquidityData.openOrderIds
+            openOrderIds.forEach(id => {
+                callsBatch2.push({
+                    contract: contracts.orderBook,
+                    contractName: ContractName.ORDERBOOK,
+                    funcName: "getOpenOrderById",
+                    funcParams: [id],
+                })
+            })
+        })
+
+        // NOTE: get data batch2
+        const dataBatch2 = await multicallReader.execute(callsBatch2, {
+            failFirstByContract: false,
+            failFirstByClient: false,
+        })
+
+        // NOTE: data batch2 analysis
+        const liquidityDataAll: LiquidityDataAll = {}
+        Object.entries(parsedData).forEach(([tickerSymbol, value]) => {
+            const market = marketMap[tickerSymbol]
+            const dataChunk = dataBatch2.splice(0, value.openOrderIds.length)
+            const openLiquidities: Liquidity[] = []
+            let totalLiquidityValue = Big(0)
+            dataChunk.forEach(({ liquidity, baseDebt, quoteDebt, lowerTick, upperTick }: Result) => {
+                const _liquidity = new Liquidity(
+                    {
+                        perp: this._perp,
+                        id: `${market.baseAddress}-${lowerTick}-${upperTick}`,
+                        liquidity: new Big(liquidity),
+                        upperTick,
+                        lowerTick,
+                        baseDebt: bigNumber2BigAndScaleDown(baseDebt),
+                        quoteDebt: bigNumber2BigAndScaleDown(quoteDebt),
+                        market,
+                    },
+                    this._perp.channelRegistry,
+                )
+                const rangeType = Liquidity.getRangeTypeByMarkPrice(
+                    value.markPrice,
+                    _liquidity.lowerTickPrice,
+                    _liquidity.upperTickPrice,
+                )
+                const { amountQuote, amountBase } = Liquidity.getLiquidityAmounts({
+                    markPrice: value.markPrice,
+                    lowerTickPrice: _liquidity.lowerTickPrice,
+                    upperTickPrice: _liquidity.upperTickPrice,
+                    liquidity: _liquidity.liquidity,
+                    rangeType,
+                })
+                const amountBaseAsQuote = amountBase.mul(value.markPrice)
+                totalLiquidityValue = totalLiquidityValue.add(amountBaseAsQuote.add(amountQuote))
+                openLiquidities.push(_liquidity)
+            })
+            liquidityDataAll[tickerSymbol] = {
+                ...value,
+                totalLiquidityValue,
+                openLiquidities,
+            }
+        })
+
+        this.emit("updatedLiquidityDataAll", liquidityDataAll)
+    }
 }
 
 export { Liquidities }
+
+export interface LiquidityData {
+    totalPendingFee: Big
+    totalLiquidityValue: Big
+    openOrderIds: number[]
+    openLiquidities: Liquidity[]
+    markPrice: Big
+}
+export type LiquidityDataAll = Record<string, LiquidityData>
