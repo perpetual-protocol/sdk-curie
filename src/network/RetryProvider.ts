@@ -23,7 +23,7 @@ function isRetryableError(error: any) {
         error.code === errors.SERVER_ERROR ||
         error.code === errors.TIMEOUT ||
         error.message?.includes("header not found") ||
-        error.message?.includes("429") ||
+        (error.message?.includes("429") && error.message?.includes("status code")) ||
         error.data?.message?.includes("your node is running with state pruning") ||
         error instanceof RpcTimeoutError
     )
