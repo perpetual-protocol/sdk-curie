@@ -134,84 +134,86 @@ class Markets extends Channel<MarketsEventName> {
         // TODO: eventName typing protection, should error when invalid eventName is provided
         return {
             updated: updateDataEventSource,
-            updateError: updateDataEventSource,
         }
     }
 
     protected async getMarketDataAll() {
-        logger("getMarketDataAll")
-        const contracts = this._perp.contracts
-        const multicallReader = new MulticallReader({ contract: this._perp.contracts.multicall2 })
-        const callsMap: { [key: string]: ContractCall[] } = {}
-        Object.entries(this._marketMap).forEach(([tickerSymbol, market]) => {
-            const contractBaseToken = contracts.baseToken.attach(market.baseAddress)
-            const contractPool = contracts.pool.attach(market.poolAddress)
-            const calls: ContractCall[] = [
-                // NOTE: get index price
-                {
-                    contract: contractBaseToken,
-                    contractName: ContractName.BASE_TOKEN,
-                    funcName: "getIndexPrice",
-                    funcParams: [0],
-                },
-                // NOTE: get index twap price
-                {
-                    contract: contractBaseToken,
-                    contractName: ContractName.BASE_TOKEN,
-                    funcName: "getIndexPrice",
-                    funcParams: [15 * 60],
-                },
-                // NOTE: get market price
-                {
-                    contract: contractPool,
-                    contractName: ContractName.POOL,
-                    funcName: "slot0",
-                    funcParams: [],
-                },
-                // NOTE: get if the base token paused
-                {
-                    contract: contractBaseToken,
-                    contractName: ContractName.BASE_TOKEN,
-                    funcName: "isPaused",
-                    funcParams: [],
-                },
-                // NOTE: get if the base token closed
-                {
-                    contract: contractBaseToken,
-                    contractName: ContractName.BASE_TOKEN,
-                    funcName: "isClosed",
-                    funcParams: [],
-                },
-            ]
-            callsMap[`${tickerSymbol}`] = calls
-        })
+        try {
+            logger("getMarketDataAll")
+            const contracts = this._perp.contracts
+            const multicallReader = new MulticallReader({ contract: this._perp.contracts.multicall2 })
+            const callsMap: { [key: string]: ContractCall[] } = {}
+            Object.entries(this._marketMap).forEach(([tickerSymbol, market]) => {
+                const contractBaseToken = contracts.baseToken.attach(market.baseAddress)
+                const contractPool = contracts.pool.attach(market.poolAddress)
+                const calls: ContractCall[] = [
+                    // NOTE: get index price
+                    {
+                        contract: contractBaseToken,
+                        contractName: ContractName.BASE_TOKEN,
+                        funcName: "getIndexPrice",
+                        funcParams: [0],
+                    },
+                    // NOTE: get index twap price
+                    {
+                        contract: contractBaseToken,
+                        contractName: ContractName.BASE_TOKEN,
+                        funcName: "getIndexPrice",
+                        funcParams: [15 * 60],
+                    },
+                    // NOTE: get market price
+                    {
+                        contract: contractPool,
+                        contractName: ContractName.POOL,
+                        funcName: "slot0",
+                        funcParams: [],
+                    },
+                    // NOTE: get if the base token paused
+                    {
+                        contract: contractBaseToken,
+                        contractName: ContractName.BASE_TOKEN,
+                        funcName: "isPaused",
+                        funcParams: [],
+                    },
+                    // NOTE: get if the base token closed
+                    {
+                        contract: contractBaseToken,
+                        contractName: ContractName.BASE_TOKEN,
+                        funcName: "isClosed",
+                        funcParams: [],
+                    },
+                ]
+                callsMap[`${tickerSymbol}`] = calls
+            })
 
-        // NOTE: get data
-        const data = await multicallReader.execute(Object.values(callsMap).flat(), {
-            failFirstByContract: false,
-            failFirstByClient: false,
-        })
+            // NOTE: get data
+            const data = await multicallReader.execute(Object.values(callsMap).flat(), {
+                failFirstByContract: false,
+                failFirstByClient: false,
+            })
 
-        // NOTE: data analysis
-        // TODO: error handling
-        const marketDataAll: MarketDataAll = {}
-        Object.entries(callsMap).forEach(([key, value]) => {
-            const dataChunk = data.splice(0, value.length)
-            const indexPrice = bigNumber2BigAndScaleDown(dataChunk[0])
-            const indexTwapPrice = bigNumber2BigAndScaleDown(dataChunk[1])
-            const markPrice = fromSqrtX96(dataChunk[2].sqrtPriceX96)
-            const isPaused = dataChunk[3]
-            const isClosed = dataChunk[4]
-            marketDataAll[`${key}`] = {
-                status: isClosed ? MarketStatus.CLOSED : isPaused ? MarketStatus.PAUSED : MarketStatus.ACTIVE,
-                markPrice,
-                indexPrice,
-                indexTwapPrice,
-            }
-        })
+            // NOTE: data analysis
+            const marketDataAll: MarketDataAll = {}
+            Object.entries(callsMap).forEach(([key, value]) => {
+                const dataChunk = data.splice(0, value.length)
+                const indexPrice = bigNumber2BigAndScaleDown(dataChunk[0])
+                const indexTwapPrice = bigNumber2BigAndScaleDown(dataChunk[1])
+                const markPrice = fromSqrtX96(dataChunk[2].sqrtPriceX96)
+                const isPaused = dataChunk[3]
+                const isClosed = dataChunk[4]
+                marketDataAll[`${key}`] = {
+                    status: isClosed ? MarketStatus.CLOSED : isPaused ? MarketStatus.PAUSED : MarketStatus.ACTIVE,
+                    markPrice,
+                    indexPrice,
+                    indexTwapPrice,
+                }
+            })
 
-        // NOTE: emit market data all
-        this.emit("updated", marketDataAll)
+            // NOTE: emit market data all
+            this.emit("updated", marketDataAll)
+        } catch (error) {
+            this.emit("updateError", { error })
+        }
     }
 }
 

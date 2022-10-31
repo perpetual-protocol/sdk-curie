@@ -1,6 +1,6 @@
 {
     "name": "@perp/sdk-curie",
-    "version": "1.15.0",
+    "version": "1.16.0",
     "license": "BSD-3-Clause",
     "main": "dist/lib/index.js",
     "module": "dist/es/index.js",
@@ -59,7 +59,8 @@
     ],
     "dependencies": {
         "@perp/curie-deployments": "2022.10.5-1664940982527",
-        "cross-fetch": "3.1.5"
+        "cross-fetch": "3.1.5",
+        "exponential-backoff": "3.1.0"
     },
     "peerDependencies": {
         "big.js": "6.1.1",

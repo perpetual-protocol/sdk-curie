@@ -56,21 +56,7 @@ export class LiquidityBase<EventName extends string = ""> extends Channel<EventN
 
     async getRangeType({ cache = true } = {}) {
         const { markPrice } = await this.market.getPrices({ cache })
-
-        if (!markPrice || !this.lowerTickPrice || !this.upperTickPrice) {
-            return RangeType.RANGE_UNINITIALIZED
-        }
-        if (this.upperTickPrice.lte(this.lowerTickPrice)) {
-            return RangeType.RANGE_INVALID
-        }
-
-        if (markPrice.gte(this.upperTickPrice)) {
-            return RangeType.RANGE_AT_LEFT
-        } else if (markPrice.lte(this.lowerTickPrice)) {
-            return RangeType.RANGE_AT_RIGHT
-        }
-
-        return RangeType.RANGE_INSIDE
+        return LiquidityBase.getRangeTypeByMarkPrice(markPrice, this.lowerTickPrice, this.upperTickPrice)
     }
 
     protected _getEventSourceMap() {
@@ -84,6 +70,18 @@ export class LiquidityBase<EventName extends string = ""> extends Channel<EventN
             updated: updateDataEventSource,
             updateError: updateDataEventSource,
         }
+    }
+
+    static getRangeTypeByMarkPrice(markPrice: Big, lowerTickPrice: Big, upperTickPrice: Big) {
+        if (upperTickPrice.lte(lowerTickPrice)) {
+            return RangeType.RANGE_INVALID
+        }
+        if (markPrice.gte(upperTickPrice)) {
+            return RangeType.RANGE_AT_LEFT
+        } else if (markPrice.lte(lowerTickPrice)) {
+            return RangeType.RANGE_AT_RIGHT
+        }
+        return RangeType.RANGE_INSIDE
     }
 
     static getLiquidityFromBaseToken(markPriceSqrtX96: Big, upperPriceSqrtX96: Big, amount: Big) {

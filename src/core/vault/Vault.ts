@@ -282,104 +282,108 @@ class Vault extends Channel<VaultEventName> {
     }
 
     protected async getVaultDataAll() {
-        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getVaultDataAll" }))
-        logger("getVaultDataAll")
+        try {
+            invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getVaultDataAll" }))
+            logger("getVaultDataAll")
 
-        const account = this._perp.wallet.account
-        const contracts = this._perp.contracts
-        const collateralTokenList = this._perp.wallet.collateralTokenList
-        const multicall2 = new MulticallReader({ contract: contracts.multicall2 })
+            const account = this._perp.wallet.account
+            const contracts = this._perp.contracts
+            const collateralTokenList = this._perp.wallet.collateralTokenList
+            const multicall2 = new MulticallReader({ contract: contracts.multicall2 })
 
-        // NOTE: key = collateral address, value = call[]
-        const callsMap: Record<string, ContractCall[]> = {}
-        collateralTokenList?.forEach(collateralToken => {
-            const isSettlementToken = collateralToken instanceof SettlementToken
-            const collateralTokenContract = collateralToken.contract
-            const collateralTokenAddress = collateralToken.address
-            const balanceCall = isSettlementToken
-                ? {
-                      contract: contracts.vault,
-                      contractName: ContractName.VAULT,
-                      funcName: "getSettlementTokenValue",
-                      funcParams: [account],
-                  }
-                : {
-                      contract: contracts.vault,
-                      contractName: ContractName.VAULT,
-                      funcName: "getBalanceByToken",
-                      funcParams: [account, collateralTokenAddress],
-                  }
-            const decimalsCall = isSettlementToken
-                ? {
-                      contract: collateralTokenContract,
-                      contractName: ContractName.SETTLEMENT_TOKEN,
-                      funcName: "decimals",
-                      funcParams: [],
-                  }
-                : {
-                      contract: collateralTokenContract,
-                      contractName: ContractName.COLLATERAL_TOKENS,
-                      funcName: "decimals",
-                      funcParams: [],
-                  }
-            const calls = [
-                // NOTE: get free collateral by token
+            // NOTE: key = collateral address, value = call[]
+            const callsMap: Record<string, ContractCall[]> = {}
+            collateralTokenList?.forEach(collateralToken => {
+                const isSettlementToken = collateralToken instanceof SettlementToken
+                const collateralTokenContract = collateralToken.contract
+                const collateralTokenAddress = collateralToken.address
+                const balanceCall = isSettlementToken
+                    ? {
+                          contract: contracts.vault,
+                          contractName: ContractName.VAULT,
+                          funcName: "getSettlementTokenValue",
+                          funcParams: [account],
+                      }
+                    : {
+                          contract: contracts.vault,
+                          contractName: ContractName.VAULT,
+                          funcName: "getBalanceByToken",
+                          funcParams: [account, collateralTokenAddress],
+                      }
+                const decimalsCall = isSettlementToken
+                    ? {
+                          contract: collateralTokenContract,
+                          contractName: ContractName.SETTLEMENT_TOKEN,
+                          funcName: "decimals",
+                          funcParams: [],
+                      }
+                    : {
+                          contract: collateralTokenContract,
+                          contractName: ContractName.COLLATERAL_TOKENS,
+                          funcName: "decimals",
+                          funcParams: [],
+                      }
+                const calls = [
+                    // NOTE: get free collateral by token
+                    {
+                        contract: contracts.vault,
+                        contractName: ContractName.VAULT,
+                        funcName: "getFreeCollateralByToken",
+                        funcParams: [account, collateralTokenAddress],
+                    },
+                    // NOTE: get decimals
+                    decimalsCall,
+                    // NOTE: get balance
+                    balanceCall,
+                ]
+                callsMap[`${collateralToken.address}`] = calls
+            })
+
+            const independentCalls = [
+                // NOTE: get free collateral (total)
                 {
                     contract: contracts.vault,
                     contractName: ContractName.VAULT,
-                    funcName: "getFreeCollateralByToken",
-                    funcParams: [account, collateralTokenAddress],
+                    funcName: "getFreeCollateral",
+                    funcParams: [account],
                 },
-                // NOTE: get decimals
-                decimalsCall,
-                // NOTE: get balance
-                balanceCall,
+                // NOTE: get account value
+                {
+                    contract: contracts.vault,
+                    contractName: ContractName.VAULT,
+                    funcName: "getAccountValue",
+                    funcParams: [account],
+                },
             ]
-            callsMap[`${collateralToken.address}`] = calls
-        })
 
-        const independentCalls = [
-            // NOTE: get free collateral (total)
-            {
-                contract: contracts.vault,
-                contractName: ContractName.VAULT,
-                funcName: "getFreeCollateral",
-                funcParams: [account],
-            },
-            // NOTE: get account value
-            {
-                contract: contracts.vault,
-                contractName: ContractName.VAULT,
-                funcName: "getAccountValue",
-                funcParams: [account],
-            },
-        ]
+            const data = await multicall2.execute(Object.values(callsMap).flat().concat(independentCalls), {
+                failFirstByContract: false,
+                failFirstByClient: false,
+            })
 
-        const data = await multicall2.execute(Object.values(callsMap).flat().concat(independentCalls), {
-            failFirstByContract: false,
-            failFirstByClient: false,
-        })
+            const vaultDataAllByCollateral: VaultDataAllByCollateral = {}
+            Object.entries(callsMap).forEach(([collateralTokenAddress, calls]) => {
+                const dataChunk = data.splice(0, calls.length)
+                const freeCollateral = dataChunk[0]
+                const decimals = dataChunk[1]
+                const balance = dataChunk[2]
+                vaultDataAllByCollateral[`${collateralTokenAddress}`] = {
+                    freeCollateral: bigNumber2BigAndScaleDown(freeCollateral, decimals),
+                    balance: bigNumber2BigAndScaleDown(balance, decimals),
+                }
+            })
 
-        const vaultDataAllByCollateral: VaultDataAllByCollateral = {}
-        Object.entries(callsMap).forEach(([collateralTokenAddress, calls]) => {
-            const dataChunk = data.splice(0, calls.length)
-            const freeCollateral = dataChunk[0]
-            const decimals = dataChunk[1]
-            const balance = dataChunk[2]
-            vaultDataAllByCollateral[`${collateralTokenAddress}`] = {
-                freeCollateral: bigNumber2BigAndScaleDown(freeCollateral, decimals),
-                balance: bigNumber2BigAndScaleDown(balance, decimals),
+            const accountFreeCollateral = bigNumber2BigAndScaleDown(data[0], COLLATERAL_TOKEN_DECIMAL)
+            const accountBalance = bigNumber2BigAndScaleDown(data[1], SETTLEMENT_TOKEN_DECIMAL)
+            const vaultDataAllCrossCollateral: VaultDataAllCrossCollateral = {
+                accountBalance,
+                accountFreeCollateral,
             }
-        })
 
-        const accountFreeCollateral = bigNumber2BigAndScaleDown(data[0], COLLATERAL_TOKEN_DECIMAL)
-        const accountBalance = bigNumber2BigAndScaleDown(data[1], SETTLEMENT_TOKEN_DECIMAL)
-        const vaultDataAllCrossCollateral: VaultDataAllCrossCollateral = {
-            accountBalance,
-            accountFreeCollateral,
+            this.emit("updatedVaultDataAll", { vaultDataAllByCollateral, vaultDataAllCrossCollateral })
+        } catch (error) {
+            this.emit("updateError", { error })
         }
-
-        this.emit("updatedVaultDataAll", { vaultDataAllByCollateral, vaultDataAllCrossCollateral })
     }
 }
 
