@@ -56,6 +56,9 @@ export enum ErrorName {
 
     /* CONTRACT READ */
     CONTRACT_READ_ERROR = "contract_read_error",
+    MULTICALL_READ_ERROR = "multicall_read_error",
+    MULTICALL_READ_ENCODE_ERROR = "multicall_read_encode_error",
+    MULTICALL_READ_DECODE_ERROR = "multicall_read_decode_error",
     INSUFFICIENT_LIQUIDITY_ERROR = "insufficient_liquidity_error",
     UNISWAP_BROKER_INSUFFICIENT_LIQUIDITY_ERROR = "uniswap_broker_insufficient_liquidity_error",
     NOT_ENOUGH_FREE_COLLATERAL_ERROR = "not_enough_free_collateral_error",
@@ -211,6 +214,41 @@ export interface ContractErrorParams<ContractFunctionName> extends SDKBaseErrorP
     args?: { [key: string]: any }
     context?: { [key: string]: any }
 }
+
+/* ========== MULTICALL READ ========== */
+export class MulticallReadError<ContractType extends EthersContract> extends SDKBaseError {
+    readonly contractName: string
+    readonly contractFunctionName: keyof ContractType
+    readonly contractErrorCode?: ContractErrorCode
+    readonly arguments: string
+    readonly context: string
+    constructor(data: ContractErrorParams<keyof ContractType>) {
+        super(data)
+        const { contractName, contractFunctionName, contractErrorCode, args, context } = data
+        this.name = ErrorName.MULTICALL_READ_ERROR
+        this.message = `Read ${contractName} contract error, invoke ${String(contractFunctionName)} function failed.`
+        this.contractName = contractName
+        this.contractFunctionName = contractFunctionName
+        this.contractErrorCode = contractErrorCode
+        this.arguments = JSON.stringify(args)
+        this.context = JSON.stringify(context)
+    }
+}
+
+export class MulticallEncodeError<ContractType extends EthersContract> extends MulticallReadError<ContractType> {
+    constructor(data: ContractErrorParams<keyof ContractType>) {
+        super(data)
+        this.name = ErrorName.MULTICALL_READ_ENCODE_ERROR
+    }
+}
+
+export class MulticallDecodeError<ContractType extends EthersContract> extends MulticallReadError<ContractType> {
+    constructor(data: ContractErrorParams<keyof ContractType>) {
+        super(data)
+        this.name = ErrorName.MULTICALL_READ_DECODE_ERROR
+    }
+}
+
 /* ========== CONTRACT READ ========== */
 export type ContractReadErrorParams<ContractFunctionName> = ContractErrorParams<ContractFunctionName>
 
