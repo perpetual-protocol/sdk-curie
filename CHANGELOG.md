@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.16.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.15.0...v1.16.0-canary.0) (2022-10-31)
+
+
+### Features
+
+* add backOff after retry through all providers ([651617d](https://github.com/perpetual-protocol/sdk-curie/commit/651617dd58eef576020f5e277ffd9e77388854a2))
+* add liquidity get data all error handling ([da478d7](https://github.com/perpetual-protocol/sdk-curie/commit/da478d7f123dfbc79d2125b1a11a368860eafd04))
+* add markets get data all error handling ([0394bd4](https://github.com/perpetual-protocol/sdk-curie/commit/0394bd4a0af9723df792d31ac3b2a2926d0fbb13))
+* add MulticallReadError, MulticallEncodeError, MulticallDecodeError ([118dda0](https://github.com/perpetual-protocol/sdk-curie/commit/118dda09895be00a3cd94da3530e445ad08fc99e))
+* add positions get data all error handling ([a49bd3c](https://github.com/perpetual-protocol/sdk-curie/commit/a49bd3c5687eeb6d16003f58425242fe833ea2b9))
+* add vault get data all error handling ([a71611c](https://github.com/perpetual-protocol/sdk-curie/commit/a71611ca69a390dab54d6cb69f00668aabba4024))
+* add wallet get data all error handling ([9de76f7](https://github.com/perpetual-protocol/sdk-curie/commit/9de76f790f827eb2f9f080c26d198f43f3b45853))
+* provide get liquidity data all function ([da7010f](https://github.com/perpetual-protocol/sdk-curie/commit/da7010fba9d501a16cf30ef8a6fea3bd71086713))
+
+
+### Bug Fixes
+
+* refine condition to handle error response ([2b94447](https://github.com/perpetual-protocol/sdk-curie/commit/2b944470b755fe6700ef2ff620d57fc17e004aa1))
+* review comments ([8ec3057](https://github.com/perpetual-protocol/sdk-curie/commit/8ec30578b8d0ec65903c45025bda67efd553fb52))
+* update error condition logic ([858a30f](https://github.com/perpetual-protocol/sdk-curie/commit/858a30fe38945e6545802380466a2b7f5e5303b6))
+
+
+### Others
+
+* remove debug console ([ea5d7e7](https://github.com/perpetual-protocol/sdk-curie/commit/ea5d7e707289766739ef6cf93edddcb41f43f405))
+
 ## [1.15.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.11.0...v1.15.0) (2022-10-26)
 
 
