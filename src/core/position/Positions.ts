@@ -52,7 +52,6 @@ export class Positions extends Channel<PositionsEventName> {
         // TODO: eventName typing protection, should error when invalid eventName is provided
         return {
             updated: updateDataEventSource,
-            updateError: updateDataEventSource,
         }
     }
 
@@ -295,307 +294,311 @@ export class Positions extends Channel<PositionsEventName> {
     }
 
     protected async getPositionDataAll() {
-        logger("getPositionDataAll")
-        const marketMap = this._perp.markets.marketMap
-        const contracts = this._perp.contracts
-        const account = this._perp.wallet.account
-        const multicall2 = new MulticallReader({ contract: contracts.multicall2 })
+        try {
+            logger("getPositionDataAll")
+            const marketMap = this._perp.markets.marketMap
+            const contracts = this._perp.contracts
+            const account = this._perp.wallet.account
+            const multicall2 = new MulticallReader({ contract: contracts.multicall2 })
 
-        // NOTE: prepare first batch multicall data
-        const callsMap: { [key: string]: ContractCall[] } = {}
-        Object.entries(marketMap).forEach(([tickerSymbol, market]) => {
-            const baseAddress = market.baseAddress
-            const poolAddress = market.poolAddress
-            const calls = [
-                // NOTE: get taker position size
-                {
-                    contract: contracts.accountBalance,
-                    contractName: ContractName.ACCOUNT_BALANCE,
-                    funcName: "getTakerPositionSize",
-                    funcParams: [account, baseAddress],
-                },
-                // NOTE: get taker open notional
-                {
-                    contract: contracts.accountBalance,
-                    contractName: ContractName.ACCOUNT_BALANCE,
-                    funcName: "getTakerOpenNotional",
-                    funcParams: [account, baseAddress],
-                },
-                // NOTE: get liquidation price
-                {
-                    contract: contracts.perpPortal,
-                    contractName: ContractName.PerpPortal,
-                    funcName: "getLiquidationPrice",
-                    funcParams: [account, baseAddress],
-                },
-                // NOTE: get total position size
-                {
-                    contract: contracts.accountBalance,
-                    contractName: ContractName.ACCOUNT_BALANCE,
-                    funcName: "getTotalPositionSize",
-                    funcParams: [account, baseAddress],
-                },
-                // NOTE: get total open notional
-                {
-                    contract: contracts.accountBalance,
-                    contractName: ContractName.ACCOUNT_BALANCE,
-                    funcName: "getTotalOpenNotional",
-                    funcParams: [account, baseAddress],
-                },
-                // NOTE: get funding payment
-                {
-                    contract: contracts.exchange,
-                    contractName: ContractName.EXCHANGE,
-                    funcName: "getPendingFundingPayment",
-                    funcParams: [account, baseAddress],
-                },
-                // NOTE: get market index price
-                {
-                    contract: contracts.baseToken.attach(baseAddress),
-                    contractName: ContractName.BASE_TOKEN,
-                    funcName: "getIndexPrice",
-                    funcParams: [0],
-                },
-                // NOTE: get market price
-                {
-                    contract: contracts.pool.attach(poolAddress),
-                    contractName: ContractName.POOL,
-                    funcName: "slot0",
-                    funcParams: [],
-                },
-            ]
-            callsMap[`${tickerSymbol}`] = calls
-        })
-
-        // NOTE: execute first batch multicall
-        const dataBatch1 = await multicall2.execute(Object.values(callsMap).flat(), {
-            failFirstByContract: false,
-            failFirstByClient: false,
-        })
-
-        // NOTE: analysis first batch multicall
-        const positionDataAllByMarket: PositionDataAllByMarket = {}
-        Object.entries(callsMap).forEach(([tickerSymbol, calls]) => {
-            const dataChunk = dataBatch1.splice(0, calls.length)
-            const takerPosSize = bigNumber2BigAndScaleDown(dataChunk[0])
-            const takerPosOpenNotional = bigNumber2BigAndScaleDown(dataChunk[1])
-            const takerPosLiquidationPrice = bigNumber2BigAndScaleDown(dataChunk[2])
-            const totalPosSize = bigNumber2BigAndScaleDown(dataChunk[3])
-            const totalPosOpenNotional = bigNumber2BigAndScaleDown(dataChunk[4])
-            const pendingFundingPayment = bigNumber2BigAndScaleDown(dataChunk[5])
-            const indexPrice = bigNumber2BigAndScaleDown(dataChunk[6])
-            const markPrice = fromSqrtX96(dataChunk[7].sqrtPriceX96)
-            let takerPosition: Position | undefined
-            let takerPositionValue: Big | undefined
-            if (!takerPosSize.eq(0)) {
-                takerPosition = new Position({
-                    perp: this._perp,
-                    type: PositionType.TAKER,
-                    market: marketMap[`${tickerSymbol}`],
-                    side: takerPosSize.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
-                    sizeAbs: takerPosSize.abs(),
-                    openNotionalAbs: takerPosOpenNotional.abs(),
-                    entryPrice: takerPosOpenNotional.div(takerPosSize).abs(),
-                    liquidationPrice: takerPosLiquidationPrice,
-                })
-                takerPositionValue = takerPosSize.mul(indexPrice)
-            }
-            const makerPosSize = totalPosSize.minus(takerPosSize)
-            const makerPosOpenNotional = totalPosOpenNotional.minus(takerPosOpenNotional)
-            let makerPosition: Position | undefined
-            let makerPositionValue: Big | undefined
-            if (!makerPosSize.eq(0)) {
-                makerPosition = new Position({
-                    perp: this._perp,
-                    type: PositionType.MAKER,
-                    market: marketMap[`${tickerSymbol}`],
-                    side: makerPosSize.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
-                    sizeAbs: makerPosSize.abs(),
-                    openNotionalAbs: makerPosOpenNotional.abs(),
-                    entryPrice: makerPosOpenNotional.div(makerPosSize).abs(),
-                })
-                makerPositionValue = makerPosSize.mul(indexPrice)
-            }
-            positionDataAllByMarket[`${tickerSymbol}`] = {
-                takerPosition,
-                takerPositionValue,
-                makerPosition,
-                makerPositionValue,
-                pendingFundingPayment,
-                indexPrice,
-                markPrice,
-            }
-        })
-
-        // NOTE: multicall second batch
-        // NOTE: include the calls which depends on the first call batch result or the call we need only once, ex. position size and account value
-        const callsBatch2: ContractCall[] = []
-        const takerPosMap: { [key: string]: TakerPositionExist } = {}
-        const makerPosMap: { [key: string]: MakerPositionExist } = {}
-        Object.entries(positionDataAllByMarket).forEach(([tickerSymbol, posData]) => {
-            if (isTakerPositionExist(posData)) {
-                takerPosMap[`${tickerSymbol}`] = posData
-            }
-            if (isMakerPositionExist(posData)) {
-                makerPosMap[`${tickerSymbol}`] = posData
-            }
-        })
-        // NOTE: get taker pos swap result
-        Object.values(takerPosMap).forEach(posData => {
-            const call = {
-                contract: contracts.quoter,
-                contractName: ContractName.QUOTER,
-                funcName: "swap",
-                funcParams: [
+            // NOTE: prepare first batch multicall data
+            const callsMap: { [key: string]: ContractCall[] } = {}
+            Object.entries(marketMap).forEach(([tickerSymbol, market]) => {
+                const baseAddress = market.baseAddress
+                const poolAddress = market.poolAddress
+                const calls = [
+                    // NOTE: get taker position size
                     {
-                        baseToken: posData.takerPosition.market.baseAddress,
-                        isBaseToQuote: posData.takerPosition.isBaseToQuote,
-                        isExactInput: posData.takerPosition.isExactInput,
-                        amount: big2BigNumberAndScaleUp(posData.takerPosition.sizeAbs),
-                        sqrtPriceLimitX96: 0,
+                        contract: contracts.accountBalance,
+                        contractName: ContractName.ACCOUNT_BALANCE,
+                        funcName: "getTakerPositionSize",
+                        funcParams: [account, baseAddress],
                     },
-                ],
-            }
-            callsBatch2.push(call)
-        })
-        // NOTE: get maker pos swap result
-        Object.values(makerPosMap).forEach(posData => {
-            const call = {
-                contract: contracts.quoter,
-                contractName: ContractName.QUOTER,
-                funcName: "swap",
-                funcParams: [
+                    // NOTE: get taker open notional
                     {
-                        baseToken: posData.makerPosition.market.baseAddress,
-                        isBaseToQuote: posData.makerPosition.isBaseToQuote,
-                        isExactInput: posData.makerPosition.isExactInput,
-                        amount: big2BigNumberAndScaleUp(posData.makerPosition.sizeAbs),
-                        sqrtPriceLimitX96: 0,
+                        contract: contracts.accountBalance,
+                        contractName: ContractName.ACCOUNT_BALANCE,
+                        funcName: "getTakerOpenNotional",
+                        funcParams: [account, baseAddress],
                     },
-                ],
+                    // NOTE: get liquidation price
+                    {
+                        contract: contracts.perpPortal,
+                        contractName: ContractName.PerpPortal,
+                        funcName: "getLiquidationPrice",
+                        funcParams: [account, baseAddress],
+                    },
+                    // NOTE: get total position size
+                    {
+                        contract: contracts.accountBalance,
+                        contractName: ContractName.ACCOUNT_BALANCE,
+                        funcName: "getTotalPositionSize",
+                        funcParams: [account, baseAddress],
+                    },
+                    // NOTE: get total open notional
+                    {
+                        contract: contracts.accountBalance,
+                        contractName: ContractName.ACCOUNT_BALANCE,
+                        funcName: "getTotalOpenNotional",
+                        funcParams: [account, baseAddress],
+                    },
+                    // NOTE: get funding payment
+                    {
+                        contract: contracts.exchange,
+                        contractName: ContractName.EXCHANGE,
+                        funcName: "getPendingFundingPayment",
+                        funcParams: [account, baseAddress],
+                    },
+                    // NOTE: get market index price
+                    {
+                        contract: contracts.baseToken.attach(baseAddress),
+                        contractName: ContractName.BASE_TOKEN,
+                        funcName: "getIndexPrice",
+                        funcParams: [0],
+                    },
+                    // NOTE: get market price
+                    {
+                        contract: contracts.pool.attach(poolAddress),
+                        contractName: ContractName.POOL,
+                        funcName: "slot0",
+                        funcParams: [],
+                    },
+                ]
+                callsMap[`${tickerSymbol}`] = calls
+            })
+
+            // NOTE: execute first batch multicall
+            const dataBatch1 = await multicall2.execute(Object.values(callsMap).flat(), {
+                failFirstByContract: false,
+                failFirstByClient: false,
+            })
+
+            // NOTE: analysis first batch multicall
+            const positionDataAllByMarket: PositionDataAllByMarket = {}
+            Object.entries(callsMap).forEach(([tickerSymbol, calls]) => {
+                const dataChunk = dataBatch1.splice(0, calls.length)
+                const takerPosSize = bigNumber2BigAndScaleDown(dataChunk[0])
+                const takerPosOpenNotional = bigNumber2BigAndScaleDown(dataChunk[1])
+                const takerPosLiquidationPrice = bigNumber2BigAndScaleDown(dataChunk[2])
+                const totalPosSize = bigNumber2BigAndScaleDown(dataChunk[3])
+                const totalPosOpenNotional = bigNumber2BigAndScaleDown(dataChunk[4])
+                const pendingFundingPayment = bigNumber2BigAndScaleDown(dataChunk[5])
+                const indexPrice = bigNumber2BigAndScaleDown(dataChunk[6])
+                const markPrice = fromSqrtX96(dataChunk[7].sqrtPriceX96)
+                let takerPosition: Position | undefined
+                let takerPositionValue: Big | undefined
+                if (!takerPosSize.eq(0)) {
+                    takerPosition = new Position({
+                        perp: this._perp,
+                        type: PositionType.TAKER,
+                        market: marketMap[`${tickerSymbol}`],
+                        side: takerPosSize.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
+                        sizeAbs: takerPosSize.abs(),
+                        openNotionalAbs: takerPosOpenNotional.abs(),
+                        entryPrice: takerPosOpenNotional.div(takerPosSize).abs(),
+                        liquidationPrice: takerPosLiquidationPrice,
+                    })
+                    takerPositionValue = takerPosSize.mul(indexPrice)
+                }
+                const makerPosSize = totalPosSize.minus(takerPosSize)
+                const makerPosOpenNotional = totalPosOpenNotional.minus(takerPosOpenNotional)
+                let makerPosition: Position | undefined
+                let makerPositionValue: Big | undefined
+                if (!makerPosSize.eq(0)) {
+                    makerPosition = new Position({
+                        perp: this._perp,
+                        type: PositionType.MAKER,
+                        market: marketMap[`${tickerSymbol}`],
+                        side: makerPosSize.gte(0) ? PositionSide.LONG : PositionSide.SHORT,
+                        sizeAbs: makerPosSize.abs(),
+                        openNotionalAbs: makerPosOpenNotional.abs(),
+                        entryPrice: makerPosOpenNotional.div(makerPosSize).abs(),
+                    })
+                    makerPositionValue = makerPosSize.mul(indexPrice)
+                }
+                positionDataAllByMarket[`${tickerSymbol}`] = {
+                    takerPosition,
+                    takerPositionValue,
+                    makerPosition,
+                    makerPositionValue,
+                    pendingFundingPayment,
+                    indexPrice,
+                    markPrice,
+                }
+            })
+
+            // NOTE: multicall second batch
+            // NOTE: include the calls which depends on the first call batch result or the call we need only once, ex. position size and account value
+            const callsBatch2: ContractCall[] = []
+            const takerPosMap: { [key: string]: TakerPositionExist } = {}
+            const makerPosMap: { [key: string]: MakerPositionExist } = {}
+            Object.entries(positionDataAllByMarket).forEach(([tickerSymbol, posData]) => {
+                if (isTakerPositionExist(posData)) {
+                    takerPosMap[`${tickerSymbol}`] = posData
+                }
+                if (isMakerPositionExist(posData)) {
+                    makerPosMap[`${tickerSymbol}`] = posData
+                }
+            })
+            // NOTE: get taker pos swap result
+            Object.values(takerPosMap).forEach(posData => {
+                const call = {
+                    contract: contracts.quoter,
+                    contractName: ContractName.QUOTER,
+                    funcName: "swap",
+                    funcParams: [
+                        {
+                            baseToken: posData.takerPosition.market.baseAddress,
+                            isBaseToQuote: posData.takerPosition.isBaseToQuote,
+                            isExactInput: posData.takerPosition.isExactInput,
+                            amount: big2BigNumberAndScaleUp(posData.takerPosition.sizeAbs),
+                            sqrtPriceLimitX96: 0,
+                        },
+                    ],
+                }
+                callsBatch2.push(call)
+            })
+            // NOTE: get maker pos swap result
+            Object.values(makerPosMap).forEach(posData => {
+                const call = {
+                    contract: contracts.quoter,
+                    contractName: ContractName.QUOTER,
+                    funcName: "swap",
+                    funcParams: [
+                        {
+                            baseToken: posData.makerPosition.market.baseAddress,
+                            isBaseToQuote: posData.makerPosition.isBaseToQuote,
+                            isExactInput: posData.makerPosition.isExactInput,
+                            amount: big2BigNumberAndScaleUp(posData.makerPosition.sizeAbs),
+                            sqrtPriceLimitX96: 0,
+                        },
+                    ],
+                }
+                callsBatch2.push(call)
+            })
+            // NOTE: get total abs pos value
+            callsBatch2.push({
+                contract: contracts.accountBalance,
+                contractName: ContractName.ACCOUNT_BALANCE,
+                funcName: "getTotalAbsPositionValue",
+                funcParams: [account],
+            })
+            // NOTE: get vault account value
+            callsBatch2.push({
+                contract: contracts.vault,
+                contractName: ContractName.VAULT,
+                funcName: "getAccountValue",
+                funcParams: [account],
+            })
+
+            // NOTE: execute second batch multicall
+            const dataBatch2 = await multicall2.execute(callsBatch2)
+
+            // NOTE: analysis batch 2 result
+            const dataChunkTakerPosSwap = dataBatch2.splice(0, Object.keys(takerPosMap).length)
+            const dataChunkMakerPosSwap = dataBatch2.splice(0, Object.keys(makerPosMap).length)
+            const accountPosValueAbs = bigNumber2BigAndScaleDown(dataBatch2.shift())
+            const accountValue = bigNumber2BigAndScaleDown(dataBatch2.shift(), SETTLEMENT_TOKEN_DECIMAL)
+            const accountMarginRatio = !accountPosValueAbs.eq(0) ? accountValue.div(accountPosValueAbs) : undefined
+            const accountLeverage = accountMarginRatio ? Big(1).div(accountMarginRatio) : undefined
+
+            const totalTakerPositionValue = Object.values(takerPosMap).reduce((acc, cur) => {
+                return acc.add(cur.takerPositionValue)
+            }, Big(0))
+            const totalMakerPositionValue = Object.values(makerPosMap).reduce((acc, cur) => {
+                return acc.add(cur.makerPositionValue)
+            }, Big(0))
+
+            // NOTE: get taker unrealized pnl and assign back to positionDataAllByMarket
+            let totalTakerUnrealizedPnl = Big(0)
+            Object.values(takerPosMap).forEach((posData, index) => {
+                const { deltaAvailableQuote, exchangedPositionSize, exchangedPositionNotional } =
+                    dataChunkTakerPosSwap[index]
+                const isLong = posData.takerPosition.side === PositionSide.LONG
+                const deltaAvailableQuoteParsed = bigNumber2BigAndScaleDown(deltaAvailableQuote)
+                const exchangedPositionNotionalParsed = bigNumber2BigAndScaleDown(exchangedPositionNotional)
+                const exchangedPositionSizeParsed = bigNumber2BigAndScaleDown(exchangedPositionSize)
+                const unrealizedPnl = getUnrealizedPnl({
+                    isLong,
+                    deltaAvailableQuote: deltaAvailableQuoteParsed,
+                    openNotionalAbs: posData.takerPosition.openNotionalAbs,
+                })
+                const exitPrice = getSwapRate({
+                    amountBase: exchangedPositionSizeParsed,
+                    amountQuote: exchangedPositionNotionalParsed,
+                })
+                const exitPriceImpact = getPriceImpact({
+                    price: exitPrice,
+                    markPrice: posData.markPrice,
+                })
+                const feeRatio =
+                    this._perp.clearingHouseConfig.marketExchangeFeeRatios[posData.takerPosition.market.baseAddress]
+                const exitTxFee = getTransactionFee({
+                    isBaseToQuote: posData.takerPosition.isBaseToQuote,
+                    exchangedPositionNotional: exchangedPositionNotionalParsed,
+                    deltaAvailableQuote: deltaAvailableQuoteParsed,
+                    feeRatio,
+                })
+                posData.takerPosUnrealizedPnl = unrealizedPnl
+                posData.takerPosExitPrice = exitPrice
+                posData.takerPosExitPriceImpact = exitPriceImpact
+                posData.takerPosExitTxFee = exitTxFee
+                totalTakerUnrealizedPnl = totalTakerUnrealizedPnl.add(unrealizedPnl)
+            })
+
+            // NOTE: get maker unrealized pnl and assign back to positionDataAllByMarket
+            let totalMakerUnrealizedPnl = Big(0)
+            Object.values(makerPosMap).forEach((posData, index) => {
+                const { deltaAvailableQuote, exchangedPositionSize, exchangedPositionNotional } =
+                    dataChunkMakerPosSwap[index]
+                const isLong = posData.makerPosition.side === PositionSide.LONG
+                const deltaAvailableQuoteParsed = bigNumber2BigAndScaleDown(deltaAvailableQuote)
+                const exchangedPositionNotionalParsed = bigNumber2BigAndScaleDown(exchangedPositionNotional)
+                const exchangedPositionSizeParsed = bigNumber2BigAndScaleDown(exchangedPositionSize)
+                const unrealizedPnl = getUnrealizedPnl({
+                    isLong,
+                    deltaAvailableQuote: deltaAvailableQuoteParsed,
+                    openNotionalAbs: posData.makerPosition.openNotionalAbs,
+                })
+                const exitPrice = getSwapRate({
+                    amountBase: exchangedPositionSizeParsed,
+                    amountQuote: exchangedPositionNotionalParsed,
+                })
+                const exitPriceImpact = getPriceImpact({
+                    price: exitPrice,
+                    markPrice: posData.markPrice,
+                })
+                const feeRatio =
+                    this._perp.clearingHouseConfig.marketExchangeFeeRatios[posData.makerPosition.market.baseAddress]
+                const exitTxFee = getTransactionFee({
+                    isBaseToQuote: posData.makerPosition.isBaseToQuote,
+                    exchangedPositionNotional: exchangedPositionNotionalParsed,
+                    deltaAvailableQuote: deltaAvailableQuoteParsed,
+                    feeRatio,
+                })
+                posData.makerPosUnrealizedPnl = unrealizedPnl
+                posData.makerPosExitPrice = exitPrice
+                posData.makerPosExitPriceImpact = exitPriceImpact
+                posData.makerPosExitTxFee = exitTxFee
+                totalMakerUnrealizedPnl = totalMakerUnrealizedPnl.add(unrealizedPnl)
+            })
+
+            const positionDataAllCrossMarket: PositionDataAllCrossMarket = {
+                totalTakerPositionValue,
+                totalMakerPositionValue,
+                totalTakerUnrealizedPnl,
+                totalMakerUnrealizedPnl,
+                totalUnrealizedPnl: totalTakerUnrealizedPnl.add(totalMakerUnrealizedPnl),
+                accountPosValueAbs,
+                accountMarginRatio,
+                accountLeverage,
             }
-            callsBatch2.push(call)
-        })
-        // NOTE: get total abs pos value
-        callsBatch2.push({
-            contract: contracts.accountBalance,
-            contractName: ContractName.ACCOUNT_BALANCE,
-            funcName: "getTotalAbsPositionValue",
-            funcParams: [account],
-        })
-        // NOTE: get vault account value
-        callsBatch2.push({
-            contract: contracts.vault,
-            contractName: ContractName.VAULT,
-            funcName: "getAccountValue",
-            funcParams: [account],
-        })
 
-        // NOTE: execute second batch multicall
-        const dataBatch2 = await multicall2.execute(callsBatch2)
-
-        // NOTE: analysis batch 2 result
-        const dataChunkTakerPosSwap = dataBatch2.splice(0, Object.keys(takerPosMap).length)
-        const dataChunkMakerPosSwap = dataBatch2.splice(0, Object.keys(makerPosMap).length)
-        const accountPosValueAbs = bigNumber2BigAndScaleDown(dataBatch2.shift())
-        const accountValue = bigNumber2BigAndScaleDown(dataBatch2.shift(), SETTLEMENT_TOKEN_DECIMAL)
-        const accountMarginRatio = !accountPosValueAbs.eq(0) ? accountValue.div(accountPosValueAbs) : undefined
-        const accountLeverage = accountMarginRatio ? Big(1).div(accountMarginRatio) : undefined
-
-        const totalTakerPositionValue = Object.values(takerPosMap).reduce((acc, cur) => {
-            return acc.add(cur.takerPositionValue)
-        }, Big(0))
-        const totalMakerPositionValue = Object.values(makerPosMap).reduce((acc, cur) => {
-            return acc.add(cur.makerPositionValue)
-        }, Big(0))
-
-        // NOTE: get taker unrealized pnl and assign back to positionDataAllByMarket
-        let totalTakerUnrealizedPnl = Big(0)
-        Object.values(takerPosMap).forEach((posData, index) => {
-            const { deltaAvailableQuote, exchangedPositionSize, exchangedPositionNotional } =
-                dataChunkTakerPosSwap[index]
-            const isLong = posData.takerPosition.side === PositionSide.LONG
-            const deltaAvailableQuoteParsed = bigNumber2BigAndScaleDown(deltaAvailableQuote)
-            const exchangedPositionNotionalParsed = bigNumber2BigAndScaleDown(exchangedPositionNotional)
-            const exchangedPositionSizeParsed = bigNumber2BigAndScaleDown(exchangedPositionSize)
-            const unrealizedPnl = getUnrealizedPnl({
-                isLong,
-                deltaAvailableQuote: deltaAvailableQuoteParsed,
-                openNotionalAbs: posData.takerPosition.openNotionalAbs,
-            })
-            const exitPrice = getSwapRate({
-                amountBase: exchangedPositionSizeParsed,
-                amountQuote: exchangedPositionNotionalParsed,
-            })
-            const exitPriceImpact = getPriceImpact({
-                price: exitPrice,
-                markPrice: posData.markPrice,
-            })
-            const feeRatio =
-                this._perp.clearingHouseConfig.marketExchangeFeeRatios[posData.takerPosition.market.baseAddress]
-            const exitTxFee = getTransactionFee({
-                isBaseToQuote: posData.takerPosition.isBaseToQuote,
-                exchangedPositionNotional: exchangedPositionNotionalParsed,
-                deltaAvailableQuote: deltaAvailableQuoteParsed,
-                feeRatio,
-            })
-            posData.takerPosUnrealizedPnl = unrealizedPnl
-            posData.takerPosExitPrice = exitPrice
-            posData.takerPosExitPriceImpact = exitPriceImpact
-            posData.takerPosExitTxFee = exitTxFee
-            totalTakerUnrealizedPnl = totalTakerUnrealizedPnl.add(unrealizedPnl)
-        })
-
-        // NOTE: get maker unrealized pnl and assign back to positionDataAllByMarket
-        let totalMakerUnrealizedPnl = Big(0)
-        Object.values(makerPosMap).forEach((posData, index) => {
-            const { deltaAvailableQuote, exchangedPositionSize, exchangedPositionNotional } =
-                dataChunkMakerPosSwap[index]
-            const isLong = posData.makerPosition.side === PositionSide.LONG
-            const deltaAvailableQuoteParsed = bigNumber2BigAndScaleDown(deltaAvailableQuote)
-            const exchangedPositionNotionalParsed = bigNumber2BigAndScaleDown(exchangedPositionNotional)
-            const exchangedPositionSizeParsed = bigNumber2BigAndScaleDown(exchangedPositionSize)
-            const unrealizedPnl = getUnrealizedPnl({
-                isLong,
-                deltaAvailableQuote: deltaAvailableQuoteParsed,
-                openNotionalAbs: posData.makerPosition.openNotionalAbs,
-            })
-            const exitPrice = getSwapRate({
-                amountBase: exchangedPositionSizeParsed,
-                amountQuote: exchangedPositionNotionalParsed,
-            })
-            const exitPriceImpact = getPriceImpact({
-                price: exitPrice,
-                markPrice: posData.markPrice,
-            })
-            const feeRatio =
-                this._perp.clearingHouseConfig.marketExchangeFeeRatios[posData.makerPosition.market.baseAddress]
-            const exitTxFee = getTransactionFee({
-                isBaseToQuote: posData.makerPosition.isBaseToQuote,
-                exchangedPositionNotional: exchangedPositionNotionalParsed,
-                deltaAvailableQuote: deltaAvailableQuoteParsed,
-                feeRatio,
-            })
-            posData.makerPosUnrealizedPnl = unrealizedPnl
-            posData.makerPosExitPrice = exitPrice
-            posData.makerPosExitPriceImpact = exitPriceImpact
-            posData.makerPosExitTxFee = exitTxFee
-            totalMakerUnrealizedPnl = totalMakerUnrealizedPnl.add(unrealizedPnl)
-        })
-
-        const positionDataAllCrossMarket: PositionDataAllCrossMarket = {
-            totalTakerPositionValue,
-            totalMakerPositionValue,
-            totalTakerUnrealizedPnl,
-            totalMakerUnrealizedPnl,
-            totalUnrealizedPnl: totalTakerUnrealizedPnl.add(totalMakerUnrealizedPnl),
-            accountPosValueAbs,
-            accountMarginRatio,
-            accountLeverage,
+            // NOTE: emit position data all
+            this.emit("updated", { positionDataAllByMarket, positionDataAllCrossMarket })
+        } catch (error) {
+            this.emit("updateError", { error })
         }
-
-        // NOTE: emit position data all
-        this.emit("updated", { positionDataAllByMarket, positionDataAllCrossMarket })
     }
 }
 
