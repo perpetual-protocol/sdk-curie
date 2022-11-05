@@ -10,7 +10,7 @@ import { PositionDraft, PositionDraftConstructorData } from "../position/Positio
 import { big2BigNumberAndScaleUp, invariant, poll, toSqrtX96 } from "../../utils"
 import { BigNumber, constants, utils } from "ethers"
 
-import { BIG_ONE } from "../../constants"
+import { BIG_ONE, BIG_ZERO } from "../../constants"
 import Big from "big.js"
 import { ClearingHouse as ContractClearingHouse } from "../../contracts/type"
 import { ContractName } from "../../contracts"
@@ -137,7 +137,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         })
     }
 
-    async addLiquidity(liquidityDraft: LiquidityDraft, slippage: Big) {
+    async addLiquidity(liquidityDraft: LiquidityDraft, options: { slippage?: Big }) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "addLiquidity" }))
 
         const baseAmount = await liquidityDraft.getBaseAmount()
@@ -145,8 +145,8 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
 
         const base = big2BigNumberAndScaleUp(baseAmount)
         const quote = big2BigNumberAndScaleUp(quoteAmount)
-        const minBase = big2BigNumberAndScaleUp(baseAmount.mul(BIG_ONE.sub(slippage)))
-        const minQuote = big2BigNumberAndScaleUp(quoteAmount.mul(BIG_ONE.sub(slippage)))
+        const minBase = big2BigNumberAndScaleUp(baseAmount.mul(BIG_ONE.sub(options.slippage || BIG_ZERO)))
+        const minQuote = big2BigNumberAndScaleUp(quoteAmount.mul(BIG_ONE.sub(options.slippage || BIG_ZERO)))
 
         return getTransaction<ContractClearingHouse, "addLiquidity">({
             account: this._perp.wallet.account,
@@ -169,15 +169,15 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
         })
     }
 
-    async removeLiquidity(liquidity: Liquidity, ratio: Big, slippage: Big) {
+    async removeLiquidity(liquidity: Liquidity, ratio: Big, options: { slippage?: Big }) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "removeLiquidity" }))
 
         const { amountBase, amountQuote } = await liquidity.getLiquidityAmounts()
 
         // TODO: so far we calculate minBase/minQuote by slippage directly
         // instead of querying contract call like position do
-        const minBase = big2BigNumberAndScaleUp(amountBase.mul(ratio).mul(BIG_ONE.sub(slippage)))
-        const minQuote = big2BigNumberAndScaleUp(amountQuote.mul(ratio).mul(BIG_ONE.sub(slippage)))
+        const minBase = big2BigNumberAndScaleUp(amountBase.mul(ratio).mul(BIG_ONE.sub(options.slippage || BIG_ZERO)))
+        const minQuote = big2BigNumberAndScaleUp(amountQuote.mul(ratio).mul(BIG_ONE.sub(options.slippage || BIG_ZERO)))
 
         return getTransaction<ContractClearingHouse, "removeLiquidity">({
             account: this._perp.wallet.account,

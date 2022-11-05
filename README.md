@@ -120,10 +120,11 @@ await perp.connect({ signer })
 
 ```ts
 const tickerSymbol = "ETHUSD"
-const slippage = new Big(0.02) // remember to transform to Big type
+const slippage = new Big(0.02) // optional param, remember to transform to Big type
 const amountInput = new Big(100) // remember to transform to Big type
 const side = PositionSide.LONG
 const isAmountInputBase = false // we are not using base token to open a long position here.
+const limitPrice = new Big(1234.5) // optional param, remember to transform to Big type
 
 const newPositionDraft = perp.clearingHouse.createPositionDraft({
     tickerSymbol,
@@ -131,7 +132,7 @@ const newPositionDraft = perp.clearingHouse.createPositionDraft({
     amountInput,
     isAmountInputBase,
 })
-perp.clearingHouse.openPosition(positionDraft, slippage)
+perp.clearingHouse.openPosition(positionDraft, { slippage, limitPrice })
 ```
 
 ## Close a position
@@ -139,7 +140,7 @@ perp.clearingHouse.openPosition(positionDraft, slippage)
 ```ts
 const tickerSymbol = "ETHUSD"
 const position = await perp.positions.getTakerPositionByTickerSymbol(tickerSymbol)
-perp.clearingHouse.closePosition(position, slippage)
+perp.clearingHouse.closePosition(position, { slippage, limitPrice })
 ```
 
 ## Add liquidity
@@ -180,7 +181,7 @@ const liquidityDraft = perp.clearingHouse.createLiquidityDraft({
     lowerTick,
 })
 
-perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
+perp.clearingHouse.addLiquidity(liquidityDraft, { slippage })
 ```
 
 ## Remove liquidity
@@ -192,7 +193,7 @@ perp.clearingHouse.addLiquidity(liquidityDraft, slippage)
 const ratio = new Big(1) // remember to transform to Big type
 const slippage = new Big(0.02) // remember to transform to Big type
 const liquidity = perp.liquidities.getTotalLiquidities().filter(filterFn)
-perp.clearingHouse.removeLiquidity(liquidity, ratio, slippage)
+perp.clearingHouse.removeLiquidity(liquidity, ratio, { slippage })
 ```
 
 ---

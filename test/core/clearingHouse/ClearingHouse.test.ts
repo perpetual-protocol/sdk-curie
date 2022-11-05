@@ -5,6 +5,7 @@ import {
     Wallet,
     big2BigNumberAndScaleUp,
     getTransaction,
+    toSqrtX96,
 } from "../../../src"
 
 import Big from "big.js"
@@ -48,8 +49,9 @@ describe("ClearingHouse", () => {
                 amountInput,
                 isAmountInputBase,
             })
+            const limitPrice = new Big(1234.5)
 
-            await perp.clearingHouse?.openPosition(newPositionDraft!, { slippage })
+            await perp.clearingHouse?.openPosition(newPositionDraft!, { slippage, limitPrice })
             expect(getTransaction).toBeCalledTimes(1)
             const oppositeAmountBound = await newPositionDraft?.getOppositeAmountBound(slippage)
             const expected = {
@@ -64,7 +66,7 @@ describe("ClearingHouse", () => {
                         isExactInput: true,
                         amount: big2BigNumberAndScaleUp(amountInput),
                         oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound!),
-                        sqrtPriceLimitX96: BigNumber.from(0),
+                        sqrtPriceLimitX96: BigNumber.from(toSqrtX96(limitPrice).toString()),
                         deadline: constants.MaxUint256,
                         referralCode: "0x0000000000000000000000000000000000000000000000000000000000000000",
                     },
