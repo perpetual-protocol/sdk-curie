@@ -4,7 +4,6 @@ import resolve from "@rollup/plugin-node-resolve"
 import pkg from "./package.json"
 import replace from "@rollup/plugin-replace"
 import { visualizer } from "rollup-plugin-visualizer"
-// import esbuild from "rollup-plugin-esbuild"
 import typescript from "rollup-plugin-typescript2"
 import { terser } from "rollup-plugin-terser"
 
@@ -48,15 +47,16 @@ export default {
         replace({
             preventAssignment: true,
             values: {
+                "process.env.LOGGER_ON": JSON.stringify(process.env.LOGGER_ON),
                 "process.env.TRACK": JSON.stringify(process.env.TRACK),
-                "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN": JSON.stringify(
-                    process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_KOVAN,
+                "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_GOERLI": JSON.stringify(
+                    process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM_GOERLI,
                 ),
                 "process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM": JSON.stringify(
                     process.env.METADATA_URL_CORE_OVERRIDE_OPTIMISM,
                 ),
-                "process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN": JSON.stringify(
-                    process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_KOVAN,
+                "process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_GOERLI": JSON.stringify(
+                    process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM_GOERLI,
                 ),
                 "process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM": JSON.stringify(
                     process.env.METADATA_URL_PERIPHERY_OVERRIDE_OPTIMISM,
@@ -68,9 +68,6 @@ export default {
         json(),
         typescript(),
         terser(),
-        // esbuild({
-        //     minify: true,
-        // }),
         visualizer(),
     ],
 }

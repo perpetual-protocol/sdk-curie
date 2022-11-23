@@ -1,6 +1,6 @@
 import Big from "big.js"
 
-import { ETH_DECIMAL_DIGITS } from "../../constants"
+import { COLLATERAL_TOKEN_DECIMAL, ETH_DECIMAL_DIGITS, SETTLEMENT_TOKEN_DECIMAL } from "../../constants"
 import { ContractName } from "../../contracts"
 import { Vault as ContractVault } from "../../contracts/type"
 import { UnauthorizedError } from "../../errors"
@@ -14,8 +14,8 @@ import {
     MemoizedFetcher,
 } from "../../internal"
 import { getTransaction } from "../../transactionSender"
-import { big2BigNumberAndScaleUp, invariant, poll } from "../../utils"
-import { ContractReader } from "../contractReader"
+import { big2BigNumberAndScaleUp, bigNumber2BigAndScaleDown, invariant, logger, poll } from "../../utils"
+import { ContractCall, ContractReader, MulticallReader } from "../contractReader"
 import { NonSettlementCollateralToken } from "../wallet/NonSettlementCollateralToken"
 import { SettlementToken } from "../wallet/SettlementToken"
 
@@ -26,6 +26,7 @@ export type VaultEventName =
     | "balanceListUpdated"
     | "freeCollateralUpdated"
     | "freeCollateralListUpdated"
+    | "updatedVaultDataAll"
     | "updateError"
 
 type CacheKey = "accountValue" | "balanceList" | "freeCollateral" | "freeCollateralList"
@@ -159,11 +160,23 @@ class Vault extends Channel<VaultEventName> {
             initEventEmitter: () => fetchAndEmitFreeCollateralListUpdated(true, true),
         })
 
+        // NOTE: getVaultDataAll
+        const fetchAndEmitUpdatedVaultDataAll = this.getVaultDataAll.bind(this)
+        const updateDataEventSourceVaultDataAll = new ChannelEventSource({
+            eventSourceStarter: () => {
+                return poll(fetchAndEmitUpdatedVaultDataAll, this._perp.moduleConfigs?.vault?.period || DEFAULT_PERIOD)
+                    .cancel
+            },
+            initEventEmitter: () => fetchAndEmitUpdatedVaultDataAll(),
+        })
+
         return {
             accountValueUpdated,
             balanceListUpdated,
             freeCollateralUpdated,
             freeCollateralListUpdated,
+            // NOTE: getVaultDataAll
+            updatedVaultDataAll: updateDataEventSourceVaultDataAll,
         }
     }
 
@@ -267,6 +280,123 @@ class Vault extends Channel<VaultEventName> {
             (a, b) => (a && b ? hasNumberArrChange(a, b) : true),
         )
     }
+
+    protected async getVaultDataAll() {
+        try {
+            invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getVaultDataAll" }))
+            logger("getVaultDataAll")
+
+            const account = this._perp.wallet.account
+            const contracts = this._perp.contracts
+            const collateralTokenList = this._perp.wallet.collateralTokenList
+            const multicall2 = new MulticallReader({ contract: contracts.multicall2 })
+
+            // NOTE: key = collateral address, value = call[]
+            const callsMap: Record<string, ContractCall[]> = {}
+            collateralTokenList?.forEach(collateralToken => {
+                const isSettlementToken = collateralToken instanceof SettlementToken
+                const collateralTokenContract = collateralToken.contract
+                const collateralTokenAddress = collateralToken.address
+                const balanceCall = isSettlementToken
+                    ? {
+                          contract: contracts.vault,
+                          contractName: ContractName.VAULT,
+                          funcName: "getSettlementTokenValue",
+                          funcParams: [account],
+                      }
+                    : {
+                          contract: contracts.vault,
+                          contractName: ContractName.VAULT,
+                          funcName: "getBalanceByToken",
+                          funcParams: [account, collateralTokenAddress],
+                      }
+                const decimalsCall = isSettlementToken
+                    ? {
+                          contract: collateralTokenContract,
+                          contractName: ContractName.SETTLEMENT_TOKEN,
+                          funcName: "decimals",
+                          funcParams: [],
+                      }
+                    : {
+                          contract: collateralTokenContract,
+                          contractName: ContractName.COLLATERAL_TOKENS,
+                          funcName: "decimals",
+                          funcParams: [],
+                      }
+                const calls = [
+                    // NOTE: get free collateral by token
+                    {
+                        contract: contracts.vault,
+                        contractName: ContractName.VAULT,
+                        funcName: "getFreeCollateralByToken",
+                        funcParams: [account, collateralTokenAddress],
+                    },
+                    // NOTE: get decimals
+                    decimalsCall,
+                    // NOTE: get balance
+                    balanceCall,
+                ]
+                callsMap[`${collateralToken.address}`] = calls
+            })
+
+            const independentCalls = [
+                // NOTE: get free collateral (total)
+                {
+                    contract: contracts.vault,
+                    contractName: ContractName.VAULT,
+                    funcName: "getFreeCollateral",
+                    funcParams: [account],
+                },
+                // NOTE: get account value
+                {
+                    contract: contracts.vault,
+                    contractName: ContractName.VAULT,
+                    funcName: "getAccountValue",
+                    funcParams: [account],
+                },
+            ]
+
+            const data = await multicall2.execute(Object.values(callsMap).flat().concat(independentCalls), {
+                failFirstByContract: false,
+                failFirstByClient: false,
+            })
+
+            const vaultDataAllByCollateral: VaultDataAllByCollateral = {}
+            Object.entries(callsMap).forEach(([collateralTokenAddress, calls]) => {
+                const dataChunk = data.splice(0, calls.length)
+                const freeCollateral = dataChunk[0]
+                const decimals = dataChunk[1]
+                const balance = dataChunk[2]
+                vaultDataAllByCollateral[`${collateralTokenAddress}`] = {
+                    freeCollateral: bigNumber2BigAndScaleDown(freeCollateral, decimals),
+                    balance: bigNumber2BigAndScaleDown(balance, decimals),
+                }
+            })
+
+            const accountFreeCollateral = bigNumber2BigAndScaleDown(data[0], COLLATERAL_TOKEN_DECIMAL)
+            const accountBalance = bigNumber2BigAndScaleDown(data[1], SETTLEMENT_TOKEN_DECIMAL)
+            const vaultDataAllCrossCollateral: VaultDataAllCrossCollateral = {
+                accountBalance,
+                accountFreeCollateral,
+            }
+
+            this.emit("updatedVaultDataAll", { vaultDataAllByCollateral, vaultDataAllCrossCollateral })
+        } catch (error) {
+            this.emit("updateError", { error })
+        }
+    }
 }
 
 export { Vault }
+
+export type VaultDataAllByCollateral = {
+    [key: string]: { freeCollateral: Big; balance: Big }
+}
+export type VaultDataAllCrossCollateral = {
+    accountBalance: Big
+    accountFreeCollateral: Big
+}
+export type VaultDataAll = {
+    vaultDataAllByCollateral: VaultDataAllByCollateral
+    vaultDataAllCrossCollateral: VaultDataAllCrossCollateral
+}

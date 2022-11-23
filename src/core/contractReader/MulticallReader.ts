@@ -2,7 +2,13 @@ import { BaseContract, utils } from "ethers"
 
 import { ContractName } from "../../contracts"
 import { Multicall2 } from "../../contracts/type"
-import { ContractReadError, ContractReadErrorParams } from "../../errors"
+import {
+    ContractReadError,
+    ContractReadErrorParams,
+    MulticallDecodeError,
+    MulticallEncodeError,
+    MulticallReadError,
+} from "../../errors"
 
 interface MulticallReaderConfig {
     contract: Multicall2
@@ -38,20 +44,48 @@ export class MulticallReader {
             returnByContractAndFuncName = false,
         } = options || {}
         const callRequests = calls.map(call => {
-            const callData = call.contract.interface.encodeFunctionData(call.funcName, call.funcParams)
-            return {
-                target: call.contract.address,
-                callData,
+            try {
+                const callData = call.contract.interface.encodeFunctionData(call.funcName, call.funcParams)
+                return {
+                    target: call.contract.address,
+                    callData,
+                }
+            } catch (error) {
+                throw new MulticallEncodeError<Multicall2>({
+                    contractName: ContractName.MULTICALL2,
+                    contractFunctionName: "tryAggregate",
+                    args: { callFuncNam: call.funcName, callFuncParams: call.funcParams },
+                    rawError: error as Error,
+                })
             }
         })
-        const response = await this.contract.callStatic.tryAggregate(failFirstByContract, callRequests)
+
+        let response
+        try {
+            response = await this.contract.callStatic.tryAggregate(failFirstByContract, callRequests)
+        } catch (error) {
+            throw new MulticallReadError<Multicall2>({
+                contractName: ContractName.MULTICALL2,
+                contractFunctionName: "tryAggregate",
+                rawError: error as Error,
+            })
+        }
 
         const callResult = response.map(({ success, returnData }, index) => {
             const call = calls[index]
 
             if (failFirstByClient || success) {
-                const result = call.contract.interface.decodeFunctionResult(call.funcName, returnData)
-                return result.length <= 1 ? result[0] : result
+                try {
+                    const result = call.contract.interface.decodeFunctionResult(call.funcName, returnData)
+                    return result.length <= 1 ? result[0] : result
+                } catch (error) {
+                    throw new MulticallDecodeError<Multicall2>({
+                        contractName: ContractName.MULTICALL2,
+                        contractFunctionName: "tryAggregate",
+                        args: { callFuncNam: call.funcName, returnData },
+                        rawError: error as Error,
+                    })
+                }
             } else {
                 let rawError = new Error()
 

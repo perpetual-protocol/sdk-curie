@@ -1,3 +1,4 @@
+import { backOff } from "exponential-backoff"
 import { ArgumentError, RpcMaxRetryError, RpcTimeoutError } from "../errors"
 import { providers, errors } from "ethers"
 
@@ -15,6 +16,17 @@ export interface ChainStatus {
 interface ProviderConnection {
     provider: providers.JsonRpcProvider
     nextRetryTimestamp: number // NOTE: 0 means it's alive.
+}
+
+function isRetryableError(error: any) {
+    return (
+        error.code === errors.SERVER_ERROR ||
+        error.code === errors.TIMEOUT ||
+        error.message?.includes("header not found") ||
+        (error.message?.includes("429") && error.message?.includes("status code")) ||
+        error.data?.message?.includes("your node is running with state pruning") ||
+        error instanceof RpcTimeoutError
+    )
 }
 
 export class RetryProvider extends providers.BaseProvider {
@@ -44,7 +56,7 @@ export class RetryProvider extends providers.BaseProvider {
 
     get providerConnectionList(): ProviderConnection[] {
         return this._userProviderConnection
-            ? [this._userProviderConnection, ...this._providerConnectionList]
+            ? [...this._providerConnectionList, this._userProviderConnection]
             : this._providerConnectionList
     }
 
@@ -169,21 +181,16 @@ export class RetryProvider extends providers.BaseProvider {
         // eslint-disable-next-line no-constant-condition
         while (true) {
             if (attempts >= this.retryLoopLimit * this.providerConnectionList.length) {
-                throw new RpcMaxRetryError({ rawErrors: serverErrors })
+                return this._retryWithBackoff(func, serverErrors)
             }
             attempts++
-
             const providerConnection = this._getCandidateProviderConnection(this.providerConnectionList)
             try {
                 const result = await Promise.race([func(providerConnection.provider), this._providerTimeoutBenchmark()])
                 this._updateProviderStatus(providerConnection, true)
                 return result
             } catch (error: any) {
-                if (
-                    error.code === errors.SERVER_ERROR ||
-                    error.code === errors.TIMEOUT ||
-                    error instanceof RpcTimeoutError
-                ) {
+                if (isRetryableError(error)) {
                     // NOTE: Suppress server error or timeout error to retry with next provider.
                     this._updateProviderStatus(providerConnection, false)
                     serverErrors.push(error)
@@ -192,6 +199,22 @@ export class RetryProvider extends providers.BaseProvider {
                     throw error
                 }
             }
+        }
+    }
+
+    private async _retryWithBackoff(func: (provider: providers.JsonRpcProvider) => Promise<any>, errors: any) {
+        const providerConnection = this._getCandidateProviderConnection(this.providerConnectionList)
+        try {
+            return await backOff(() => func(providerConnection.provider), {
+                numOfAttempts: 6, // retry 5 times
+                startingDelay: 1000, // 1 sec.
+                timeMultiple: 2,
+                retry: (error: any, attemptNumber: number) => {
+                    return isRetryableError(error)
+                },
+            })
+        } catch (e: any) {
+            throw new RpcMaxRetryError({ rawErrors: [...errors, e] })
         }
     }
 
