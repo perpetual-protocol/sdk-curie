@@ -101,7 +101,7 @@ class ClearingHouse extends Channel<ClearingHouseEventName> {
                     isExactInput: positionDraft.isExactInput,
                     amount: big2BigNumberAndScaleUp(positionDraft.amountInput),
                     oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound),
-                    sqrtPriceLimitX96: BigNumber.from(sqrtPriceLimitX96.toString()), // NOTE: this is for partial filled, disable by giving zero.
+                    sqrtPriceLimitX96: big2BigNumberAndScaleUp(sqrtPriceLimitX96, 0), // NOTE: this is for partial filled, disable by giving zero.
                     deadline: constants.MaxUint256, // NOTE: not important yet
                     referralCode: referralCodeAsBytes,
                 },

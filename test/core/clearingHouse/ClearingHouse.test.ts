@@ -66,7 +66,7 @@ describe("ClearingHouse", () => {
                         isExactInput: true,
                         amount: big2BigNumberAndScaleUp(amountInput),
                         oppositeAmountBound: big2BigNumberAndScaleUp(oppositeAmountBound!),
-                        sqrtPriceLimitX96: BigNumber.from(toSqrtX96(limitPrice).toString()),
+                        sqrtPriceLimitX96: big2BigNumberAndScaleUp(toSqrtX96(limitPrice), 0),
                         deadline: constants.MaxUint256,
                         referralCode: "0x0000000000000000000000000000000000000000000000000000000000000000",
                     },
