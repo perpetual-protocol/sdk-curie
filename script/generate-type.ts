@@ -31,7 +31,9 @@ async function main() {
     let allFiles = glob(cwd, [
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/core/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/core/artifacts/oracle-contracts/**/+([a-zA-Z0-9_]).json`,
-        `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/periphery/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
+        // TODO: [only for optimism goerli dev1] use abiRef for optimism goerli and optimism
+        // `${__dirname}/../node_modules/@perp/curie-deployments/${abiRef}/periphery/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
+        `${__dirname}/../node_modules/@perp/curie-deployments/optimism-goerli/periphery/artifacts/contracts/**/+([a-zA-Z0-9_]).json`,
         `${__dirname}/../node_modules/@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json`,
         `${__dirname}/../node_modules/@chainlink/contracts/abi/v0.7/**/+([a-zA-Z0-9_]).json`,
     ])
