@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.16.1-dev1.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.16.0...v1.16.1-dev1.0) (2022-11-30)
+
+
+### Others
+
+* upgrade IF contract, IF support distribute fee ([1893994](https://github.com/perpetual-protocol/sdk-curie/commit/18939942898fcc5b75be4efec863d1a1a759b185))
+
 ## [1.16.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.15.0...v1.16.0) (2022-10-31)
 
 
