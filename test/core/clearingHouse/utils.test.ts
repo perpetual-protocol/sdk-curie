@@ -8,6 +8,8 @@ import {
     getSwapRate,
     getTransactionFee,
     getUnrealizedPnl,
+    getMarginRatio,
+    getLiquidationPrice,
 } from "../../../src/core/clearingHouse"
 
 import Big from "big.js"
@@ -217,6 +219,52 @@ describe("getNextAccountValue", () => {
                 signedDeltaAvailableQuote: Big(-4500),
             }).toString(),
         ).toEqual("1175")
+    })
+})
+
+describe.only("getMarginRatio", () => {
+    test("when open long 1 ETH position without any existing position", () => {
+        const marginRatio = getMarginRatio({
+            accountValue: Big(1000),
+            openNotional: Big(-1000),
+            positionSize: Big(1),
+            totalAbsPositionValue: Big(0),
+            indexTwapPrice: Big(990),
+        }).toString()
+        expect(marginRatio).toEqual("1")
+    })
+
+    test("when open short 1 ETH position without any existing position", () => {
+        const marginRatio = getMarginRatio({
+            accountValue: Big(1000),
+            openNotional: Big(1000),
+            positionSize: Big(-1),
+            totalAbsPositionValue: Big(0),
+            indexTwapPrice: Big(1100),
+        })
+        expect(marginRatio.toFixed(5)).toEqual("0.81818")
+    })
+
+    test("when open long 1 ETH position with existing position abs value 2000", () => {
+        const marginRatio = getMarginRatio({
+            accountValue: Big(1000),
+            openNotional: Big(-1000),
+            positionSize: Big(1),
+            totalAbsPositionValue: Big(2000),
+            indexTwapPrice: Big(990),
+        })
+        expect(marginRatio.toFixed(5)).toEqual("0.33110")
+    })
+
+    test("when open short 1 ETH position with existing position abs value 2000", () => {
+        const marginRatio = getMarginRatio({
+            accountValue: Big(1000),
+            openNotional: Big(1000),
+            positionSize: Big(-1),
+            indexTwapPrice: Big(1100),
+            totalAbsPositionValue: Big(2000),
+        })
+        expect(marginRatio.toFixed(5)).toEqual("0.29032")
     })
 })
 

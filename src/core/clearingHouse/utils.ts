@@ -83,10 +83,27 @@ export function getLiquidationPrice({
     totalAbsPositionValue,
     mmRatio,
 }: GetLiquidationPriceParams) {
-    return mmRatio
-        .mul(totalAbsPositionValue)
-        .minus(accountValue.add(openNotional))
-        .div(positionSize.minus(mmRatio.mul(positionSize.abs())))
+    console.log(
+        "debug: ",
+        "totalAbsPositionValue",
+        totalAbsPositionValue.toString(),
+        "accountValue",
+        accountValue.toString(),
+        "openNotional",
+        openNotional.toString(),
+        "mmRatio",
+        mmRatio.toString(),
+        "positionSize",
+        positionSize.toString(),
+    )
+    const nominator = mmRatio.mul(totalAbsPositionValue).minus(accountValue.add(openNotional))
+
+    const denominator = positionSize.gt(0)
+        ? Big(1).minus(mmRatio).mul(positionSize)
+        : mmRatio.minus(1).mul(positionSize)
+    console.log("debug: ", "nominator", nominator.toString(), "denominator", denominator.toString())
+
+    return nominator.div(denominator)
 }
 
 interface GetBuyingPowerParams {
