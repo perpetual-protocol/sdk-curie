@@ -3,6 +3,8 @@ import { ContractReader, GetPositionDraftRelatedDataReturn, GetQuoterSwapReturn 
 import { PerpetualProtocol, PerpetualProtocolConnected } from "../PerpetualProtocol"
 import {
     getBuyingPower,
+    getLiquidationPrice,
+    getMarginRatio,
     getNextAccountValue,
     getNextFreeCollateral,
     getNextOpenOrderMarginReq,
@@ -235,6 +237,53 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
             feeRatio: this._feeRatio,
         })
         return transactionFee
+    }
+
+    public async getEstimatedMarginRatio({ cache = true } = {}) {
+        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getBuyingPower" }))
+
+        const [
+            { deltaAvailableQuote, exchangedPositionSize },
+            accountValue,
+            totalAbsPositionValue,
+            { indexTwapPrice },
+        ] = await Promise.all([
+            this._fetch("swap", { cache }),
+            this._perp.clearingHouse.getAccountValue({ cache }),
+            this._perp.positions.getTotalTakerPositionValueFromAllMarkets({ cache }),
+            this.market.getPrices({ cache }),
+        ])
+        const openNotional = this.isBaseToQuote ? deltaAvailableQuote : deltaAvailableQuote.mul(-1)
+
+        return getMarginRatio({
+            accountValue,
+            positionSize: exchangedPositionSize,
+            openNotional,
+            totalAbsPositionValue,
+            indexTwapPrice,
+        })
+    }
+
+    public async getEstimatedLiquidationPrice({ cache = true } = {}) {
+        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getBuyingPower" }))
+
+        const [{ deltaAvailableQuote, exchangedPositionSize }, accountValue, totalAbsPositionValue] = await Promise.all(
+            [
+                this._fetch("swap", { cache }),
+                this._perp.clearingHouse.getAccountValue({ cache }),
+                this._perp.positions.getTotalTakerPositionValueFromAllMarkets({ cache }),
+            ],
+        )
+        const mmRatio = this._perp.clearingHouseConfig.mmRatio
+        const openNotional = this.isBaseToQuote ? deltaAvailableQuote : deltaAvailableQuote.mul(-1)
+
+        return getLiquidationPrice({
+            accountValue,
+            positionSize: exchangedPositionSize,
+            openNotional,
+            totalAbsPositionValue,
+            mmRatio,
+        })
     }
 
     public async getBuyingPower({ cache = true } = {}) {

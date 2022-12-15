@@ -49,6 +49,46 @@ export function getPriceImpact({ price, markPrice }: GetPriceImpactParams) {
     return price.div(markPrice).sub(1)
 }
 
+interface GetMarginRatioParams {
+    accountValue: Big
+    openNotional: Big // signed number, openNotional < 0 when open long position, vice versa
+    positionSize: Big // signed number, positionSize < 0 when open short position, vice versa
+    indexTwapPrice: Big
+    totalAbsPositionValue: Big
+}
+export function getMarginRatio({
+    accountValue,
+    positionSize,
+    openNotional,
+    totalAbsPositionValue,
+    indexTwapPrice,
+}: GetMarginRatioParams) {
+    const nextAccountValue = accountValue.add(openNotional).add(positionSize.mul(indexTwapPrice))
+    const nextTotalAbsPositionValue = totalAbsPositionValue.add(positionSize.abs().mul(indexTwapPrice))
+    return nextAccountValue.div(nextTotalAbsPositionValue)
+}
+
+interface GetLiquidationPriceParams {
+    accountValue: Big
+    openNotional: Big // signed number, openNotional < 0 when open long position, vice versa
+    positionSize: Big // signed number, positionSize < 0 when open short position, vice versa
+    mmRatio: Big
+    totalAbsPositionValue: Big
+}
+
+export function getLiquidationPrice({
+    accountValue,
+    positionSize,
+    openNotional,
+    totalAbsPositionValue,
+    mmRatio,
+}: GetLiquidationPriceParams) {
+    return mmRatio
+        .mul(totalAbsPositionValue)
+        .minus(accountValue.add(openNotional))
+        .div(positionSize.minus(mmRatio.mul(positionSize.abs())))
+}
+
 interface GetBuyingPowerParams {
     imRatio: Big
     freeCollateral: Big
