@@ -222,7 +222,7 @@ describe("getNextAccountValue", () => {
     })
 })
 
-describe.only("getMarginRatio", () => {
+describe("getMarginRatio", () => {
     test("when open long 1 ETH position without any existing position", () => {
         const marginRatio = getMarginRatio({
             accountValue: Big(1000),
@@ -267,6 +267,61 @@ describe.only("getMarginRatio", () => {
         expect(marginRatio.toFixed(5)).toEqual("0.29032")
     })
 })
+
+describe.only('getLiquidationPrice', () => {
+  const mmRatio = Big(0.0625)
+  describe("has no any existing positions", () => {
+    test("when open long 1 ETH position", () => {
+      const liquidationPrice = getLiquidationPrice({
+        accountValue: Big(1000),
+        openNotional: Big(-900),
+        positionSize: Big(1),
+        totalAbsPositionValue: Big(0),
+        mmRatio,
+      })
+      expect(liquidationPrice.toFixed(5)).toEqual("0.00000")
+    })
+
+    test("when open long 1 ETH position", () => {
+      // entry price is 900
+      const liquidationPrice = getLiquidationPrice({
+        accountValue: Big(1000),
+        openNotional: Big(-9000),
+        positionSize: Big(10),
+        totalAbsPositionValue: Big(0),
+        mmRatio,
+      })
+      expect(liquidationPrice.toFixed(5)).toEqual("853.33333")
+    })
+
+    test("when open short 1 ETH position", () => {
+      const liquidationPrice = getLiquidationPrice({
+        accountValue: Big(1000),
+        openNotional: Big(1000),
+        positionSize: Big(-1),
+        totalAbsPositionValue: Big(0),
+        mmRatio,
+      })
+      expect(liquidationPrice.toFixed(5)).toEqual("1882.35294")
+    })
+
+    test("when open short 1 ETH position", () => {
+      // entry price is 900
+      const liquidationPrice = getLiquidationPrice({
+        accountValue: Big(1000),
+        openNotional: Big(9000),
+        positionSize: Big(-10),
+        totalAbsPositionValue: Big(0),
+        mmRatio,
+      })
+      expect(liquidationPrice.toFixed(5)).toEqual("941.17647")
+    })
+  })
+
+  describe("has the existing position", () => {
+    
+  })
+});
 
 describe("getBuyingPower", () => {
     describe("has no exisiting position", () => {

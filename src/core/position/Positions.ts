@@ -166,9 +166,8 @@ export class Positions extends Channel<PositionsEventName> {
         const takerPositions = await this.getTakerPositions({ cache })
         let total = BIG_ZERO
         for (const position of takerPositions) {
-            const sizeOriginal = position.sizeOriginal
             const { indexPrice } = await position.market.getPrices({ cache })
-            total = total.add(sizeOriginal.mul(indexPrice))
+            total = total.add(position.sizeAbs.mul(indexPrice))
         }
         return total
     }
@@ -177,9 +176,8 @@ export class Positions extends Channel<PositionsEventName> {
         const makerPositions = await this.getMakerPositions({ cache })
         let total = BIG_ZERO
         for (const position of makerPositions) {
-            const sizeOriginal = position.sizeOriginal
             const { indexPrice } = await position.market.getPrices({ cache })
-            total = total.add(sizeOriginal.mul(indexPrice))
+            total = total.add(position.sizeAbs.mul(indexPrice))
         }
         return total
     }

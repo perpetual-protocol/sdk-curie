@@ -76,6 +76,11 @@ interface GetLiquidationPriceParams {
     totalAbsPositionValue: Big
 }
 
+// (accountValue - (indexPrice - liqPrice) * collateral * collateralRatio)
+
+// accountValue - positionSizeOfTokenX * (indexPrice - liqPrice) =
+//      totalPositionValue * mmRatio - positionSizeOfTokenX * (indexPrice - liqPrice) * mmRatio
+//      = mmRatio * (totalPositionValue - positionSizeOfTokenX * (indexPrice - liqPrice) )
 export function getLiquidationPrice({
     accountValue,
     positionSize,
@@ -98,12 +103,12 @@ export function getLiquidationPrice({
     )
     const nominator = mmRatio.mul(totalAbsPositionValue).minus(accountValue.add(openNotional))
 
-    const denominator = positionSize.gt(0)
-        ? Big(1).minus(mmRatio).mul(positionSize)
-        : mmRatio.minus(1).mul(positionSize)
+    const denominator = positionSize.gt(0) ? Big(1).minus(mmRatio).mul(positionSize) : mmRatio.add(1).mul(positionSize)
     console.log("debug: ", "nominator", nominator.toString(), "denominator", denominator.toString())
 
-    return nominator.div(denominator)
+    const liquidationPrice = nominator.div(denominator)
+    console.log("debug: ", "liquidationPrice", liquidationPrice.toString())
+    return liquidationPrice.gt(0) ? liquidationPrice : BIG_ZERO
 }
 
 interface GetBuyingPowerParams {

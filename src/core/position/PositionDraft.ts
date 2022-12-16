@@ -239,7 +239,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         return transactionFee
     }
 
-    public async getEstimatedMarginRatio({ cache = true } = {}) {
+    public async getMarginRatio({ cache = true } = {}) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getBuyingPower" }))
 
         const [
@@ -264,14 +264,14 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
         })
     }
 
-    public async getEstimatedLiquidationPrice({ cache = true } = {}) {
+    public async getLiquidationPrice({ cache = true } = {}) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getBuyingPower" }))
 
         const [{ deltaAvailableQuote, exchangedPositionSize }, accountValue, totalAbsPositionValue] = await Promise.all(
             [
                 this._fetch("swap", { cache }),
                 this._perp.clearingHouse.getAccountValue({ cache }),
-                this._perp.positions.getTotalTakerPositionValueFromAllMarkets({ cache }),
+                this._perp.positions.getTotalPositionValueFromAllMarkets({ cache }),
             ],
         )
         const mmRatio = this._perp.clearingHouseConfig.mmRatio
