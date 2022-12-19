@@ -104,7 +104,17 @@ export function getLiquidationPrice({
     const nominator = mmRatio.mul(totalAbsPositionValue).minus(accountValue.add(openNotional))
 
     const denominator = positionSize.gt(0) ? Big(1).minus(mmRatio).mul(positionSize) : mmRatio.add(1).mul(positionSize)
-    console.log("debug: ", "nominator", nominator.toString(), "denominator", denominator.toString())
+    let denomiator2 = Big(1).minus(mmRatio)
+    denomiator2 = denomiator2.mul(positionSize)
+    console.log(
+        "debug: ",
+        "nominator",
+        nominator.toString(),
+        "denominator",
+        denominator.toString(),
+        "denomiator2",
+        denomiator2.toString(),
+    )
 
     const liquidationPrice = nominator.div(denominator)
     console.log("debug: ", "liquidationPrice", liquidationPrice.toString())

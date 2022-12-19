@@ -223,105 +223,160 @@ describe("getNextAccountValue", () => {
 })
 
 describe("getMarginRatio", () => {
-    test("when open long 1 ETH position without any existing position", () => {
-        const marginRatio = getMarginRatio({
-            accountValue: Big(1000),
-            openNotional: Big(-1000),
-            positionSize: Big(1),
-            totalAbsPositionValue: Big(0),
-            indexTwapPrice: Big(990),
-        }).toString()
-        expect(marginRatio).toEqual("1")
+    describe("when has no any existing positions", () => {
+        const accountValue = Big(1000)
+        const totalAbsPositionValue = Big(0)
+        test("open long 1 ETH position", () => {
+            const marginRatio = getMarginRatio({
+                accountValue,
+                openNotional: Big(-1000),
+                positionSize: Big(1),
+                totalAbsPositionValue,
+                indexTwapPrice: Big(990),
+            }).toString()
+            expect(marginRatio).toEqual("1")
+        })
+
+        test("open short 1 ETH position", () => {
+            const marginRatio = getMarginRatio({
+                accountValue,
+                openNotional: Big(1000),
+                positionSize: Big(-1),
+                totalAbsPositionValue,
+                indexTwapPrice: Big(1100),
+            })
+            expect(marginRatio.toFixed(5)).toEqual("0.81818")
+        })
     })
 
-    test("when open short 1 ETH position without any existing position", () => {
-        const marginRatio = getMarginRatio({
-            accountValue: Big(1000),
-            openNotional: Big(1000),
-            positionSize: Big(-1),
-            totalAbsPositionValue: Big(0),
-            indexTwapPrice: Big(1100),
+    describe("when has the existing position, 1 long ETH", () => {
+        const accountValue = Big(1000)
+        const totalAbsPositionValue = Big(1000)
+        test("open long 1 ETH position", () => {
+            const marginRatio = getMarginRatio({
+                accountValue,
+                openNotional: Big(-1000),
+                positionSize: Big(1),
+                totalAbsPositionValue,
+                indexTwapPrice: Big(990),
+            })
+            expect(marginRatio.toFixed(5)).toEqual("0.49749")
         })
-        expect(marginRatio.toFixed(5)).toEqual("0.81818")
-    })
 
-    test("when open long 1 ETH position with existing position abs value 2000", () => {
-        const marginRatio = getMarginRatio({
-            accountValue: Big(1000),
-            openNotional: Big(-1000),
-            positionSize: Big(1),
-            totalAbsPositionValue: Big(2000),
-            indexTwapPrice: Big(990),
+        test("open short 1 ETH position", () => {
+            const marginRatio = getMarginRatio({
+                accountValue,
+                openNotional: Big(1000),
+                positionSize: Big(-1),
+                totalAbsPositionValue,
+                indexTwapPrice: Big(1100),
+            })
+            expect(marginRatio.toFixed(5)).toEqual("0.42857")
         })
-        expect(marginRatio.toFixed(5)).toEqual("0.33110")
-    })
 
-    test("when open short 1 ETH position with existing position abs value 2000", () => {
-        const marginRatio = getMarginRatio({
-            accountValue: Big(1000),
-            openNotional: Big(1000),
-            positionSize: Big(-1),
-            indexTwapPrice: Big(1100),
-            totalAbsPositionValue: Big(2000),
+        test("open long 0.1 BTC position", () => {
+            const marginRatio = getMarginRatio({
+                accountValue,
+                openNotional: Big(-1600),
+                positionSize: Big(0.1),
+                totalAbsPositionValue,
+                indexTwapPrice: Big(15000),
+            })
+            expect(marginRatio.toFixed(5)).toEqual("0.36000")
         })
-        expect(marginRatio.toFixed(5)).toEqual("0.29032")
+
+        test("open short 0.1 BTC position", () => {
+            const marginRatio = getMarginRatio({
+                accountValue,
+                openNotional: Big(1600),
+                positionSize: Big(-0.1),
+                totalAbsPositionValue,
+                indexTwapPrice: Big(17000),
+            })
+            expect(marginRatio.toFixed(5)).toEqual("0.33333")
+        })
     })
 })
 
-describe.only('getLiquidationPrice', () => {
-  const mmRatio = Big(0.0625)
-  describe("has no any existing positions", () => {
-    test("when open long 1 ETH position", () => {
-      const liquidationPrice = getLiquidationPrice({
-        accountValue: Big(1000),
-        openNotional: Big(-900),
-        positionSize: Big(1),
-        totalAbsPositionValue: Big(0),
-        mmRatio,
-      })
-      expect(liquidationPrice.toFixed(5)).toEqual("0.00000")
+describe.only("getLiquidationPrice", () => {
+    const mmRatio = Big(0.0625)
+    describe("when has no any existing positions", () => {
+        test("open long 1 ETH position", () => {
+            const liquidationPrice = getLiquidationPrice({
+                accountValue: Big(1000),
+                openNotional: Big(-900),
+                positionSize: Big(1),
+                totalAbsPositionValue: Big(0),
+                mmRatio,
+            })
+            expect(liquidationPrice.toFixed(5)).toEqual("0.00000")
+        })
+
+        test("open long 10 ETH position", () => {
+            // entry price is 900
+            const liquidationPrice = getLiquidationPrice({
+                accountValue: Big(1000),
+                openNotional: Big(-9000),
+                positionSize: Big(10),
+                totalAbsPositionValue: Big(0),
+                mmRatio,
+            })
+            expect(liquidationPrice.toFixed(5)).toEqual("853.33333")
+        })
+
+        test("open short 1 ETH position", () => {
+            const liquidationPrice = getLiquidationPrice({
+                accountValue: Big(1000),
+                openNotional: Big(1000),
+                positionSize: Big(-1),
+                totalAbsPositionValue: Big(0),
+                mmRatio,
+            })
+            expect(liquidationPrice.toFixed(5)).toEqual("1882.35294")
+        })
+
+        test("open short 10 ETH position", () => {
+            // entry price is 900
+            const liquidationPrice = getLiquidationPrice({
+                accountValue: Big(1000),
+                openNotional: Big(9000),
+                positionSize: Big(-10),
+                totalAbsPositionValue: Big(0),
+                mmRatio,
+            })
+            expect(liquidationPrice.toFixed(5)).toEqual("941.17647")
+        })
     })
 
-    test("when open long 1 ETH position", () => {
-      // entry price is 900
-      const liquidationPrice = getLiquidationPrice({
-        accountValue: Big(1000),
-        openNotional: Big(-9000),
-        positionSize: Big(10),
-        totalAbsPositionValue: Big(0),
-        mmRatio,
-      })
-      expect(liquidationPrice.toFixed(5)).toEqual("853.33333")
-    })
+    describe("when has the existing position, 1 long ETH", () => {
+        const accountValue = Big(1000)
+        const totalAbsPositionValue = Big(1000)
 
-    test("when open short 1 ETH position", () => {
-      const liquidationPrice = getLiquidationPrice({
-        accountValue: Big(1000),
-        openNotional: Big(1000),
-        positionSize: Big(-1),
-        totalAbsPositionValue: Big(0),
-        mmRatio,
-      })
-      expect(liquidationPrice.toFixed(5)).toEqual("1882.35294")
-    })
+        test("open long 0.1 BTC position", () => {
+            // entry price for BTC position, 1 BTC = $16000
+            const liquidationPrice = getLiquidationPrice({
+                accountValue,
+                openNotional: Big(-1600),
+                positionSize: Big(0.1),
+                totalAbsPositionValue,
+                mmRatio,
+            })
+            expect(liquidationPrice.toFixed(5)).toEqual("7066.66667")
+        })
 
-    test("when open short 1 ETH position", () => {
-      // entry price is 900
-      const liquidationPrice = getLiquidationPrice({
-        accountValue: Big(1000),
-        openNotional: Big(9000),
-        positionSize: Big(-10),
-        totalAbsPositionValue: Big(0),
-        mmRatio,
-      })
-      expect(liquidationPrice.toFixed(5)).toEqual("941.17647")
+        test("open short 0.1 BTC position", () => {
+            // entry price for BTC position, 1 BTC = $16000
+            const liquidationPrice = getLiquidationPrice({
+                accountValue,
+                openNotional: Big(1600),
+                positionSize: Big(-0.1),
+                totalAbsPositionValue,
+                mmRatio,
+            })
+            expect(liquidationPrice.toFixed(5)).toEqual("23882.35294")
+        })
     })
-  })
-
-  describe("has the existing position", () => {
-    
-  })
-});
+})
 
 describe("getBuyingPower", () => {
     describe("has no exisiting position", () => {
