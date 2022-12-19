@@ -249,7 +249,9 @@ describe("getMarginRatio", () => {
         })
     })
 
-    describe("when has the existing position, 1 long ETH", () => {
+    // TODO: we need to finalize the formula to calculate marginRatio for
+    // the existing position case
+    describe.skip("when has the existing position, 1 long ETH", () => {
         const accountValue = Big(1000)
         const totalAbsPositionValue = Big(1000)
         test("open long 1 ETH position", () => {
@@ -298,7 +300,7 @@ describe("getMarginRatio", () => {
     })
 })
 
-describe.only("getLiquidationPrice", () => {
+describe("getLiquidationPrice", () => {
     const mmRatio = Big(0.0625)
     describe("when has no any existing positions", () => {
         test("open long 1 ETH position", () => {
@@ -374,6 +376,38 @@ describe.only("getLiquidationPrice", () => {
                 mmRatio,
             })
             expect(liquidationPrice.toFixed(5)).toEqual("23882.35294")
+        })
+    })
+
+    // TODO: we need to finalize the formula to calculate liquidationPrice for
+    // the existing position case
+    describe.skip("when has the existing position, wanna increase position", () => {
+        test("open long 0.5 ETH to increase position", () => {
+            // already have 1 ETH long position
+        })
+
+        test("open short 0.5 ETH to increase position", () => {
+            // already have 1 ETH short position
+        })
+    })
+
+    describe.skip("when has the existing position, wanna reduce position", () => {
+        test("open short 0.5 ETH to reduce position", () => {
+            // already have 1 ETH long position
+        })
+
+        test("open long 0.5 ETH to reduce position", () => {
+            // already have 1 ETH short position
+        })
+    })
+
+    describe.skip("when has the existing position, wanna reverse position", () => {
+        test("open short 1.5 ETH to reverse position", () => {
+            // already have 1 ETH long position
+        })
+
+        test("open long 1.5 ETH to reverse position", () => {
+            // already have 1 ETH short position
         })
     })
 })
