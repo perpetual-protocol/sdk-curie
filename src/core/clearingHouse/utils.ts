@@ -56,6 +56,9 @@ interface GetMarginRatioParams {
     indexTwapPrice: Big
     totalAbsPositionValue: Big
 }
+
+// TODO: we need to finalize the formula to calculate marginRatio for
+// the existing position case
 export function getMarginRatio({
     accountValue,
     positionSize,
@@ -76,11 +79,8 @@ interface GetLiquidationPriceParams {
     totalAbsPositionValue: Big
 }
 
-// (accountValue - (indexPrice - liqPrice) * collateral * collateralRatio)
-
-// accountValue - positionSizeOfTokenX * (indexPrice - liqPrice) =
-//      totalPositionValue * mmRatio - positionSizeOfTokenX * (indexPrice - liqPrice) * mmRatio
-//      = mmRatio * (totalPositionValue - positionSizeOfTokenX * (indexPrice - liqPrice) )
+// TODO: we need to finalize the formula to calculate liquidationPrice for
+// the existing position case
 export function getLiquidationPrice({
     accountValue,
     positionSize,
@@ -88,36 +88,9 @@ export function getLiquidationPrice({
     totalAbsPositionValue,
     mmRatio,
 }: GetLiquidationPriceParams) {
-    console.log(
-        "debug: ",
-        "totalAbsPositionValue",
-        totalAbsPositionValue.toString(),
-        "accountValue",
-        accountValue.toString(),
-        "openNotional",
-        openNotional.toString(),
-        "mmRatio",
-        mmRatio.toString(),
-        "positionSize",
-        positionSize.toString(),
-    )
     const nominator = mmRatio.mul(totalAbsPositionValue).minus(accountValue.add(openNotional))
-
     const denominator = positionSize.gt(0) ? Big(1).minus(mmRatio).mul(positionSize) : mmRatio.add(1).mul(positionSize)
-    let denomiator2 = Big(1).minus(mmRatio)
-    denomiator2 = denomiator2.mul(positionSize)
-    console.log(
-        "debug: ",
-        "nominator",
-        nominator.toString(),
-        "denominator",
-        denominator.toString(),
-        "denomiator2",
-        denomiator2.toString(),
-    )
-
     const liquidationPrice = nominator.div(denominator)
-    console.log("debug: ", "liquidationPrice", liquidationPrice.toString())
     return liquidationPrice.gt(0) ? liquidationPrice : BIG_ZERO
 }
 
