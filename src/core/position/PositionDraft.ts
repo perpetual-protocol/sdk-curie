@@ -240,7 +240,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
     }
 
     public async getMarginRatio({ cache = true } = {}) {
-        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getBuyingPower" }))
+        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getMarginRatio" }))
 
         const [
             { deltaAvailableQuote, exchangedPositionSize },
@@ -265,7 +265,7 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
     }
 
     public async getLiquidationPrice({ cache = true } = {}) {
-        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getBuyingPower" }))
+        invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getLiquidationPrice" }))
 
         const [{ deltaAvailableQuote, exchangedPositionSize }, accountValue, totalAbsPositionValue] = await Promise.all(
             [
