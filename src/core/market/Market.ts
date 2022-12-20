@@ -3,18 +3,18 @@ import { Big } from "big.js"
 import {
     Channel,
     ChannelEventSource,
-    DEFAULT_PERIOD,
-    MemoizedFetcher,
     createMemoizedFetcher,
+    DEFAULT_PERIOD,
     hasNumbersChange,
+    MemoizedFetcher,
 } from "../../internal"
 import {
-    TickPriceMode,
     fromSqrtX96,
     getMaxTickByTickSpacing,
     getMinTickByTickSpacing,
     getTickFromPrice,
     poll,
+    TickPriceMode,
     tickToPrice,
 } from "../../utils"
 import { ContractReader, GetMarketStatusReturn } from "../contractReader"
@@ -22,7 +22,14 @@ import type { PerpetualProtocol } from "../PerpetualProtocol"
 
 type MarketEventName = "updateError" | "updated"
 
-type CacheKey = "indexPrice" | "markPrice" | "indexTwapPrice" | "isMarketPaused" | "isMarketClosed" | "marketStatus"
+type CacheKey =
+    | "indexPrice"
+    | "markPrice"
+    | "indexTwapPrice"
+    | "isMarketPaused"
+    | "isMarketClosed"
+    | "marketStatus"
+    | "closedPrice"
 
 type CacheValue = Big | boolean | GetMarketStatusReturn
 
@@ -132,6 +139,10 @@ class Market extends Channel<MarketEventName> {
         return isClosed ? MarketStatus.CLOSED : isPaused ? MarketStatus.PAUSED : MarketStatus.ACTIVE
     }
 
+    async getClosedPrice() {
+        return await this._fetch("closedPrice")
+    }
+
     async getPrices({ cache = true } = {}) {
         // TODO: replace with multi-call
         const [markPrice, indexPrice, indexTwapPrice] = await Promise.all([
@@ -146,6 +157,7 @@ class Market extends Channel<MarketEventName> {
         }
     }
 
+    private async _fetch(key: "closedPrice", obj?: { cache: boolean }): Promise<Big>
     private async _fetch(key: "indexPrice" | "markPrice" | "indexTwapPrice", obj?: { cache: boolean }): Promise<Big>
     private async _fetch(key: "isMarketPaused" | "isMarketClosed", obj?: { cache: boolean }): Promise<boolean>
     private async _fetch(key: "marketStatus", obj?: { cache: boolean }): Promise<GetMarketStatusReturn>
@@ -180,6 +192,10 @@ class Market extends Channel<MarketEventName> {
             }
             case "marketStatus": {
                 result = await this._contractReader.getMarketStatus(this.baseAddress)
+                break
+            }
+            case "closedPrice": {
+                result = await this._contractReader.getClosedPrice(this.baseAddress)
                 break
             }
         }
