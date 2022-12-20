@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.16.0...v1.17.0-canary.0) (2022-12-20)
+
+
+### Features
+
+* market and contract reader can support closed price feature ([8b99058](https://github.com/perpetual-protocol/sdk-curie/commit/8b9905850d991f3426bc6820ca9c7ef0b955ec31))
+
+
+### Others
+
+* update @perp/curie-deployments ([3b9ed6b](https://github.com/perpetual-protocol/sdk-curie/commit/3b9ed6b4c2804cf484621ea2aa8a9d5fc532ed94))
+* upgrade @perp/curie-deployments to 2022.12.20-1671509278203 ([2b49129](https://github.com/perpetual-protocol/sdk-curie/commit/2b49129242e06ed8a4b6fa18981246479eb20c23))
+
 ## [1.16.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.15.0...v1.16.0) (2022-10-31)
 
 
