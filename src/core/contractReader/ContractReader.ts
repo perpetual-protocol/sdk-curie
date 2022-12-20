@@ -1,3 +1,6 @@
+import { BigNumber, constants, errors } from "ethers"
+import { COLLATERAL_TOKEN_DECIMAL, RATIO_DECIMAL, SETTLEMENT_TOKEN_DECIMAL } from "../../constants"
+import { ContractName, Contracts } from "../../contracts"
 import {
     BaseToken,
     ChainlinkPriceFeed,
@@ -11,22 +14,17 @@ import {
     UniswapV3Pool,
     Vault,
 } from "../../contracts/type"
-import { BigNumber, constants, errors, providers } from "ethers"
-import { COLLATERAL_TOKEN_DECIMAL, RATIO_DECIMAL, SETTLEMENT_TOKEN_DECIMAL } from "../../constants"
-import { ContractCall, MulticallReader } from "./MulticallReader"
 import {
     ContractErrorCode,
     ContractReadError,
     ContractReadErrorParams,
+    extractContractErrorCode,
     InsufficientLiquidityError,
+    MarketNumberExceedsError,
     NotEnoughFreeCollateralError,
     OverPriceLimitAfterSwapError,
     UniswapBrokerInsufficientLiquidityError,
-    extractContractErrorCode,
-    MarketNumberExceedsError,
 } from "../../errors"
-import { ContractName, Contracts } from "../../contracts"
-import { NonSettlementCollateralToken, SettlementToken } from "../wallet"
 import {
     big2BigNumberAndScaleUp,
     bigNumber2BigAndScaleDown,
@@ -34,14 +32,16 @@ import {
     fromSqrtX96,
     scaleDownDecimals,
 } from "../../utils"
+import { NonSettlementCollateralToken, SettlementToken } from "../wallet"
+import { ContractCall, MulticallReader } from "./MulticallReader"
 import { contractCallsParserForErrorHandling, genKeyFromContractAndFuncName } from "./utils"
 
 import Big from "big.js"
-import { MarketMap } from "../market"
 import { Metadata } from "../../metadata"
-import { marketInfo } from "../market/Markets"
-import { logger } from "../../utils"
 import { RetryProvider } from "../../network"
+import { logger } from "../../utils"
+import { MarketMap } from "../market"
+import { marketInfo } from "../market/Markets"
 
 interface ContractsReaderConfig {
     contracts: Contracts
@@ -492,6 +492,29 @@ export class ContractReader {
                     contractName: ContractName.MULTICALL2,
                     contractFunctionName: "tryAggregate",
                     args: contractCallsParserForErrorHandling(contractCalls),
+                    rawError,
+                }),
+        )
+    }
+
+    /**
+     * get closed price.
+     * @constructor
+     * @param {string} baseTokenAddress -  token address of baseToken
+     */
+    async getClosedPrice(baseTokenAddress: string) {
+        return errorGuardAsync(
+            async () => {
+                logger("getClosedPrice")
+                const contract = this.contracts.baseToken.attach(baseTokenAddress)
+                const closedPrice = await contract.getClosedPrice()
+                return bigNumber2BigAndScaleDown(closedPrice)
+            },
+            rawError =>
+                new ContractReadError<BaseToken>({
+                    contractName: ContractName.BASE_TOKEN,
+                    contractFunctionName: "getClosedPrice",
+                    context: { baseTokenAddress },
                     rawError,
                 }),
         )
