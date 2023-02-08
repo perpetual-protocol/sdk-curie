@@ -140,6 +140,7 @@ class Markets extends Channel<MarketsEventName> {
     protected async getMarketDataAll() {
         try {
             logger("getMarketDataAll")
+            const twapInterval = this._perp.clearingHouseConfig.twapInterval.toNumber()
             const contracts = this._perp.contracts
             const multicallReader = new MulticallReader({ contract: this._perp.contracts.multicall2 })
             const callsMap: { [key: string]: ContractCall[] } = {}
@@ -159,7 +160,7 @@ class Markets extends Channel<MarketsEventName> {
                         contract: contractBaseToken,
                         contractName: ContractName.BASE_TOKEN,
                         funcName: "getIndexPrice",
-                        funcParams: [15 * 60],
+                        funcParams: [twapInterval],
                     },
                     // NOTE: get market price
                     {
