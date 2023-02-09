@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.18.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.14.0...v1.18.0) (2023-02-09)
+
+
+### Features
+
+* add backOff after retry through all providers ([651617d](https://github.com/perpetual-protocol/sdk-curie/commit/651617dd58eef576020f5e277ffd9e77388854a2))
+* add liquidity get data all error handling ([da478d7](https://github.com/perpetual-protocol/sdk-curie/commit/da478d7f123dfbc79d2125b1a11a368860eafd04))
+* add logger util ([b75439a](https://github.com/perpetual-protocol/sdk-curie/commit/b75439ab59fdac8811eb9a1bdfc58e0cb6c12bd0))
+* add markets get data all error handling ([0394bd4](https://github.com/perpetual-protocol/sdk-curie/commit/0394bd4a0af9723df792d31ac3b2a2926d0fbb13))
+* add MulticallReadError, MulticallEncodeError, MulticallDecodeError ([118dda0](https://github.com/perpetual-protocol/sdk-curie/commit/118dda09895be00a3cd94da3530e445ad08fc99e))
+* add positions get data all error handling ([a49bd3c](https://github.com/perpetual-protocol/sdk-curie/commit/a49bd3c5687eeb6d16003f58425242fe833ea2b9))
+* add vault get data all error handling ([a71611c](https://github.com/perpetual-protocol/sdk-curie/commit/a71611ca69a390dab54d6cb69f00668aabba4024))
+* add wallet get data all error handling ([9de76f7](https://github.com/perpetual-protocol/sdk-curie/commit/9de76f790f827eb2f9f080c26d198f43f3b45853))
+* market and contract reader can support closed price feature ([8b99058](https://github.com/perpetual-protocol/sdk-curie/commit/8b9905850d991f3426bc6820ca9c7ef0b955ec31))
+* **Markets:** markets module supports get all market data by getMarketDataAll function ([9793502](https://github.com/perpetual-protocol/sdk-curie/commit/9793502dab197e55274b584e768a56bf7f5eea0f))
+* **Positions:** positions module supports get all position data by getPositionDataAll function ([7e93253](https://github.com/perpetual-protocol/sdk-curie/commit/7e9325322b69e9687fd153b0f64a96f70a9cdd0b))
+* provide get liquidity data all function ([da7010f](https://github.com/perpetual-protocol/sdk-curie/commit/da7010fba9d501a16cf30ef8a6fea3bd71086713))
+* suspend adding user rpc into the rotate list ([b236234](https://github.com/perpetual-protocol/sdk-curie/commit/b236234c9d93b3140cc18ef1adab9f0a42455190))
+* **Vault:** support get vault data all feature ([b2f6a6b](https://github.com/perpetual-protocol/sdk-curie/commit/b2f6a6b08485271a502e6e326b960ebd3dff38e9))
+* **Wallet:** support get wallet data all and get collateral info all ([da9a8a8](https://github.com/perpetual-protocol/sdk-curie/commit/da9a8a81415fcccadc7b6953d37445f21a36318f))
+
+
+### Bug Fixes
+
+* avoid using provider from signer ([9a051c1](https://github.com/perpetual-protocol/sdk-curie/commit/9a051c1a09117fedf4237734276a2a2cc4f92485))
+* refine condition to handle error response ([2b94447](https://github.com/perpetual-protocol/sdk-curie/commit/2b944470b755fe6700ef2ff620d57fc17e004aa1))
+* review comments ([8ec3057](https://github.com/perpetual-protocol/sdk-curie/commit/8ec30578b8d0ec65903c45025bda67efd553fb52))
+* update error condition logic ([858a30f](https://github.com/perpetual-protocol/sdk-curie/commit/858a30fe38945e6545802380466a2b7f5e5303b6))
+
+
+### Performance Improvements
+
+* **ChannelEventSource:** add isFirstRequired checker ([8c969fa](https://github.com/perpetual-protocol/sdk-curie/commit/8c969fa1cb704582ec374886a218f5c1d3fe6877))
+
+
+### Code Refactoring
+
+* (WIP) debugging rpc ([13f9a86](https://github.com/perpetual-protocol/sdk-curie/commit/13f9a8611b9b4bd6fcad242994321b91017f342d))
+* refactor ClearingHouseConfig with twapInterval ([fb94711](https://github.com/perpetual-protocol/sdk-curie/commit/fb9471152edda4b2a6e9607e3fe4f13a9a111ff8))
+
+
+### Others
+
+* add debugging msg ([5307804](https://github.com/perpetual-protocol/sdk-curie/commit/53078048823dca9e8a59203947313893f450e22a))
+* clean up ([d13ccc4](https://github.com/perpetual-protocol/sdk-curie/commit/d13ccc46eb7f2124728765e97a8ad8013889b1f1))
+* **release:** 1.13.0-canary.0 ([afaa6be](https://github.com/perpetual-protocol/sdk-curie/commit/afaa6be0cabbd032f569f3e17320683940435333))
+* **release:** 1.13.0-canary.1 ([7098eaa](https://github.com/perpetual-protocol/sdk-curie/commit/7098eaa78b441203107837a6aca59a17db30100e))
+* **release:** 1.15.0 ([54fe759](https://github.com/perpetual-protocol/sdk-curie/commit/54fe7594b733fb3fbf9717c30aca7b5528d06b1a))
+* **release:** 1.15.0-canary.0 ([30d3da7](https://github.com/perpetual-protocol/sdk-curie/commit/30d3da7e907a46b1645ef655ece1f2bb219552f5))
+* **release:** 1.16.0 ([f678027](https://github.com/perpetual-protocol/sdk-curie/commit/f6780275e578f77edfad970937b2b215b69bd6ee))
+* **release:** 1.16.0-canary.0 ([4e14248](https://github.com/perpetual-protocol/sdk-curie/commit/4e142485f50cd841cd2a68784c2e8d035d3c544e))
+* **release:** 1.17.0-canary.0 ([4d59e03](https://github.com/perpetual-protocol/sdk-curie/commit/4d59e0323dd7504cf272bf47dd64472846b6ec77))
+* remove debug console ([ea5d7e7](https://github.com/perpetual-protocol/sdk-curie/commit/ea5d7e707289766739ef6cf93edddcb41f43f405))
+* remove debug log ([e43139f](https://github.com/perpetual-protocol/sdk-curie/commit/e43139f0581e20681c7c42aea1bb521c80cf892a))
+* update @perp/curie-deployments ([3b9ed6b](https://github.com/perpetual-protocol/sdk-curie/commit/3b9ed6b4c2804cf484621ea2aa8a9d5fc532ed94))
+* update CHANGELOG.md ([5c20b2b](https://github.com/perpetual-protocol/sdk-curie/commit/5c20b2b50558680ff9b52aa4bab7cafb8a1ea910))
+* update package version ([7d69115](https://github.com/perpetual-protocol/sdk-curie/commit/7d69115888136c902be0bd33a7b3c926ac23841d))
+* upgrade @perp/curie-deployments to 2022.12.20-1671509278203 ([2b49129](https://github.com/perpetual-protocol/sdk-curie/commit/2b49129242e06ed8a4b6fa18981246479eb20c23))
+* **Wallet:** add todo note for getWalletDataAllCollateralInfo function ([f96a1e1](https://github.com/perpetual-protocol/sdk-curie/commit/f96a1e14ae9d48ef4e99867b867b548819601877))
+
 ## [1.18.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.17.0...v1.18.0-canary.0) (2023-02-09)
 
 
