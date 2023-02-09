@@ -107,10 +107,11 @@ class Market extends Channel<MarketEventName> {
     private _createFetchUpdateData(): MemoizedFetcher {
         const getMarketData = async () => {
             try {
+                const twapInterval = this._perp.clearingHouseConfig.twapInterval.toNumber()
                 const result = await this._contractReader.getMarketData({
                     poolAddress: this.poolAddress,
                     baseAddress: this.baseAddress,
-                    twapTimeRange: 15 * 60,
+                    twapTimeRange: twapInterval,
                 })
 
                 const { markPrice, indexPrice, indexTwapPrice } = result
@@ -179,7 +180,8 @@ class Market extends Channel<MarketEventName> {
                 break
             }
             case "indexTwapPrice": {
-                result = await this._contractReader.getIndexPrice(this.baseAddress, 15 * 60)
+                const twapInterval = this._perp.clearingHouseConfig.twapInterval.toNumber()
+                result = await this._contractReader.getIndexPrice(this.baseAddress, twapInterval)
                 break
             }
             case "isMarketPaused": {

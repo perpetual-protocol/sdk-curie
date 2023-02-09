@@ -14,6 +14,7 @@ export class ClearingHouseConfig {
         private readonly _mmRatio: Big,
         private readonly _imRatio: Big,
         private readonly _maxFundingRateAbs: Big,
+        private readonly _twapInterval: Big,
         private readonly _marketExchangeFeeRatios: MarketExchangeFeeRatios,
         private readonly _marketInsuranceFundFeeRatios: MarketInsuranceFundFeeRatios,
         private readonly _marketTickSpacings: MarketTickSpacings,
@@ -31,6 +32,10 @@ export class ClearingHouseConfig {
         return this._maxFundingRateAbs
     }
 
+    get twapInterval() {
+        return this._twapInterval
+    }
+
     get marketExchangeFeeRatios() {
         return this._marketExchangeFeeRatios
     }
@@ -44,13 +49,21 @@ export class ClearingHouseConfig {
     }
 
     static async create(contractReader: ContractReader) {
-        const { mmRatio, imRatio, maxFundingRate, exchangeFeeRatios, insuranceFundFeeRatios, tickSpacings } =
-            await contractReader.getClearingHouseMetadata()
+        const {
+            mmRatio,
+            imRatio,
+            maxFundingRate,
+            twapInterval,
+            exchangeFeeRatios,
+            insuranceFundFeeRatios,
+            tickSpacings,
+        } = await contractReader.getClearingHouseMetadata()
 
         return new ClearingHouseConfig(
             scaleDownDecimals(mmRatio, RATIO_DECIMAL),
             scaleDownDecimals(imRatio, RATIO_DECIMAL),
             scaleDownDecimals(maxFundingRate, RATIO_DECIMAL),
+            twapInterval,
             exchangeFeeRatios,
             insuranceFundFeeRatios,
             tickSpacings,
