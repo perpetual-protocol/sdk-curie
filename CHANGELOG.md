@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [1.17.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.16.0...v1.17.0-canary.0) (2023-02-09)
+## [1.18.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.17.0...v1.18.0-canary.0) (2023-02-09)
 
 
 ### Code Refactoring
