@@ -933,6 +933,12 @@ export class ContractReader {
             funcName: "getMaxFundingRate",
             funcParams: [],
         }
+        const twapIntervalMulticallArgs = {
+            contract: this.contracts.clearingHouseConfig,
+            contractName: ContractName.CLEARINGHOUSE_CONFIG,
+            funcName: "getTwapInterval",
+            funcParams: [],
+        }
         const baseAddresses = this._metadata.pools.map(pool => {
             return pool.baseAddress
         })
@@ -955,6 +961,7 @@ export class ContractReader {
             mmRatioMulticallArgs,
             imRatioMulticallArgs,
             maxFundingRateMulticallArgs,
+            twapIntervalMulticallArgs,
             ...marketInfoMulticallArgs,
             ...tickSpacingMulticallArgs,
         ]
@@ -966,6 +973,8 @@ export class ContractReader {
                 const [mmRatio] = result[genKeyFromContractAndFuncName(mmRatioMulticallArgs)]
                 const [imRatio] = result[genKeyFromContractAndFuncName(imRatioMulticallArgs)]
                 const [maxFundingRate] = result[genKeyFromContractAndFuncName(maxFundingRateMulticallArgs)]
+                const [twapInterval] = result[genKeyFromContractAndFuncName(twapIntervalMulticallArgs)]
+
                 const marketInfoList = result[genKeyFromContractAndFuncName(marketInfoMulticallArgs[0])]
                 const rawTickSpacings = result[genKeyFromContractAndFuncName(tickSpacingMulticallArgs[0])]
 
@@ -986,6 +995,7 @@ export class ContractReader {
                     mmRatio: new Big(mmRatio),
                     imRatio: new Big(imRatio),
                     maxFundingRate: new Big(maxFundingRate),
+                    twapInterval: new Big(twapInterval),
                     exchangeFeeRatios,
                     insuranceFundFeeRatios,
                     tickSpacings,
