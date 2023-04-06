@@ -20,6 +20,7 @@ import {
     MarketNumberExceedsError,
     OverMaximumPriceSpreadError,
     NotEnoughMinimumRequiredMarginError,
+    OverPriceBandError,
 } from "../errors"
 import { ClearingHouse, Exchange, OrderBook } from "../contracts/type"
 
@@ -80,6 +81,10 @@ export function getTransactionErrorFactory({
         }
         case ContractErrorCode.OVER_PRICE_LIMIT_AFTER_SWAP: {
             ErrorClass = OverPriceLimitAfterSwapError
+            break
+        }
+        case ContractErrorCode.OVER_PRICE_BAND: {
+            ErrorClass = OverPriceBandError
             break
         }
         case ContractErrorCode.POSITION_SIZE_IS_ZERO: {
