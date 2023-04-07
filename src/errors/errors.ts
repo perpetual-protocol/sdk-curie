@@ -33,6 +33,7 @@ export enum ContractErrorCode {
     MARKET_NUMBER_EXCEEDS = "AB_MNE",
     OVER_MAXIMUM_PRICE_SPREAD = "CH_OMPS",
     NOT_ENOUGH_MINIMUM_REQUIRED_MARGIN = "CH_NEMRM",
+    OVER_PRICE_BAND = "EX_OPB",
 
     /* UNISWAP ERROR */
     LIQUIDITY_MATH_ERROR_LS = "LS", // https://github.com/Uniswap/v3-core/blob/f03155670ec1667406b83a539e23dcccf32a03bc/contracts/libraries/LiquidityMath.sol#L12
@@ -71,6 +72,7 @@ export enum ErrorName {
     ALREADY_OVER_PRICE_LIMIT_ONCE_ERROR = "already_over_price_limit_once_error",
     OVER_PRICE_LIMIT_BEFORE_SWAP_ERROR = "over_price_limit_before_swap_error",
     OVER_PRICE_LIMIT_AFTER_SWAP_ERROR = "over_price_limit_after_swap_error",
+    OVER_PRICE_BAND_ERROR = "over_price_band_error",
     POSITION_SIZE_IS_ZERO_ERROR = "position_size_is_zero_error",
     NOT_ENOUGH_ACCOUNT_VALUE_BY_IM_RATIO_ERROR = "not_enough_account_value_by_im_ratio_error",
     ORDERS_NUMBER_EXCEEDS_ERROR = "orders_number_exceeds_error",
@@ -378,6 +380,13 @@ export class OverPriceLimitAfterSwapError extends ContractWriteError<Exchange> {
     constructor(data: ContractWriteErrorParams<keyof Exchange>) {
         super({ ...data })
         this.name = ErrorName.OVER_PRICE_LIMIT_AFTER_SWAP_ERROR
+    }
+}
+
+export class OverPriceBandError extends ContractWriteError<Exchange> {
+    constructor(data: ContractWriteErrorParams<keyof Exchange>) {
+        super({ ...data })
+        this.name = ErrorName.OVER_PRICE_BAND_ERROR
     }
 }
 
