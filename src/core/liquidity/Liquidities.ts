@@ -275,11 +275,11 @@ class Liquidities extends Channel<LiquiditiesEventName> {
                 const dataChunk = data.splice(0, value.length)
                 const [totalTokenAmount, totalPendingFee] = dataChunk[0]
                 const openOrderIds = dataChunk[1]
-                const markPrice = fromSqrtX96(dataChunk[2].sqrtPriceX96)
+                const marketPrice = fromSqrtX96(dataChunk[2].sqrtPriceX96)
                 parsedData[key] = {
                     totalPendingFee: bigNumber2BigAndScaleDown(totalPendingFee),
                     openOrderIds,
-                    markPrice,
+                    marketPrice,
                 }
             })
 
@@ -324,19 +324,19 @@ class Liquidities extends Channel<LiquiditiesEventName> {
                         },
                         this._perp.channelRegistry,
                     )
-                    const rangeType = Liquidity.getRangeTypeByMarkPrice(
-                        value.markPrice,
+                    const rangeType = Liquidity.getRangeTypeByMarketPrice(
+                        value.marketPrice,
                         _liquidity.lowerTickPrice,
                         _liquidity.upperTickPrice,
                     )
                     const { amountQuote, amountBase } = Liquidity.getLiquidityAmounts({
-                        markPrice: value.markPrice,
+                        marketPrice: value.marketPrice,
                         lowerTickPrice: _liquidity.lowerTickPrice,
                         upperTickPrice: _liquidity.upperTickPrice,
                         liquidity: _liquidity.liquidity,
                         rangeType,
                     })
-                    const amountBaseAsQuote = amountBase.mul(value.markPrice)
+                    const amountBaseAsQuote = amountBase.mul(value.marketPrice)
                     totalLiquidityValue = totalLiquidityValue.add(amountBaseAsQuote.add(amountQuote))
                     openLiquidities.push(_liquidity)
                 })
@@ -361,6 +361,6 @@ export interface LiquidityData {
     totalLiquidityValue: Big
     openOrderIds: number[]
     openLiquidities: Liquidity[]
-    markPrice: Big
+    marketPrice: Big
 }
 export type LiquidityDataAll = Record<string, LiquidityData>

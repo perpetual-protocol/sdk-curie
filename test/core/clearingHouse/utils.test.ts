@@ -100,7 +100,7 @@ describe("getPriceImpact", () => {
     test("should return positive price impact (long)", () => {
         const rate = getPriceImpact({
             price: Big(100),
-            markPrice: Big(80),
+            marketPrice: Big(80),
         })
         expect(rate?.toString()).toEqual("0.25")
     })
@@ -108,16 +108,16 @@ describe("getPriceImpact", () => {
     test("should return negative price impact (short)", () => {
         const rate = getPriceImpact({
             price: Big(50),
-            markPrice: Big(80),
+            marketPrice: Big(80),
         })
         expect(rate?.toString()).toEqual("-0.375")
     })
 
-    test("Given that price and markPrice equal 0, it should get an Error", () => {
+    test("Given that price and marketPrice equal 0, it should get an Error", () => {
         try {
             getPriceImpact({
                 price: Big(0),
-                markPrice: Big(0),
+                marketPrice: Big(0),
             })
         } catch (e: any) {
             expect(e.message).toEqual("[big.js] Division by zero")

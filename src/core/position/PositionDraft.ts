@@ -218,10 +218,10 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
 
     public async getPriceImpact({ cache = true } = {}) {
         const entryPrice = await this.getEntryPrice({ cache })
-        const { markPrice } = await this.market.getPrices({ cache })
+        const marketPrice = await this.market.getPrice("marketPrice", { cache })
         const priceImpact = getPriceImpact({
             price: entryPrice,
-            markPrice,
+            marketPrice,
         })
         return priceImpact
     }
@@ -239,21 +239,15 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
 
     public async getBuyingPower({ cache = true } = {}) {
         invariant(this._perp.hasConnected(), () => new UnauthorizedError({ functionName: "getBuyingPower" }))
-        const [
-            { indexTwapPrice },
-            relatedData,
-            accountValue,
-            freeCollateral,
-            existingPositionValue,
-            existingPositionSize,
-        ] = await Promise.all([
-            this.market.getPrices({ cache }),
-            this._fetch("relatedData", { cache }),
-            this._perp.clearingHouse.getAccountValue({ cache }),
-            this._perp.vault.getFreeCollateral({ cache }),
-            this._perp.positions.getTotalPositionValue(this.market.baseAddress, { cache }),
-            this.getExistingPositionSize(), // _fetch("relatedData") already fetched it
-        ])
+        const [indexTwapPrice, relatedData, accountValue, freeCollateral, existingPositionValue, existingPositionSize] =
+            await Promise.all([
+                this.market.getPrice("indexTwapPrice", { cache }),
+                this._fetch("relatedData", { cache }),
+                this._perp.clearingHouse.getAccountValue({ cache }),
+                this._perp.vault.getFreeCollateral({ cache }),
+                this._perp.positions.getTotalPositionValue(this.market.baseAddress, { cache }),
+                this.getExistingPositionSize(), // _fetch("relatedData") already fetched it
+            ])
 
         const { deltaAvailableBase = BIG_ZERO, deltaAvailableQuote = BIG_ZERO } = relatedData.swap
         const isLong = this.side === PositionSide.LONG

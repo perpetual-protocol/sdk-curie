@@ -42,11 +42,11 @@ export function getSwapRate({ amountBase, amountQuote }: GetSwapRateParams) {
 
 interface GetPriceImpactParams {
     price: Big
-    markPrice: Big
+    marketPrice: Big
 }
 
-export function getPriceImpact({ price, markPrice }: GetPriceImpactParams) {
-    return price.div(markPrice).sub(1)
+export function getPriceImpact({ price, marketPrice }: GetPriceImpactParams) {
+    return price.div(marketPrice).sub(1)
 }
 
 interface GetBuyingPowerParams {

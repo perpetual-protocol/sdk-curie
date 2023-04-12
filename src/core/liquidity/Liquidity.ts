@@ -95,13 +95,13 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
     }
 
     async getLiquidityAmounts({ cache = true } = {}) {
-        const [{ markPrice }, rangeType] = await Promise.all([
-            this.market.getPrices({ cache }),
+        const [marketPrice, rangeType] = await Promise.all([
+            this.market.getPrice("marketPrice", { cache }),
             this.getRangeType({ cache }),
         ])
 
         const { amountQuote, amountBase } = Liquidity.getLiquidityAmounts({
-            markPrice,
+            marketPrice,
             lowerTickPrice: this.lowerTickPrice,
             upperTickPrice: this.upperTickPrice,
             liquidity: this.liquidity,
@@ -115,12 +115,12 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
     }
 
     async getMakerPositionImpermanent({ cache = true } = {}) {
-        const [{ markPrice }, rangeType] = await Promise.all([
-            this.market.getPrices({ cache }),
+        const [marketPrice, rangeType] = await Promise.all([
+            this.market.getPrice("marketPrice", { cache }),
             this.getRangeType({ cache }),
         ])
         const { amountQuote, amountBase } = Liquidity.getLiquidityAmounts({
-            markPrice,
+            marketPrice,
             lowerTickPrice: this.lowerTickPrice,
             upperTickPrice: this.upperTickPrice,
             liquidity: this.liquidity,
@@ -131,18 +131,18 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
     }
 
     async getLiquidityValue({ cache = true } = {}) {
-        const [{ markPrice }, rangeType] = await Promise.all([
-            this.market.getPrices({ cache }),
+        const [marketPrice, rangeType] = await Promise.all([
+            this.market.getPrice("marketPrice", { cache }),
             this.getRangeType({ cache }),
         ])
         const { amountBase, amountQuote } = Liquidity.getLiquidityAmounts({
-            markPrice,
+            marketPrice,
             lowerTickPrice: this.lowerTickPrice,
             upperTickPrice: this.upperTickPrice,
             liquidity: this.liquidity,
             rangeType,
         })
-        const amountBaseAsQuote = amountBase.mul(markPrice)
+        const amountBaseAsQuote = amountBase.mul(marketPrice)
         const amountLiquidity = amountBaseAsQuote.add(amountQuote)
         return amountLiquidity
     }
@@ -167,19 +167,19 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
     }
 
     static getLiquidityAmounts({
-        markPrice,
+        marketPrice,
         lowerTickPrice,
         upperTickPrice,
         liquidity,
         rangeType,
     }: {
-        markPrice: Big
+        marketPrice: Big
         lowerTickPrice: Big
         upperTickPrice: Big
         liquidity: Big
         rangeType: RangeType
     }) {
-        const markPriceSqrtX96 = toSqrtX96(markPrice)
+        const marketPriceSqrtX96 = toSqrtX96(marketPrice)
         const upperPriceSqrtX96 = toSqrtX96(upperTickPrice)
         const lowerPriceSqrtX96 = toSqrtX96(lowerTickPrice)
 
@@ -205,12 +205,12 @@ export class Liquidity extends LiquidityBase<LiquidityEventName> {
             }
             case RangeType.RANGE_INSIDE: {
                 erc20DecimalAmountQuote = Liquidity.getQuoteTokenAmountFromLiquidity(
-                    markPriceSqrtX96,
+                    marketPriceSqrtX96,
                     lowerPriceSqrtX96,
                     liquidity,
                 )
                 erc20DecimalAmountBase = Liquidity.getBaseTokenAmountFromLiquidity(
-                    markPriceSqrtX96,
+                    marketPriceSqrtX96,
                     upperPriceSqrtX96,
                     liquidity,
                 )

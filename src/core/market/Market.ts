@@ -24,6 +24,7 @@ type MarketEventName = "updateError" | "updated"
 
 type CacheKey =
     | "indexPrice"
+    | "marketPrice"
     | "markPrice"
     | "indexTwapPrice"
     | "isMarketPaused"
@@ -114,9 +115,10 @@ class Market extends Channel<MarketEventName> {
                     twapTimeRange: twapInterval,
                 })
 
-                const { markPrice, indexPrice, indexTwapPrice } = result
+                const { markPrice, marketPrice, indexPrice, indexTwapPrice } = result
 
                 this._cache.set("markPrice", markPrice)
+                this._cache.set("marketPrice", marketPrice)
                 this._cache.set("indexPrice", indexPrice)
                 this._cache.set("indexTwapPrice", indexTwapPrice)
 
@@ -144,14 +146,21 @@ class Market extends Channel<MarketEventName> {
         return await this._fetch("closedPrice")
     }
 
+    async getPrice(target: "marketPrice" | "markPrice" | "indexPrice" | "indexTwapPrice", { cache = true } = {}) {
+        return await this._fetch(target, { cache })
+    }
+
     async getPrices({ cache = true } = {}) {
         // TODO: replace with multi-call
-        const [markPrice, indexPrice, indexTwapPrice] = await Promise.all([
+        const [marketPrice, markPrice, indexPrice, indexTwapPrice] = await Promise.all([
+            this._fetch("marketPrice", { cache }),
             this._fetch("markPrice", { cache }),
             this._fetch("indexPrice", { cache }),
             this._fetch("indexTwapPrice", { cache }),
         ])
+
         return {
+            marketPrice,
             markPrice,
             indexPrice,
             indexTwapPrice,
@@ -159,7 +168,10 @@ class Market extends Channel<MarketEventName> {
     }
 
     private async _fetch(key: "closedPrice", obj?: { cache: boolean }): Promise<Big>
-    private async _fetch(key: "indexPrice" | "markPrice" | "indexTwapPrice", obj?: { cache: boolean }): Promise<Big>
+    private async _fetch(
+        key: "indexPrice" | "marketPrice" | "markPrice" | "indexTwapPrice",
+        obj?: { cache: boolean },
+    ): Promise<Big>
     private async _fetch(key: "isMarketPaused" | "isMarketClosed", obj?: { cache: boolean }): Promise<boolean>
     private async _fetch(key: "marketStatus", obj?: { cache: boolean }): Promise<GetMarketStatusReturn>
     private async _fetch(key: CacheKey, obj?: { cache: boolean }): Promise<CacheValue>
@@ -174,9 +186,13 @@ class Market extends Channel<MarketEventName> {
                 result = await this._contractReader.getIndexPrice(this.baseAddress)
                 break
             }
-            case "markPrice": {
+            case "marketPrice": {
                 const { sqrtPriceX96 } = await this._contractReader.getSlot0(this.poolAddress)
                 result = fromSqrtX96(sqrtPriceX96)
+                break
+            }
+            case "markPrice": {
+                result = await this._contractReader.getMarkPrice(this.baseAddress)
                 break
             }
             case "indexTwapPrice": {

@@ -167,7 +167,7 @@ export class Positions extends Channel<PositionsEventName> {
         let total = BIG_ZERO
         for (const position of takerPositions) {
             const sizeOriginal = position.sizeOriginal
-            const { indexPrice } = await position.market.getPrices({ cache })
+            const indexPrice = await position.market.getPrice("indexPrice", { cache })
             total = total.add(sizeOriginal.mul(indexPrice))
         }
         return total
@@ -178,7 +178,7 @@ export class Positions extends Channel<PositionsEventName> {
         let total = BIG_ZERO
         for (const position of makerPositions) {
             const sizeOriginal = position.sizeOriginal
-            const { indexPrice } = await position.market.getPrices({ cache })
+            const indexPrice = await position.market.getPrice("indexPrice", { cache })
             total = total.add(sizeOriginal.mul(indexPrice))
         }
         return total
@@ -384,7 +384,7 @@ export class Positions extends Channel<PositionsEventName> {
                 const totalPosOpenNotional = bigNumber2BigAndScaleDown(dataChunk[4])
                 const pendingFundingPayment = bigNumber2BigAndScaleDown(dataChunk[5])
                 const indexPrice = bigNumber2BigAndScaleDown(dataChunk[6])
-                const markPrice = fromSqrtX96(dataChunk[7].sqrtPriceX96)
+                const marketPrice = fromSqrtX96(dataChunk[7].sqrtPriceX96)
                 let takerPosition: Position | undefined
                 let takerPositionValue: Big | undefined
                 if (!takerPosSize.eq(0)) {
@@ -423,7 +423,7 @@ export class Positions extends Channel<PositionsEventName> {
                     makerPositionValue,
                     pendingFundingPayment,
                     indexPrice,
-                    markPrice,
+                    marketPrice,
                 }
             })
 
@@ -529,7 +529,7 @@ export class Positions extends Channel<PositionsEventName> {
                 })
                 const exitPriceImpact = getPriceImpact({
                     price: exitPrice,
-                    markPrice: posData.markPrice,
+                    marketPrice: posData.marketPrice,
                 })
                 const feeRatio =
                     this._perp.clearingHouseConfig.marketExchangeFeeRatios[posData.takerPosition.market.baseAddress]
@@ -566,7 +566,7 @@ export class Positions extends Channel<PositionsEventName> {
                 })
                 const exitPriceImpact = getPriceImpact({
                     price: exitPrice,
-                    markPrice: posData.markPrice,
+                    marketPrice: posData.marketPrice,
                 })
                 const feeRatio =
                     this._perp.clearingHouseConfig.marketExchangeFeeRatios[posData.makerPosition.market.baseAddress]
@@ -629,7 +629,7 @@ export interface PositionDataAllByMarket {
         makerPosExitTxFee?: Big
         pendingFundingPayment: Big
         indexPrice: Big
-        markPrice: Big
+        marketPrice: Big
     }
 }
 

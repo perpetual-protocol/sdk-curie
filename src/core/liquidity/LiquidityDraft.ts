@@ -54,11 +54,11 @@ export class LiquidityDraft extends LiquidityBase {
     }
 
     async getLiquidity({ cache = true } = {}) {
-        const [{ markPrice }, rangeType] = await Promise.all([
-            this.market.getPrices({ cache }),
+        const [marketPrice, rangeType] = await Promise.all([
+            this.market.getPrice("marketPrice", { cache }),
             this.getRangeType({ cache }),
         ])
-        const markPriceSqrtX96 = toSqrtX96(markPrice)
+        const marketPriceSqrtX96 = toSqrtX96(marketPrice)
         const lowerTickPrice = tickToPrice(this._lowerTick)
         const upperTickPrice = tickToPrice(this._upperTick)
         const lowerPriceSqrtX96 = toSqrtX96(lowerTickPrice)
@@ -70,7 +70,7 @@ export class LiquidityDraft extends LiquidityBase {
                 // NOTE: rawQuoteAmount: should have value, if not => 0 liquidity
                 return this.rawQuoteAmount
                     ? LiquidityDraft.maxLiquidityForAmounts(
-                          markPriceSqrtX96,
+                          marketPriceSqrtX96,
                           lowerPriceSqrtX96,
                           upperPriceSqrtX96,
                           AMOUNT_MAX,
@@ -83,7 +83,7 @@ export class LiquidityDraft extends LiquidityBase {
                 // NOTE: rawBaseAmount: should have value, if not => 0 liquidity
                 return this.rawBaseAmount
                     ? LiquidityDraft.maxLiquidityForAmounts(
-                          markPriceSqrtX96,
+                          marketPriceSqrtX96,
                           lowerPriceSqrtX96,
                           upperPriceSqrtX96,
                           this.rawBaseAmount,
@@ -97,7 +97,7 @@ export class LiquidityDraft extends LiquidityBase {
                     return BIG_ZERO
                 }
                 return LiquidityDraft.maxLiquidityForAmounts(
-                    markPriceSqrtX96,
+                    marketPriceSqrtX96,
                     lowerPriceSqrtX96,
                     upperPriceSqrtX96,
                     this.rawBaseAmount || AMOUNT_MAX,
@@ -112,10 +112,10 @@ export class LiquidityDraft extends LiquidityBase {
 
     async getBaseAmount({ cache = true } = {}) {
         const rangeType = await this.getRangeType({ cache })
-        // NOTE: if cache = false, below async methods' `market.getPrices` already get fetched
+        // NOTE: if cache = false, below async methods' `market.getPrice` already get fetched
         const liquidity = await this.getLiquidity()
-        const { markPrice } = await this.market.getPrices()
-        const markPriceSqrtX96 = toSqrtX96(markPrice)
+        const marketPrice = await this.market.getPrice("marketPrice")
+        const marketPriceSqrtX96 = toSqrtX96(marketPrice)
         const lowerTickPrice = tickToPrice(this._lowerTick)
         const lowerPriceSqrtX96 = toSqrtX96(lowerTickPrice)
         const upperTickPrice = tickToPrice(this._upperTick)
@@ -129,7 +129,11 @@ export class LiquidityDraft extends LiquidityBase {
                 break
             }
             case RangeType.RANGE_INSIDE: {
-                amount = LiquidityDraft.getBaseTokenAmountFromLiquidity(markPriceSqrtX96, upperPriceSqrtX96, liquidity)
+                amount = LiquidityDraft.getBaseTokenAmountFromLiquidity(
+                    marketPriceSqrtX96,
+                    upperPriceSqrtX96,
+                    liquidity,
+                )
                 break
             }
             case RangeType.RANGE_AT_LEFT: {
@@ -143,10 +147,10 @@ export class LiquidityDraft extends LiquidityBase {
 
     async getQuoteAmount({ cache = true } = {}) {
         const rangeType = await this.getRangeType({ cache })
-        // NOTE: if cache = false, below async methods' `market.getPrices` already get fetched
+        // NOTE: if cache = false, below async methods' `market.getPrice` already get fetched
         const liquidity = await this.getLiquidity()
-        const { markPrice } = await this.market.getPrices()
-        const markPriceSqrtX96 = toSqrtX96(markPrice)
+        const marketPrice = await this.market.getPrice("marketPrice")
+        const marketPriceSqrtX96 = toSqrtX96(marketPrice)
         const lowerTickPrice = tickToPrice(this._lowerTick)
         const lowerPriceSqrtX96 = toSqrtX96(lowerTickPrice)
         const upperTickPrice = tickToPrice(this._upperTick)
@@ -164,7 +168,11 @@ export class LiquidityDraft extends LiquidityBase {
                 break
             }
             case RangeType.RANGE_INSIDE: {
-                amount = LiquidityDraft.getQuoteTokenAmountFromLiquidity(markPriceSqrtX96, lowerPriceSqrtX96, liquidity)
+                amount = LiquidityDraft.getQuoteTokenAmountFromLiquidity(
+                    marketPriceSqrtX96,
+                    lowerPriceSqrtX96,
+                    liquidity,
+                )
                 break
             }
             case RangeType.RANGE_AT_RIGHT: {
