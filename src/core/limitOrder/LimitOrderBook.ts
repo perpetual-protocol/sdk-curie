@@ -1,6 +1,4 @@
 import Big from "big.js"
-import { BigNumber } from "ethers"
-import { BIG_ZERO } from "../../constants"
 import { ContractName } from "../../contracts"
 import { LimitOrderBook as ContractLimitOrderBook } from "../../contracts/type"
 import { UnauthorizedError } from "../../errors"
