@@ -32,11 +32,9 @@ import {
     LimitOrderBook,
     DelegateApproval,
     DelegateApproval__factory,
-    ChainlinkPriceFeed__factory,
     AggregatorV3Interface__factory,
     PriceFeedDispatcher,
     PriceFeedDispatcher__factory,
-    ChainlinkPriceFeed,
     AggregatorV3Interface,
     ChainlinkPriceFeedV3,
     ChainlinkPriceFeedV3__factory,
@@ -83,7 +81,7 @@ export class Contracts {
     baseToken: BaseToken
     baseTokenChainlinkAggregatorProxy: AggregatorV3Interface
     baseTokenChainlinkPriceFeed: ChainlinkPriceFeedV3
-    baseTokenPriceFeedAggregator: PriceFeedDispatcher
+    baseTokenPriceFeedDispatcher: PriceFeedDispatcher
     pool: UniswapV3Pool
     quoter: Quoter
     exchange: Exchange
@@ -129,13 +127,9 @@ export class Contracts {
         this.settlementToken = IERC20Metadata__factory.connect(settlementTokenAddress, provider)
         this.baseToken = BaseToken__factory.connect(constants.AddressZero, provider)
 
-        /* NOTE:
-         * Using ChainlinkPriceFeed__factory to assume all PriceFeed supports 'getAggregator'
-         * but in reality other PriceFeed may still be used.
-         **/
         this.baseTokenChainlinkAggregatorProxy = AggregatorV3Interface__factory.connect(constants.AddressZero, provider)
         this.baseTokenChainlinkPriceFeed = ChainlinkPriceFeedV3__factory.connect(constants.AddressZero, provider)
-        this.baseTokenPriceFeedAggregator = PriceFeedDispatcher__factory.connect(constants.AddressZero, provider)
+        this.baseTokenPriceFeedDispatcher = PriceFeedDispatcher__factory.connect(constants.AddressZero, provider)
 
         this.pool = UniswapV3Pool__factory.connect(constants.AddressZero, provider)
         this.quoter = Quoter__factory.connect(Quoter.address, provider)

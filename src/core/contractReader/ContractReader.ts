@@ -390,7 +390,7 @@ export class ContractReader {
                 logger("getPriceFeedAggregator::contractPriceFeed::getAggregator")
                 const contractBaseToken = this.contracts.baseToken.attach(baseTokenAddress)
                 const priceFeedAddress = await contractBaseToken.getPriceFeed()
-                const dispatcher = this.contracts.baseTokenPriceFeedAggregator.attach(priceFeedAddress)
+                const dispatcher = this.contracts.baseTokenPriceFeedDispatcher.attach(priceFeedAddress)
                 const chainlinkPriceFeedAddress = await dispatcher.getChainlinkPriceFeedV3()
                 const chainlinkPriceFeed = this.contracts.baseTokenChainlinkPriceFeed.attach(chainlinkPriceFeedAddress)
                 const chainlinkAggregatorProxyAddress = await chainlinkPriceFeed.getAggregator()

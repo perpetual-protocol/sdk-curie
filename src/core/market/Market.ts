@@ -81,7 +81,6 @@ class Market extends Channel<MarketEventName> {
     }
 
     getChinlinkAggregatorProxy() {
-        // chainlink
         return this._contractReader.getChinlinkAggregatorProxy(this.baseAddress)
     }
 
