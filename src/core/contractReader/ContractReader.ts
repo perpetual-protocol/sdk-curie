@@ -383,22 +383,26 @@ export class ContractReader {
         )
     }
 
-    async getPriceFeedAggregator(baseTokenAddress: string) {
+    async getChinlinkAggregatorProxy(baseTokenAddress: string) {
         return errorGuardAsync(
             async () => {
                 logger("getPriceFeedAggregator::contractBaseToken::getPriceFeed")
                 logger("getPriceFeedAggregator::contractPriceFeed::getAggregator")
                 const contractBaseToken = this.contracts.baseToken.attach(baseTokenAddress)
                 const priceFeedAddress = await contractBaseToken.getPriceFeed()
-                const contractPriceFeed = this.contracts.baseTokenPriceFeed.attach(priceFeedAddress)
+                const dispatcher = this.contracts.baseTokenPriceFeedAggregator.attach(priceFeedAddress)
+                const chainlinkPriceFeedAddress = await dispatcher.getChainlinkPriceFeedV3()
+                const chainlinkPriceFeed = this.contracts.baseTokenChainlinkPriceFeed.attach(chainlinkPriceFeedAddress)
+                const chainlinkAggregatorProxyAddress = await chainlinkPriceFeed.getAggregator()
+                const chainlinkAggregatorProxy = this.contracts.baseTokenChainlinkAggregatorProxy.attach(
+                    chainlinkAggregatorProxyAddress,
+                )
+
                 return errorGuardAsync(
                     async () => {
-                        // NOTE: contractPriceFeed is created with ChainLink factory but in runtime "getAggregator" will not exist when it's not Chainlink.
-                        const aggregatorAddress = await contractPriceFeed.getAggregator()
-                        const contractAggregator = this.contracts.baseTokenPriceFeedAggregator.attach(aggregatorAddress)
                         return {
-                            address: aggregatorAddress,
-                            contract: contractAggregator,
+                            address: chainlinkAggregatorProxyAddress,
+                            contract: chainlinkAggregatorProxy,
                         }
                     },
                     rawError =>
