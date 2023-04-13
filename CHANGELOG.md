@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.19.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.18.0...v1.19.0) (2023-04-13)
+
+### Features
+
+* add price feed v3 related logic ([58d3a6c](https://github.com/perpetual-protocol/sdk-curie/commit/58d3a6c9baf07a37034f17ed19173854006f6b0d))
+* add EX_OPB error code (over price band) ([d1158b3](https://github.com/perpetual-protocol/sdk-curie/commit/d1158b362e17560c07f271b51aff6d9a185119aa))
+
+
 ## [1.18.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.17.0...v1.18.0) (2023-02-09)
 
 ### Code Refactoring
