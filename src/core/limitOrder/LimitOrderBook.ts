@@ -1,6 +1,4 @@
 import Big from "big.js"
-import { BigNumber } from "ethers"
-import { BIG_ZERO } from "../../constants"
 import { ContractName } from "../../contracts"
 import { LimitOrderBook as ContractLimitOrderBook } from "../../contracts/type"
 import { UnauthorizedError } from "../../errors"
@@ -61,10 +59,8 @@ export class LimitOrderBook {
     async getPriceFeedLatestRound({ tickerSymbol }: { tickerSymbol: string }): Promise<string | undefined> {
         const market = this._perp.markets.getMarket({ tickerSymbol })
         try {
-            // NOTE: Expected to throw error when is not using ChainLink as priceFeed since there's no `getPriceFeedAggregator` in other price feed.
-            // NOTE: On-demand check if price feed supports this for now, better to batch check all markets during sdk init.
-            const { contract: aggregatorContract } = await market.getPriceFeedAggregator()
-            const { roundId } = await aggregatorContract.latestRoundData()
+            const { contract } = await market.getChinlinkAggregatorProxy()
+            const { roundId } = await contract.latestRoundData()
             return roundId.toString()
         } catch (error) {
             return undefined

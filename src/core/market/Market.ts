@@ -80,8 +80,8 @@ class Market extends Channel<MarketEventName> {
         return tickToPrice(tick)
     }
 
-    getPriceFeedAggregator() {
-        return this._contractReader.getPriceFeedAggregator(this.baseAddress)
+    getChinlinkAggregatorProxy() {
+        return this._contractReader.getChinlinkAggregatorProxy(this.baseAddress)
     }
 
     protected _getEventSourceMap() {
