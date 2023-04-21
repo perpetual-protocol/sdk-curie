@@ -22,6 +22,7 @@ import {
     InsufficientLiquidityError,
     MarketNumberExceedsError,
     NotEnoughFreeCollateralError,
+    OverPriceBandError,
     OverPriceLimitAfterSwapError,
     UniswapBrokerInsufficientLiquidityError,
 } from "../../errors"
@@ -862,6 +863,13 @@ export class ContractReader {
                     return new MarketNumberExceedsError({
                         contractName: ContractName.ACCOUNT_BALANCE,
                         contractFunctionName: "registerBaseToken",
+                        contractErrorCode,
+                        rawError,
+                    })
+                } else if (contractErrorCode === ContractErrorCode.OVER_PRICE_BAND) {
+                    return new OverPriceBandError({
+                        contractName: ContractName.EXCHANGE,
+                        contractFunctionName: "swap",
                         contractErrorCode,
                         rawError,
                     })
