@@ -106,10 +106,10 @@ export class Position extends Channel<PositionEventName> {
 
     public async getPriceImpact({ cache = true } = {}) {
         const exitPrice = await this.getExitPrice({ cache })
-        const { markPrice } = await this.market.getPrices({ cache })
+        const marketPrice = await this.market.getPrice("marketPrice", { cache })
         const priceImpact = getPriceImpact({
             price: exitPrice,
-            markPrice: markPrice,
+            marketPrice,
         })
         return priceImpact
     }

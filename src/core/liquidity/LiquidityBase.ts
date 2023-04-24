@@ -9,16 +9,11 @@ export enum RangeType {
     RANGE_UNINITIALIZED = "RANGE_UNINITIALIZED",
     RANGE_INVALID = "RANGE_INVALID",
     RANGE_INSIDE = "RANGE_INSIDE",
-    RANGE_AT_LEFT = "RANGE_AT_LEFT", // lower < upper < markPrice
-    RANGE_AT_RIGHT = "RANGE_AT_RIGHT", // markPrice < lower < upper
+    RANGE_AT_LEFT = "RANGE_AT_LEFT", // lower < upper < marketPrice
+    RANGE_AT_RIGHT = "RANGE_AT_RIGHT", // marketPrice < lower < upper
 }
 
 type LiquidityBaseEventName = "updateError" | "updated"
-
-export interface EventPayloadRangeTypeUpdated {
-    rangeType: RangeType
-    markPrice: Big
-}
 
 export interface LiquidityBaseConstructorData {
     market: Market
@@ -55,8 +50,8 @@ export class LiquidityBase<EventName extends string = ""> extends Channel<EventN
     }
 
     async getRangeType({ cache = true } = {}) {
-        const { markPrice } = await this.market.getPrices({ cache })
-        return LiquidityBase.getRangeTypeByMarkPrice(markPrice, this.lowerTickPrice, this.upperTickPrice)
+        const marketPrice = await this.market.getPrice("marketPrice", { cache })
+        return LiquidityBase.getRangeTypeByMarketPrice(marketPrice, this.lowerTickPrice, this.upperTickPrice)
     }
 
     protected _getEventSourceMap() {
@@ -72,13 +67,13 @@ export class LiquidityBase<EventName extends string = ""> extends Channel<EventN
         }
     }
 
-    static getRangeTypeByMarkPrice(markPrice: Big, lowerTickPrice: Big, upperTickPrice: Big) {
+    static getRangeTypeByMarketPrice(marketPrice: Big, lowerTickPrice: Big, upperTickPrice: Big) {
         if (upperTickPrice.lte(lowerTickPrice)) {
             return RangeType.RANGE_INVALID
         }
-        if (markPrice.gte(upperTickPrice)) {
+        if (marketPrice.gte(upperTickPrice)) {
             return RangeType.RANGE_AT_LEFT
-        } else if (markPrice.lte(lowerTickPrice)) {
+        } else if (marketPrice.lte(lowerTickPrice)) {
             return RangeType.RANGE_AT_RIGHT
         }
         return RangeType.RANGE_INSIDE

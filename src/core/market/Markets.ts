@@ -40,6 +40,7 @@ type MarketsEventName = "updateError" | "updated"
 export interface MarketDataAll {
     [key: string]: {
         status: MarketStatus
+        marketPrice: Big
         markPrice: Big
         indexPrice: Big
         indexTwapPrice: Big
@@ -169,6 +170,13 @@ class Markets extends Channel<MarketsEventName> {
                         funcName: "slot0",
                         funcParams: [],
                     },
+                    // NOTE: get mark price
+                    {
+                        contract: contracts.accountBalance,
+                        contractName: ContractName.ACCOUNT_BALANCE,
+                        funcName: "getMarkPrice",
+                        funcParams: [market.baseAddress],
+                    },
                     // NOTE: get if the base token paused
                     {
                         contract: contractBaseToken,
@@ -199,11 +207,13 @@ class Markets extends Channel<MarketsEventName> {
                 const dataChunk = data.splice(0, value.length)
                 const indexPrice = bigNumber2BigAndScaleDown(dataChunk[0])
                 const indexTwapPrice = bigNumber2BigAndScaleDown(dataChunk[1])
-                const markPrice = fromSqrtX96(dataChunk[2].sqrtPriceX96)
-                const isPaused = dataChunk[3]
-                const isClosed = dataChunk[4]
+                const marketPrice = fromSqrtX96(dataChunk[2].sqrtPriceX96)
+                const markPrice = bigNumber2BigAndScaleDown(dataChunk[3])
+                const isPaused = dataChunk[4]
+                const isClosed = dataChunk[5]
                 marketDataAll[`${key}`] = {
                     status: isClosed ? MarketStatus.CLOSED : isPaused ? MarketStatus.PAUSED : MarketStatus.ACTIVE,
+                    marketPrice,
                     markPrice,
                     indexPrice,
                     indexTwapPrice,

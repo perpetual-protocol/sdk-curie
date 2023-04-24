@@ -2,6 +2,7 @@ import { BigNumber, constants, errors } from "ethers"
 import { COLLATERAL_TOKEN_DECIMAL, RATIO_DECIMAL, SETTLEMENT_TOKEN_DECIMAL } from "../../constants"
 import { ContractName, Contracts } from "../../contracts"
 import {
+    AccountBalance,
     BaseToken,
     ChainlinkPriceFeed,
     ClearingHouse,
@@ -545,6 +546,23 @@ export class ContractReader {
                     contractFunctionName: "getIndexPrice",
                     args: { interval },
                     context: { baseTokenAddress },
+                    rawError,
+                }),
+        )
+    }
+
+    async getMarkPrice(baseTokenAddress: string) {
+        return errorGuardAsync(
+            async () => {
+                logger("getMarkPrice")
+                const markPrice = await this.contracts.accountBalance.getMarkPrice(baseTokenAddress)
+                return bigNumber2BigAndScaleDown(markPrice)
+            },
+            rawError =>
+                new ContractReadError<AccountBalance>({
+                    contractName: ContractName.ACCOUNT_BALANCE,
+                    contractFunctionName: "getMarkPrice",
+                    args: { baseTokenAddress },
                     rawError,
                 }),
         )
@@ -1187,12 +1205,18 @@ export class ContractReader {
                 funcName: "getIndexPrice",
                 funcParams: [args.twapTimeRange],
             },
+            {
+                contract: this.contracts.accountBalance,
+                contractName: ContractName.ACCOUNT_BALANCE,
+                funcName: "getMarkPrice",
+                funcParams: [args.baseAddress],
+            },
         ]
         return errorGuardAsync(
             async () => {
                 logger("getMarketData")
                 const multicallResult = await this._multicallReader.execute(contractCalls)
-                const [markPrice, indexPrice, indexTwapPrice] = multicallResult.map((value, index) => {
+                const [marketPrice, indexPrice, indexTwapPrice, markPrice] = multicallResult.map((value, index) => {
                     if (index === 0) {
                         // NOTE: multicallResult[0] = slot0, and we only need slot0.sqrtPriceX96 to calculate the markPrice
                         const { sqrtPriceX96 } = value
@@ -1201,6 +1225,7 @@ export class ContractReader {
                     return bigNumber2BigAndScaleDown(value)
                 })
                 return {
+                    marketPrice,
                     markPrice,
                     indexPrice,
                     indexTwapPrice,

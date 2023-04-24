@@ -58,7 +58,7 @@
         "sdk"
     ],
     "dependencies": {
-        "@perp/curie-deployments": "2023.3.31-1680253303231",
+        "@perp/curie-deployments": "2023.4.12-1681295833590",
         "cross-fetch": "3.1.5",
         "exponential-backoff": "3.1.0"
     },
