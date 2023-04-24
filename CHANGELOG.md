@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.19.0...v1.20.0) (2023-04-24)
+
+
+### Features
+
+* added mark price related logic & update wrong naming ([ba8387a](https://github.com/perpetual-protocol/sdk-curie/commit/ba8387a9673fec7e688bfd807100cda29aa2f608))
+
+
+### Bug Fixes
+
+* over price band error should be shown after swap simulation ([140a48d](https://github.com/perpetual-protocol/sdk-curie/commit/140a48d2ebdd5f88847d9dfb936cbd8c38103308))
+
+
+### Others
+
+* 1.19.0-canary ([f5ef69b](https://github.com/perpetual-protocol/sdk-curie/commit/f5ef69b0eea53e56e79cb04ff53c25fe794311d2))
+* **release:** 1.20.0-canary.0 ([7393d5e](https://github.com/perpetual-protocol/sdk-curie/commit/7393d5e0a6e47522205d5a7eb3c742be465eb62e))
+* update changelogs ([bc169cd](https://github.com/perpetual-protocol/sdk-curie/commit/bc169cd3fbafde98ac33d4e7d51c7f97fd1d4f96))
+
+## [1.20.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.19.0...v1.20.0-canary.0) (2023-04-24)
+
+
+### Features
+
+* added mark price related logic & update wrong naming ([ba8387a](https://github.com/perpetual-protocol/sdk-curie/commit/ba8387a9673fec7e688bfd807100cda29aa2f608))
+
+
+### Bug Fixes
+
+* over price band error should be shown after swap simulation ([140a48d](https://github.com/perpetual-protocol/sdk-curie/commit/140a48d2ebdd5f88847d9dfb936cbd8c38103308))
+
+
+### Others
+
+* 1.19.0-canary ([f5ef69b](https://github.com/perpetual-protocol/sdk-curie/commit/f5ef69b0eea53e56e79cb04ff53c25fe794311d2))
+* update changelogs ([bc169cd](https://github.com/perpetual-protocol/sdk-curie/commit/bc169cd3fbafde98ac33d4e7d51c7f97fd1d4f96))
+
 ## [1.19.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.18.0...v1.19.0) (2023-04-13)
 
 ### Features
