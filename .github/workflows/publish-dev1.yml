@@ -23,7 +23,7 @@ jobs:
               # See: https://github.com/actions/cache/blob/main/examples.md#node---yarn
             - name: Get Yarn cache directory
               id: yarn-cache-dir-path
-              run: echo "::set-output name=dir::$(yarn cache dir)"
+              run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
 
             - name: Use Yarn cache
               uses: actions/cache@v2
@@ -40,8 +40,8 @@ jobs:
               run: |
                   RELEASE_TRACK=dev1
                   PKG_VERSION=$(npm pkg get version | sed 's/"//g')
-                  echo "::set-output name=release_track::$RELEASE_TRACK"
-                  echo "::set-output name=pkg_version::$PKG_VERSION"
+                  echo "release_track=$RELEASE_TRACK" >> $GITHUB_OUTPUT
+                  echo "pkg_version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
             - name: Build package
               run: yarn build
