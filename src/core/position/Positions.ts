@@ -1,16 +1,16 @@
 import { BIG_ONE, BIG_ZERO, SETTLEMENT_TOKEN_DECIMAL } from "../../constants"
-import { Channel, ChannelEventSource, DEFAULT_PERIOD, MemoizedFetcher, createMemoizedFetcher } from "../../internal"
-import { Position, PositionType } from "./Position"
+import { Channel, ChannelEventSource, DEFAULT_PERIOD } from "../../internal"
 import { big2BigNumberAndScaleUp, bigNumber2BigAndScaleDown, fromSqrtX96, invariant, logger, poll } from "../../utils"
+import { Position, PositionType } from "./Position"
 
 import Big from "big.js"
-import { MarketMap } from "../market"
-import { PerpetualProtocolConnected } from "../PerpetualProtocol"
-import { PositionSide } from "./types"
-import { UnauthorizedError } from "../../errors"
-import { ContractCall, MulticallReader } from "../contractReader"
 import { ContractName } from "../../contracts"
+import { UnauthorizedError } from "../../errors"
+import { PerpetualProtocolConnected } from "../PerpetualProtocol"
 import { getPriceImpact, getSwapRate, getTransactionFee, getUnrealizedPnl } from "../clearingHouse/utils"
+import { ContractCall, MulticallReader } from "../contractReader"
+import { MarketMap } from "../market"
+import { PositionSide } from "./types"
 
 export interface FetchPositionsReturn {
     takerPositions: Position[]
@@ -442,6 +442,8 @@ export class Positions extends Channel<PositionsEventName> {
             })
             // NOTE: get taker pos swap result
             Object.values(takerPosMap).forEach(posData => {
+                const isBaseToQuote = posData.takerPosition.isBaseToQuote
+                const sqrtPriceLimitX96 = this.getAdjustedSqrtPriceX96(isBaseToQuote)
                 const call = {
                     contract: contracts.quoter,
                     contractName: ContractName.QUOTER,
@@ -449,10 +451,10 @@ export class Positions extends Channel<PositionsEventName> {
                     funcParams: [
                         {
                             baseToken: posData.takerPosition.market.baseAddress,
-                            isBaseToQuote: posData.takerPosition.isBaseToQuote,
+                            isBaseToQuote,
                             isExactInput: posData.takerPosition.isExactInput,
                             amount: big2BigNumberAndScaleUp(posData.takerPosition.sizeAbs),
-                            sqrtPriceLimitX96: 0,
+                            sqrtPriceLimitX96: big2BigNumberAndScaleUp(sqrtPriceLimitX96, 0),
                         },
                     ],
                 }
@@ -460,6 +462,8 @@ export class Positions extends Channel<PositionsEventName> {
             })
             // NOTE: get maker pos swap result
             Object.values(makerPosMap).forEach(posData => {
+                const isBaseToQuote = posData.makerPosition.isBaseToQuote
+                const sqrtPriceLimitX96 = this.getAdjustedSqrtPriceX96(isBaseToQuote)
                 const call = {
                     contract: contracts.quoter,
                     contractName: ContractName.QUOTER,
@@ -469,8 +473,8 @@ export class Positions extends Channel<PositionsEventName> {
                             baseToken: posData.makerPosition.market.baseAddress,
                             isBaseToQuote: posData.makerPosition.isBaseToQuote,
                             isExactInput: posData.makerPosition.isExactInput,
-                            amount: big2BigNumberAndScaleUp(posData.makerPosition.sizeAbs),
-                            sqrtPriceLimitX96: 0,
+                            amount: big2BigNumberAndScaleUp(posData.makerPosition.sizeAbs.mul(1e20)),
+                            sqrtPriceLimitX96: big2BigNumberAndScaleUp(sqrtPriceLimitX96, 0),
                         },
                     ],
                 }
@@ -599,6 +603,13 @@ export class Positions extends Channel<PositionsEventName> {
         } catch (error) {
             this.emit("updateError", { error })
         }
+    }
+
+    private getAdjustedSqrtPriceX96(isBaseToQuote: boolean): Big {
+        // NOTE: UniswapV3 TickMath MIN_SQRT_RATIO, MAX_SQRT_RATIO
+        const MIN_SQRT_RATIO = Big("4295128739")
+        const MAX_SQRT_RATIO = Big("1461446703485210103287273052203988822378723970342")
+        return isBaseToQuote ? MIN_SQRT_RATIO.add(1) : MAX_SQRT_RATIO.minus(1)
     }
 }
 
