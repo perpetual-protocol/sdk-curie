@@ -473,7 +473,7 @@ export class Positions extends Channel<PositionsEventName> {
                             baseToken: posData.makerPosition.market.baseAddress,
                             isBaseToQuote: posData.makerPosition.isBaseToQuote,
                             isExactInput: posData.makerPosition.isExactInput,
-                            amount: big2BigNumberAndScaleUp(posData.makerPosition.sizeAbs.mul(1e20)),
+                            amount: big2BigNumberAndScaleUp(posData.makerPosition.sizeAbs),
                             sqrtPriceLimitX96: big2BigNumberAndScaleUp(sqrtPriceLimitX96, 0),
                         },
                     ],
