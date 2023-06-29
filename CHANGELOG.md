@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.21.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.20.0...v1.21.0-canary.0) (2023-06-29)
+
+
+### Features
+
+* set an adjusted sqrtPriceX96 when calling Quoter swap ([9cad112](https://github.com/perpetual-protocol/sdk-curie/commit/9cad1125a3ea7801b8f1588cb9777b4d4ec9269e))
+
+
+### Bug Fixes
+
+* remove unexpected mul 1e20 when calling quoter swap for maker position ([3afc4be](https://github.com/perpetual-protocol/sdk-curie/commit/3afc4be2ff58048c5f7667aa7343a0e2b13d0ec8))
+* upgrade GitHub workflow with new syntax ([e7c3e00](https://github.com/perpetual-protocol/sdk-curie/commit/e7c3e00c574eb9b96e4b11b8aad82aa55cf7b03f))
+
 ## [1.20.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.19.0...v1.20.0) (2023-04-24)
 
 
