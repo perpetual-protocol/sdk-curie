@@ -195,6 +195,31 @@ const liquidity = perp.liquidities.getTotalLiquidities().filter(filterFn)
 perp.clearingHouse.removeLiquidity(liquidity, ratio, slippage)
 ```
 
+## Gas Estimation Guide
+
+The current version of the SDK does not support for configuring `maxFeePerGas` and `maxPriorityFeePerGas`. It relies on the gas settings defined by the provider as defaults. After the Optimism Bedrock upgrade, gas fees have become volatile and can sometimes be extremely high. If this happens, we recommend using alternative library, such as [ethers.js](https://www.npmjs.com/package/ethers), to send transactions. Here's an example:
+
+```ts
+// example of open position using ethers.js
+import { StaticJsonRpcProvider } from "@ethersproject/providers"
+import { parseUnits } from "@ethersproject/units"
+import { Contract, Wallet } from "ethers"
+
+// create clearing house
+const provider = new StaticJsonRpcProvider(endpointUrl)
+const wallet = new Wallet(privateKey, provider)
+const clearingHouse = new Contract(clearingHouseAddress, clearingHouseAbi, wallet)
+
+// set appropriate gas fee
+const feeData = await provider.getFeeData()
+const maxFeePerGas = feeData.lastBaseFeePerGas.mul(2)
+const maxPriorityFeePerGas = parseUnits("0.001", "gwei")
+
+// send tx
+const tx = await clearingHouse.openPosition(openPositionParams, { maxFeePerGas, maxPriorityFeePerGas })
+await tx.wait()
+```
+
 ---
 
 > If any features/functionalities described in the Perpetual Protocol documentation, code comments, marketing, community discussion or announcements, pre-production or testing code, or other non-production-code sources, vary or differ from the code used in production, in case of any dispute, the code used in production shall prevail.
