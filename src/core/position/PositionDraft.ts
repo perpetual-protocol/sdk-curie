@@ -172,6 +172,8 @@ export class PositionDraft<EventName extends string = string> extends Channel<Po
                 })
                 return result
             } catch (error) {
+                console.log("here here")
+                console.log("error", error)
                 this.emit("updateError", { error })
             }
         }
