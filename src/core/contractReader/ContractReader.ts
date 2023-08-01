@@ -20,7 +20,7 @@ import {
     ContractReadError,
     ContractReadErrorParams,
     extractContractErrorCode,
-    InsufficientLiquidityError,
+    UnableToQuoteError,
     MarketNumberExceedsError,
     NotEnoughFreeCollateralError,
     OverPriceBandError,
@@ -636,7 +636,7 @@ export class ContractReader {
 
                 const contractErrorCode = extractContractErrorCode(rawError)
                 if (contractErrorCode === ContractErrorCode.QUOTER_INSUFFICIENT_LIQUIDITY) {
-                    return new InsufficientLiquidityError(params)
+                    return new UnableToQuoteError(params)
                 }
                 return new ContractReadError<Quoter>(params)
             },
@@ -1350,7 +1350,7 @@ export class ContractReader {
                         args: swapCall.funcParams[0],
                         rawError,
                     }
-                    return new InsufficientLiquidityError(params)
+                    return new UnableToQuoteError(params)
                 }
 
                 return new ContractReadError<Multicall2>({

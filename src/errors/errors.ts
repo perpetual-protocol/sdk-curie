@@ -60,7 +60,7 @@ export enum ErrorName {
     MULTICALL_READ_ERROR = "multicall_read_error",
     MULTICALL_READ_ENCODE_ERROR = "multicall_read_encode_error",
     MULTICALL_READ_DECODE_ERROR = "multicall_read_decode_error",
-    INSUFFICIENT_LIQUIDITY_ERROR = "insufficient_liquidity_error",
+    UNABLE_TO_QUOTE_ERROR = "unable_to_quote_error",
     UNISWAP_BROKER_INSUFFICIENT_LIQUIDITY_ERROR = "uniswap_broker_insufficient_liquidity_error",
     NOT_ENOUGH_FREE_COLLATERAL_ERROR = "not_enough_free_collateral_error",
     REDUCE_POSITION_TOO_MUCH_ERROR = "reduce_position_too_much_error",
@@ -88,7 +88,7 @@ export enum ErrorName {
 
 export type SDKErrorContractRead =
     | ContractReadError<EthersContract>
-    | InsufficientLiquidityError
+    | UnableToQuoteError
     | UniswapBrokerInsufficientLiquidityError
     | NotEnoughFreeCollateralError
 
@@ -273,10 +273,10 @@ export class ContractReadError<ContractType extends EthersContract> extends SDKB
     }
 }
 
-export class InsufficientLiquidityError extends ContractReadError<Quoter> {
+export class UnableToQuoteError extends ContractReadError<Quoter> {
     constructor(data: ContractReadErrorParams<keyof Quoter>) {
         super(data)
-        this.name = ErrorName.INSUFFICIENT_LIQUIDITY_ERROR
+        this.name = ErrorName.UNABLE_TO_QUOTE_ERROR
     }
 }
 
