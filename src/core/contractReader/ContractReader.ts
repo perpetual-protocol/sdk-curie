@@ -633,12 +633,9 @@ export class ContractReader {
                     },
                     rawError,
                 }
-                // NOTE: currently, ethers doesn't provider typing for error
-                // see details in https://github.com/ethers-io/ethers.js/discussions/1556
-                if (
-                    rawError.code === errors.CALL_EXCEPTION &&
-                    rawError.reason === ContractErrorCode.QUOTER_INSUFFICIENT_LIQUIDITY
-                ) {
+
+                const contractErrorCode = extractContractErrorCode(rawError)
+                if (contractErrorCode === ContractErrorCode.QUOTER_INSUFFICIENT_LIQUIDITY) {
                     return new InsufficientLiquidityError(params)
                 }
                 return new ContractReadError<Quoter>(params)
@@ -1345,10 +1342,8 @@ export class ContractReader {
                 }
             },
             (rawError: any) => {
-                if (
-                    rawError.code === errors.CALL_EXCEPTION &&
-                    rawError.reason === ContractErrorCode.QUOTER_INSUFFICIENT_LIQUIDITY
-                ) {
+                const contractErrorCode = extractContractErrorCode(rawError)
+                if (contractErrorCode === ContractErrorCode.QUOTER_INSUFFICIENT_LIQUIDITY) {
                     const params: ContractReadErrorParams<"swap"> = {
                         contractName: ContractName.QUOTER,
                         contractFunctionName: "swap",
