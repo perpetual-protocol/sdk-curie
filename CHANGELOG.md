@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.22.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.19.0...v1.22.0) (2023-08-02)
+
+
+### Features
+
+* added mark price related logic & update wrong naming ([ba8387a](https://github.com/perpetual-protocol/sdk-curie/commit/ba8387a9673fec7e688bfd807100cda29aa2f608))
+* set an adjusted sqrtPriceX96 when calling Quoter swap ([9cad112](https://github.com/perpetual-protocol/sdk-curie/commit/9cad1125a3ea7801b8f1588cb9777b4d4ec9269e))
+
+
+### Bug Fixes
+
+* over price band error should be shown after swap simulation ([140a48d](https://github.com/perpetual-protocol/sdk-curie/commit/140a48d2ebdd5f88847d9dfb936cbd8c38103308))
+* remove unexpected mul 1e20 when calling quoter swap for maker position ([3afc4be](https://github.com/perpetual-protocol/sdk-curie/commit/3afc4be2ff58048c5f7667aa7343a0e2b13d0ec8))
+* upgrade GitHub workflow with new syntax ([e7c3e00](https://github.com/perpetual-protocol/sdk-curie/commit/e7c3e00c574eb9b96e4b11b8aad82aa55cf7b03f))
+
+
+### Others
+
+* 1.19.0-canary ([f5ef69b](https://github.com/perpetual-protocol/sdk-curie/commit/f5ef69b0eea53e56e79cb04ff53c25fe794311d2))
+* add a gas estimation guide ([02e0cbe](https://github.com/perpetual-protocol/sdk-curie/commit/02e0cbe1bb40b046e56df10a174a073057530c6d))
+* **release:** 1.20.0 ([d983076](https://github.com/perpetual-protocol/sdk-curie/commit/d98307602ced9b1805ff6d444bd1881a69357efc))
+* **release:** 1.20.0-canary.0 ([7393d5e](https://github.com/perpetual-protocol/sdk-curie/commit/7393d5e0a6e47522205d5a7eb3c742be465eb62e))
+* **release:** 1.21.0 ([2450598](https://github.com/perpetual-protocol/sdk-curie/commit/2450598a8efd372026a3c0132c951d676fad463a))
+* **release:** 1.21.0-canary.0 ([df9f4dd](https://github.com/perpetual-protocol/sdk-curie/commit/df9f4ddb381ae13d357a8e71f5c4ff9520a1d339))
+* **release:** 1.22.0-canary.0 ([5d93b53](https://github.com/perpetual-protocol/sdk-curie/commit/5d93b530f54783c1beb563c6fa84a27251ea00d0))
+* update changelogs ([bc169cd](https://github.com/perpetual-protocol/sdk-curie/commit/bc169cd3fbafde98ac33d4e7d51c7f97fd1d4f96))
+
+## [1.22.0-canary.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.19.0...v1.22.0-canary.0) (2023-08-02)
+
+
+### Features
+
+* added mark price related logic & update wrong naming ([ba8387a](https://github.com/perpetual-protocol/sdk-curie/commit/ba8387a9673fec7e688bfd807100cda29aa2f608))
+* set an adjusted sqrtPriceX96 when calling Quoter swap ([9cad112](https://github.com/perpetual-protocol/sdk-curie/commit/9cad1125a3ea7801b8f1588cb9777b4d4ec9269e))
+
+
+### Bug Fixes
+
+* over price band error should be shown after swap simulation ([140a48d](https://github.com/perpetual-protocol/sdk-curie/commit/140a48d2ebdd5f88847d9dfb936cbd8c38103308))
+* remove unexpected mul 1e20 when calling quoter swap for maker position ([3afc4be](https://github.com/perpetual-protocol/sdk-curie/commit/3afc4be2ff58048c5f7667aa7343a0e2b13d0ec8))
+* upgrade GitHub workflow with new syntax ([e7c3e00](https://github.com/perpetual-protocol/sdk-curie/commit/e7c3e00c574eb9b96e4b11b8aad82aa55cf7b03f))
+
+
+### Others
+
+* 1.19.0-canary ([f5ef69b](https://github.com/perpetual-protocol/sdk-curie/commit/f5ef69b0eea53e56e79cb04ff53c25fe794311d2))
+* add a gas estimation guide ([02e0cbe](https://github.com/perpetual-protocol/sdk-curie/commit/02e0cbe1bb40b046e56df10a174a073057530c6d))
+* **release:** 1.20.0 ([d983076](https://github.com/perpetual-protocol/sdk-curie/commit/d98307602ced9b1805ff6d444bd1881a69357efc))
+* **release:** 1.20.0-canary.0 ([7393d5e](https://github.com/perpetual-protocol/sdk-curie/commit/7393d5e0a6e47522205d5a7eb3c742be465eb62e))
+* **release:** 1.21.0 ([2450598](https://github.com/perpetual-protocol/sdk-curie/commit/2450598a8efd372026a3c0132c951d676fad463a))
+* **release:** 1.21.0-canary.0 ([df9f4dd](https://github.com/perpetual-protocol/sdk-curie/commit/df9f4ddb381ae13d357a8e71f5c4ff9520a1d339))
+* update changelogs ([bc169cd](https://github.com/perpetual-protocol/sdk-curie/commit/bc169cd3fbafde98ac33d4e7d51c7f97fd1d4f96))
+
 ## [1.21.0](https://github.com/perpetual-protocol/sdk-curie/compare/v1.20.0...v1.21.0) (2023-06-29)
 
 
